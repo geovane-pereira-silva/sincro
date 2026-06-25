@@ -122,11 +122,15 @@ function HistoricoPage() {
                           ))}
                         </div>
                       </div>
-                      <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-xs font-bold text-positivo">
-                        {resumo.entrada && resumo.saida
-                          ? formatDuracao(resumo.trabalhadoMin)
-                          : "—"}
-                      </span>
+                      {resumo.entrada && resumo.saida ? (
+                        <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-xs font-bold text-positivo">
+                          {formatDuracao(resumo.trabalhadoMin)}
+                        </span>
+                      ) : (
+                        <span className="text-sm font-medium text-muted-foreground">
+                          —
+                        </span>
+                      )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-3">
