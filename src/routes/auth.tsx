@@ -12,10 +12,10 @@ import { mensagemErro } from "@/lib/erros";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — PontoLivre" },
+      { title: "Entrar — SINCRO" },
       {
         name: "description",
-        content: "Acesse sua conta PontoLivre e comece a bater ponto.",
+        content: "Acesse sua conta SINCRO e registre sua jornada.",
       },
     ],
   }),
@@ -103,7 +103,7 @@ function AuthPage() {
           // ignora
         }
 
-        toast.success("Conta criada! Bem-vindo ao PontoLivre.");
+        toast.success("Conta criada! Bem-vindo ao SINCRO.");
         navigate({ to: "/ponto", replace: true });
         return;
       }
