@@ -265,58 +265,29 @@ function PontoPage() {
           )}
         </div>
 
-        {/* Botão principal */}
+        {/* Botão principal — texto dinâmico por tipo de batida */}
         {proximo ? (
-          <div className="space-y-2">
-            <p className="text-center text-sm text-muted-foreground">
-              Próximo registro:{" "}
-              <span className="font-semibold text-foreground">
-                {TIPO_INFO[proximo].label}
-              </span>
-            </p>
-            <Button
-              onClick={handleBater}
-              disabled={submitting}
-              className={cn(
-                "h-16 w-full rounded-full text-lg font-bold shadow-sm",
-                TIPO_INFO[proximo].colorClass,
-              )}
-            >
-              {submitting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                "Confirmar meu registro"
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleBater}
+            disabled={submitting}
+            className={cn(
+              "h-16 w-full rounded-2xl text-lg font-bold transition-all",
+              TIPO_INFO[proximo].colorClass,
+            )}
+          >
+            {submitting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              TIPO_INFO[proximo].botao
+            )}
+          </Button>
         ) : (
-          <div className="flex h-16 w-full items-center justify-center gap-2 rounded-full border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
+          <div className="flex h-16 w-full items-center justify-center gap-2 rounded-2xl border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
             <Check className="h-5 w-5" />
             Jornada de hoje concluída
           </div>
         )}
 
-        {/* Streak de dias consecutivos */}
-        {streak >= 2 && (
-          <div
-            className={cn(
-              "flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold",
-              streak >= 7
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
-                : "bg-secondary text-muted-foreground",
-            )}
-          >
-            <Flame
-              className={cn(
-                "h-4 w-4",
-                streak >= 7 ? "text-amber-500" : "text-orange-500",
-              )}
-            />
-            {streak >= 7
-              ? `${streak} dias seguidos — você é consistente!`
-              : `${streak} dias seguidos registrando`}
-          </div>
-        )}
 
 
         {/* Status do dia */}
