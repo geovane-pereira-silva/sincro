@@ -179,7 +179,7 @@ function PontoPage() {
       if (error) throw error;
 
       toast.success(
-        `${TIPO_INFO[proximo].label} registrada às ${formatTime(dataHora.toISOString(), tz)}`,
+        `✓ Registro confirmado pelo SINCRO às ${formatTime(dataHora.toISOString(), tz)}`,
       );
       setIsManual(false);
       setJustificativa("");
