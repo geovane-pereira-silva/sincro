@@ -291,21 +291,19 @@ function PontoPage() {
 
 
         {/* Status do dia */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">
-              Batidas de hoje
-            </h2>
+            <h2 className="text-sm font-bold text-primary">Hoje</h2>
             {resumo.entrada && resumo.saida && (
               <span
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-bold",
+                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold",
                   resumo.saldoMin >= 0
                     ? "bg-positivo/10 text-positivo"
                     : "bg-negativo/10 text-negativo",
                 )}
               >
-                {formatSaldo(resumo.saldoMin)}
+                {resumo.saldoMin >= 0 ? "▲" : "▼"} {formatSaldo(resumo.saldoMin)}
               </span>
             )}
           </div>
