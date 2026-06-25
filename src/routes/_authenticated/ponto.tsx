@@ -207,18 +207,28 @@ function PontoPage() {
     <AppShell profile={profile ?? null}>
       <div className="space-y-6">
         {/* Relógio */}
-        <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <p className="font-mono text-5xl font-bold tabular-nums tracking-tight text-foreground">
+        <div className="rounded-[20px] border border-border bg-card p-6 text-center shadow-card">
+          <p className="font-mono text-[56px] font-bold leading-none tabular-nums tracking-tight text-primary">
             {relogio}
           </p>
-          <p className="mt-1 text-sm lowercase first-letter:uppercase text-muted-foreground">
+          <p className="mt-2 text-sm lowercase first-letter:uppercase text-muted-foreground">
             {formatDateLong(now, tz)}
           </p>
+          {streak >= 2 && (
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
+              <Flame className="h-3.5 w-3.5" />
+              {streak >= 7
+                ? `${streak} dias seguidos — você é consistente!`
+                : `${streak} dias seguidos`}
+            </div>
+          )}
         </div>
 
         {/* Campo de horário editável */}
         <div className="space-y-2">
-          <Label htmlFor="hora">Horário da batida</Label>
+          <Label htmlFor="hora" className="text-xs text-muted-foreground/70">
+            Horário do registro
+          </Label>
           <Input
             id="hora"
             type="time"
