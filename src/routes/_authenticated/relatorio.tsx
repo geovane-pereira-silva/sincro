@@ -136,7 +136,7 @@ function RelatorioPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pontolivre-${ano}-${String(mes).padStart(2, "0")}.csv`;
+    a.download = `sincro-${ano}-${String(mes).padStart(2, "0")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Relatório exportado.");
