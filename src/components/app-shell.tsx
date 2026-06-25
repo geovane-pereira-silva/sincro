@@ -59,6 +59,11 @@ export function AppShell({
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
 
+  // Onboarding obrigatório de primeiro acesso (não pulável).
+  if (profile && !profile.onboarding_concluido) {
+    return <OnboardingScreen profile={profile} />;
+  }
+
   async function handleLogout() {
     setOpen(false);
     await queryClient.cancelQueries();
