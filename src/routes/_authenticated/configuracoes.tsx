@@ -112,9 +112,12 @@ function ConfiguracoesPage() {
       <div className="space-y-6">
         <h1 className="text-xl font-bold text-foreground">Configurações</h1>
 
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Perfil
+        </p>
         <form
           onSubmit={handleSave}
-          className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
+          className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-card"
         >
           <div className="space-y-1.5">
             <Label htmlFor="nome">Nome completo</Label>
