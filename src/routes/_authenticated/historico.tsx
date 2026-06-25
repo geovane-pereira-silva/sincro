@@ -122,7 +122,7 @@ function HistoricoPage() {
                           ))}
                         </div>
                       </div>
-                      <span className="text-sm font-medium text-muted-foreground">
+                      <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-xs font-bold text-positivo">
                         {resumo.entrada && resumo.saida
                           ? formatDuracao(resumo.trabalhadoMin)
                           : "—"}
