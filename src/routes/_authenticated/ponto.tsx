@@ -65,6 +65,31 @@ function PontoPage() {
     isLoading: loadingRegistros,
   } = useRegistros(user?.id, fromIso, toIso, `dia-${hojeKey}`);
 
+  // Sequência de dias consecutivos (streak) — últimos 45 dias
+  const { data: streakRegs = [] } = useQuery({
+    queryKey: ["streak", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const since = new Date(
+        Date.now() - 45 * 24 * 3600 * 1000,
+      ).toISOString();
+      const { data, error } = await supabase
+        .from("ponto_registros")
+        .select("data_hora")
+        .eq("user_id", user!.id)
+        .gte("data_hora", since);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const streak = useMemo(() => {
+    const dias = new Set(
+      streakRegs.map((r) => dayKeyInTz(new Date(r.data_hora), tz)),
+    );
+    return calcularStreak(dias, tz);
+  }, [streakRegs, tz]);
+
   // Realtime: atualiza a lista quando novos registros chegam
   useEffect(() => {
     if (!user?.id) return;
