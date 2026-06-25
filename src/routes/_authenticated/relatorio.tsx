@@ -120,6 +120,12 @@ function RelatorioPage() {
       [],
       ["Total trabalhado", formatDuracao(totais.trabalhado)],
       ["Saldo do mês", formatSaldo(totais.saldo)],
+      [],
+      [
+        `Documento gerado pelo usuário via PontoLivre. Responsabilidade pelos dados: ${
+          profile?.nome_completo || profile?.email || "usuário"
+        }.`,
+      ],
     ];
     const csv = linhasCSV
       .map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
