@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { saudacao, type Profile } from "@/lib/ponto";
+import { OnboardingScreen } from "@/components/onboarding-screen";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -57,6 +58,11 @@ export function AppShell({
     profile?.email?.split("@")[0] ||
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
+
+  // Onboarding obrigatório de primeiro acesso (não pulável).
+  if (profile && !profile.onboarding_concluido) {
+    return <OnboardingScreen profile={profile} />;
+  }
 
   async function handleLogout() {
     setOpen(false);

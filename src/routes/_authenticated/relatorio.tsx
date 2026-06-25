@@ -120,6 +120,12 @@ function RelatorioPage() {
       [],
       ["Total trabalhado", formatDuracao(totais.trabalhado)],
       ["Saldo do mês", formatSaldo(totais.saldo)],
+      [],
+      [
+        `Documento gerado pelo usuário via PontoLivre. Responsabilidade pelos dados: ${
+          profile?.nome_completo || profile?.email || "usuário"
+        }.`,
+      ],
     ];
     const csv = linhasCSV
       .map((row) => row.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(";"))
@@ -254,6 +260,11 @@ function RelatorioPage() {
             </div>
           </div>
         )}
+
+        <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground">
+          Relatório gerado com base nos registros inseridos por você. O
+          PontoLivre não valida nem certifica os dados.
+        </p>
       </div>
     </AppShell>
   );

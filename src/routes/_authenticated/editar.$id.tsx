@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Info, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -76,10 +76,6 @@ function EditarPage() {
       toast.error("Horário inválido.");
       return;
     }
-    if (justificativa.trim().length < 10) {
-      toast.error("A justificativa deve ter pelo menos 10 caracteres.");
-      return;
-    }
 
     setSaving(true);
     try {
@@ -87,12 +83,13 @@ function EditarPage() {
       const p = getZonedParts(new Date(registro.data_hora), tz);
       const novaData = zonedWallToUtc(p.year, p.month, p.day, hh, mm, 0, tz);
 
+      const obs = justificativa.trim();
       const { error } = await supabase
         .from("ponto_registros")
         .update({
           data_hora: novaData.toISOString(),
           foi_editado: true,
-          justificativa: justificativa.trim(),
+          justificativa: obs.length > 0 ? obs : null,
         })
         .eq("id", registro.id);
       if (error) throw error;
@@ -165,27 +162,22 @@ function EditarPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="just">Justificativa (mínimo 10 caracteres)</Label>
+              <Label htmlFor="just">Observação (opcional)</Label>
               <Textarea
                 id="just"
                 value={justificativa}
                 onChange={(e) => setJustificativa(e.target.value)}
                 rows={3}
-                placeholder="Explique o motivo do ajuste..."
+                placeholder="Anote algo, se quiser..."
                 className="resize-none"
               />
-              <p className="text-right text-xs text-muted-foreground">
-                {justificativa.trim().length}/10
-              </p>
             </div>
 
-            <div className="flex items-start gap-2 rounded-xl bg-accent p-3 text-xs text-accent-foreground">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>
-                Edições ficam registradas com o horário original para fins de
-                controle.
-              </p>
-            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              O horário original fica salvo para seu controle. Você é
+              responsável pelos registros feitos aqui.
+            </p>
+
 
             <div className="flex gap-3">
               <Button

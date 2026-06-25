@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Check, Pencil } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Check, Pencil, Flame } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
 import {
   TIPO_INFO,
+  calcularStreak,
+  dayKeyInTz,
   formatDateLong,
   formatTime,
   formatSaldo,
@@ -63,6 +65,31 @@ function PontoPage() {
     isLoading: loadingRegistros,
   } = useRegistros(user?.id, fromIso, toIso, `dia-${hojeKey}`);
 
+  // Sequência de dias consecutivos (streak) — últimos 45 dias
+  const { data: streakRegs = [] } = useQuery({
+    queryKey: ["streak", user?.id],
+    enabled: !!user?.id,
+    queryFn: async () => {
+      const since = new Date(
+        Date.now() - 45 * 24 * 3600 * 1000,
+      ).toISOString();
+      const { data, error } = await supabase
+        .from("ponto_registros")
+        .select("data_hora")
+        .eq("user_id", user!.id)
+        .gte("data_hora", since);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const streak = useMemo(() => {
+    const dias = new Set(
+      streakRegs.map((r) => dayKeyInTz(new Date(r.data_hora), tz)),
+    );
+    return calcularStreak(dias, tz);
+  }, [streakRegs, tz]);
+
   // Realtime: atualiza a lista quando novos registros chegam
   useEffect(() => {
     if (!user?.id) return;
@@ -80,6 +107,7 @@ function PontoPage() {
           queryClient.invalidateQueries({
             queryKey: ["registros", user.id, `dia-${hojeKey}`],
           });
+          queryClient.invalidateQueries({ queryKey: ["streak", user.id] });
         },
       )
       .subscribe();
@@ -118,10 +146,6 @@ function PontoPage() {
 
   async function handleBater() {
     if (!user || !proximo) return;
-    if (foiEditado && justificativa.trim().length < 10) {
-      toast.error("Informe uma justificativa de pelo menos 10 caracteres.");
-      return;
-    }
     if (!/^\d{2}:\d{2}$/.test(timeInput)) {
       toast.error("Horário inválido.");
       return;
@@ -141,6 +165,7 @@ function PontoPage() {
 
       const editadoReal =
         Math.abs(dataHora.getTime() - original.getTime()) > 60000;
+      const obs = justificativa.trim();
 
       const { error } = await supabase.from("ponto_registros").insert({
         user_id: user.id,
@@ -148,7 +173,7 @@ function PontoPage() {
         data_hora: dataHora.toISOString(),
         data_hora_original: original.toISOString(),
         foi_editado: editadoReal,
-        justificativa: editadoReal ? justificativa.trim() : null,
+        justificativa: editadoReal && obs.length > 0 ? obs : null,
         origem: "web",
       });
       if (error) throw error;
@@ -162,6 +187,7 @@ function PontoPage() {
       queryClient.invalidateQueries({
         queryKey: ["registros", user.id, `dia-${hojeKey}`],
       });
+      queryClient.invalidateQueries({ queryKey: ["streak", user.id] });
     } catch (err) {
       toast.error(mensagemErro(err));
     } finally {
@@ -215,7 +241,7 @@ function PontoPage() {
             <div className="space-y-1.5 rounded-xl border border-border bg-secondary/50 p-3">
               <Label htmlFor="just" className="flex items-center gap-1.5 text-xs">
                 <Pencil className="h-3.5 w-3.5" />
-                Justificativa (obrigatória — horário ajustado)
+                Observação (opcional)
               </Label>
               <Textarea
                 id="just"
@@ -225,35 +251,63 @@ function PontoPage() {
                 rows={2}
                 className="resize-none bg-card"
               />
-              <p className="text-right text-xs text-muted-foreground">
-                {justificativa.trim().length}/10
-              </p>
             </div>
           )}
         </div>
 
         {/* Botão principal */}
         {proximo ? (
-          <Button
-            onClick={handleBater}
-            disabled={submitting}
-            className={cn(
-              "h-16 w-full rounded-full text-lg font-bold shadow-sm",
-              TIPO_INFO[proximo].colorClass,
-            )}
-          >
-            {submitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              TIPO_INFO[proximo].acao.toUpperCase()
-            )}
-          </Button>
+          <div className="space-y-2">
+            <p className="text-center text-sm text-muted-foreground">
+              Próximo registro:{" "}
+              <span className="font-semibold text-foreground">
+                {TIPO_INFO[proximo].label}
+              </span>
+            </p>
+            <Button
+              onClick={handleBater}
+              disabled={submitting}
+              className={cn(
+                "h-16 w-full rounded-full text-lg font-bold shadow-sm",
+                TIPO_INFO[proximo].colorClass,
+              )}
+            >
+              {submitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Confirmar meu registro"
+              )}
+            </Button>
+          </div>
         ) : (
           <div className="flex h-16 w-full items-center justify-center gap-2 rounded-full border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
             <Check className="h-5 w-5" />
             Jornada de hoje concluída
           </div>
         )}
+
+        {/* Streak de dias consecutivos */}
+        {streak >= 2 && (
+          <div
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold",
+              streak >= 7
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+                : "bg-secondary text-muted-foreground",
+            )}
+          >
+            <Flame
+              className={cn(
+                "h-4 w-4",
+                streak >= 7 ? "text-amber-500" : "text-orange-500",
+              )}
+            />
+            {streak >= 7
+              ? `${streak} dias seguidos — você é consistente!`
+              : `${streak} dias seguidos registrando`}
+          </div>
+        )}
+
 
         {/* Status do dia */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
