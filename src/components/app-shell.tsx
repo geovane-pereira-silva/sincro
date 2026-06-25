@@ -24,9 +24,9 @@ import { OnboardingScreen } from "@/components/onboarding-screen";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/ponto", label: "Bater ponto", icon: Clock },
+  { to: "/ponto", label: "Meu Ponto", icon: Clock },
   { to: "/historico", label: "Histórico", icon: ListChecks },
-  { to: "/relatorio", label: "Relatório mensal", icon: BarChart3 },
+  { to: "/relatorio", label: "Relatório", icon: BarChart3 },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
