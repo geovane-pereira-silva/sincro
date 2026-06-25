@@ -107,6 +107,7 @@ function PontoPage() {
           queryClient.invalidateQueries({
             queryKey: ["registros", user.id, `dia-${hojeKey}`],
           });
+          queryClient.invalidateQueries({ queryKey: ["streak", user.id] });
         },
       )
       .subscribe();
