@@ -174,7 +174,7 @@ function ConfiguracoesPage() {
           <Button
             type="submit"
             disabled={saving}
-            className="h-11 w-full rounded-full font-semibold"
+            className="h-11 w-full rounded-xl font-semibold"
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Salvar alterações
