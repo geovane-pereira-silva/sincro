@@ -169,7 +169,7 @@ function RelatorioPage() {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>

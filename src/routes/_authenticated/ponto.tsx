@@ -207,18 +207,28 @@ function PontoPage() {
     <AppShell profile={profile ?? null}>
       <div className="space-y-6">
         {/* Relógio */}
-        <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-          <p className="font-mono text-5xl font-bold tabular-nums tracking-tight text-foreground">
+        <div className="rounded-[20px] border border-border bg-card p-6 text-center shadow-card">
+          <p className="font-mono text-[56px] font-bold leading-none tabular-nums tracking-tight text-primary">
             {relogio}
           </p>
-          <p className="mt-1 text-sm lowercase first-letter:uppercase text-muted-foreground">
+          <p className="mt-2 text-sm lowercase first-letter:uppercase text-muted-foreground">
             {formatDateLong(now, tz)}
           </p>
+          {streak >= 2 && (
+            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
+              <Flame className="h-3.5 w-3.5" />
+              {streak >= 7
+                ? `${streak} dias seguidos — você é consistente!`
+                : `${streak} dias seguidos`}
+            </div>
+          )}
         </div>
 
         {/* Campo de horário editável */}
         <div className="space-y-2">
-          <Label htmlFor="hora">Horário da batida</Label>
+          <Label htmlFor="hora" className="text-xs text-muted-foreground/70">
+            Horário do registro
+          </Label>
           <Input
             id="hora"
             type="time"
@@ -235,7 +245,7 @@ function PontoPage() {
               setTimeInput(v);
               setIsManual(v.trim() !== "");
             }}
-            className="h-12 text-center text-lg font-semibold tabular-nums"
+            className="h-12 rounded-xl text-center text-2xl font-bold tabular-nums text-primary"
           />
           {foiEditado && (
             <div className="space-y-1.5 rounded-xl border border-border bg-secondary/50 p-3">
@@ -255,76 +265,45 @@ function PontoPage() {
           )}
         </div>
 
-        {/* Botão principal */}
+        {/* Botão principal — texto dinâmico por tipo de batida */}
         {proximo ? (
-          <div className="space-y-2">
-            <p className="text-center text-sm text-muted-foreground">
-              Próximo registro:{" "}
-              <span className="font-semibold text-foreground">
-                {TIPO_INFO[proximo].label}
-              </span>
-            </p>
-            <Button
-              onClick={handleBater}
-              disabled={submitting}
-              className={cn(
-                "h-16 w-full rounded-full text-lg font-bold shadow-sm",
-                TIPO_INFO[proximo].colorClass,
-              )}
-            >
-              {submitting ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                "Confirmar meu registro"
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleBater}
+            disabled={submitting}
+            className={cn(
+              "h-16 w-full rounded-2xl text-lg font-bold transition-all",
+              TIPO_INFO[proximo].colorClass,
+            )}
+          >
+            {submitting ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              TIPO_INFO[proximo].botao
+            )}
+          </Button>
         ) : (
-          <div className="flex h-16 w-full items-center justify-center gap-2 rounded-full border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
+          <div className="flex h-16 w-full items-center justify-center gap-2 rounded-2xl border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
             <Check className="h-5 w-5" />
             Jornada de hoje concluída
           </div>
         )}
 
-        {/* Streak de dias consecutivos */}
-        {streak >= 2 && (
-          <div
-            className={cn(
-              "flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold",
-              streak >= 7
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
-                : "bg-secondary text-muted-foreground",
-            )}
-          >
-            <Flame
-              className={cn(
-                "h-4 w-4",
-                streak >= 7 ? "text-amber-500" : "text-orange-500",
-              )}
-            />
-            {streak >= 7
-              ? `${streak} dias seguidos — você é consistente!`
-              : `${streak} dias seguidos registrando`}
-          </div>
-        )}
 
 
         {/* Status do dia */}
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">
-              Batidas de hoje
-            </h2>
+            <h2 className="text-sm font-bold text-primary">Hoje</h2>
             {resumo.entrada && resumo.saida && (
               <span
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-bold",
+                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold",
                   resumo.saldoMin >= 0
                     ? "bg-positivo/10 text-positivo"
                     : "bg-negativo/10 text-negativo",
                 )}
               >
-                {formatSaldo(resumo.saldoMin)}
+                {resumo.saldoMin >= 0 ? "▲" : "▼"} {formatSaldo(resumo.saldoMin)}
               </span>
             )}
           </div>

@@ -74,40 +74,49 @@ export function AppShell({
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/90 px-4 py-3 backdrop-blur">
-        <div className="min-w-0">
-          <p className="truncate text-sm text-muted-foreground">
-            {saudacao(tz)},
-          </p>
-          <p className="truncate text-base font-semibold capitalize text-foreground">
-            {nome}
+      <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-6 text-primary-foreground">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar className="h-10 w-10 border border-white/10">
+            {profile?.avatar_url && (
+              <AvatarImage src={profile.avatar_url} alt={nome} />
+            )}
+            <AvatarFallback className="bg-[#1E3A5F] text-sm font-bold text-ponto-entrada">
+              {iniciais(profile?.nome_completo || profile?.email || "P")}
+            </AvatarFallback>
+          </Avatar>
+          <p className="truncate text-base font-medium">
+            <span className="capitalize">{saudacao(tz)}</span>,{" "}
+            <span className="font-semibold capitalize">{nome}</span>
           </p>
         </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
             aria-label="Abrir menu"
-            className="flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors hover:bg-secondary"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-primary-foreground transition-all hover:bg-white/10"
           >
             <Menu className="h-5 w-5" />
           </SheetTrigger>
-          <SheetContent side="right" className="w-72 p-0">
-            <SheetHeader className="border-b border-border p-5">
+          <SheetContent
+            side="right"
+            className="w-[280px] border-0 bg-sidebar p-0 text-sidebar-foreground [&>button]:text-sidebar-foreground/70"
+          >
+            <SheetHeader className="border-b border-white/10 p-6">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="flex items-center gap-3">
-                <Avatar className="h-11 w-11">
+                <Avatar className="h-14 w-14 border border-white/10">
                   {profile?.avatar_url && (
                     <AvatarImage src={profile.avatar_url} alt={nome} />
                   )}
-                  <AvatarFallback className="bg-primary text-primary-foreground">
+                  <AvatarFallback className="bg-[#1E3A5F] text-base font-bold text-ponto-entrada">
                     {iniciais(profile?.nome_completo || profile?.email || "P")}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 text-left">
-                  <p className="truncate font-semibold text-foreground">
+                  <p className="truncate font-semibold text-sidebar-foreground">
                     {profile?.nome_completo || nome}
                   </p>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-[13px] text-sidebar-foreground/60">
                     {profile?.email}
                   </p>
                 </div>
@@ -124,23 +133,23 @@ export function AppShell({
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-lg px-6 py-4 text-[15px] font-medium transition-all",
                       active
-                        ? "bg-secondary text-foreground"
-                        : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground",
+                        ? "bg-white/10 text-sidebar-foreground"
+                        : "text-sidebar-foreground/90 hover:bg-white/10",
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-5 w-5 text-ponto-entrada" />
                     {item.label}
                   </Link>
                 );
               })}
 
-              <Separator className="my-2" />
+              <Separator className="my-2 bg-white/10" />
 
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                className="flex items-center gap-3 rounded-lg px-6 py-4 text-[15px] font-medium text-destructive transition-all hover:bg-destructive/10"
               >
                 <LogOut className="h-5 w-5" />
                 Sair

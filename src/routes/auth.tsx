@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Clock, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SincroMark } from "@/components/sincro-logo";
 import { mensagemErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/auth")({
@@ -153,16 +154,14 @@ function AuthPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <Clock className="h-7 w-7" />
-          </div>
-          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-foreground">
+          <SincroMark size={64} className="shadow-soft" />
+          <h1 className="mt-4 text-[28px] font-extrabold tracking-tight text-primary">
             SINCRO
           </h1>
-          <p className="mt-1 text-sm font-medium text-foreground">
+          <p className="mt-1 text-base text-muted-foreground">
             Seu tempo, seu controle.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground/80">
             {modo === "login" && "Entre para registrar sua jornada"}
             {modo === "cadastro" && "Crie sua conta gratuita"}
             {modo === "recuperar" && "Recupere o acesso à sua conta"}
@@ -171,7 +170,7 @@ function AuthPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
+          className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-card"
         >
           {modo === "cadastro" && (
             <div className="space-y-1.5">
@@ -182,6 +181,7 @@ function AuthPage() {
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Seu nome"
                 autoComplete="name"
+                className="h-13"
               />
             </div>
           )}
@@ -196,6 +196,7 @@ function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="voce@email.com"
               autoComplete="email"
+              className="h-13"
             />
           </div>
 
@@ -224,6 +225,7 @@ function AuthPage() {
                 autoComplete={
                   modo === "cadastro" ? "new-password" : "current-password"
                 }
+                className="h-13"
               />
               {modo === "cadastro" && (
                 <p className="text-xs text-muted-foreground">
@@ -246,6 +248,7 @@ function AuthPage() {
                 disabled={indicacaoTravada}
                 autoComplete="off"
                 autoCapitalize="characters"
+                className="h-13"
               />
               {indicacaoTravada && (
                 <p className="text-xs font-medium text-primary">
@@ -259,7 +262,7 @@ function AuthPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="h-11 w-full rounded-full text-base font-semibold"
+            className="h-13 w-full rounded-xl bg-primary text-base font-semibold hover:bg-[#1E3A5F]"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {modo === "login" && "Entrar"}
@@ -280,7 +283,7 @@ function AuthPage() {
                 variant="outline"
                 onClick={handleGoogle}
                 disabled={googleLoading}
-                className="h-11 w-full rounded-full text-base font-medium"
+                className="h-13 w-full rounded-xl border-border text-base font-medium"
               >
                 {googleLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -326,7 +329,7 @@ function AuthPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-6 text-center text-[13px] leading-relaxed text-muted-foreground/70">
           Usado por autônomos, freelancers e MEIs para controlar a própria
           jornada.
         </p>

@@ -34,33 +34,38 @@ export interface Profile {
 
 export const TIPO_INFO: Record<
   Tipo,
-  { label: string; acao: string; colorClass: string; dot: string }
+  { label: string; acao: string; botao: string; colorClass: string; dot: string }
 > = {
   entrada: {
     label: "Entrada",
     acao: "Registrar entrada",
+    botao: "Confirmar minha Entrada",
     colorClass:
-      "bg-ponto-entrada text-ponto-entrada-foreground hover:bg-ponto-entrada/90",
+      "bg-ponto-entrada text-ponto-entrada-foreground hover:bg-ponto-entrada/90 shadow-[0_4px_16px_rgba(32,201,151,0.4)]",
     dot: "bg-ponto-entrada",
   },
   saida_intervalo: {
     label: "Saída intervalo",
     acao: "Registrar saída intervalo",
+    botao: "Confirmar Saída p/ Intervalo",
     colorClass:
-      "bg-ponto-saida-intervalo text-ponto-saida-intervalo-foreground hover:bg-ponto-saida-intervalo/90",
+      "bg-ponto-saida-intervalo text-ponto-saida-intervalo-foreground hover:bg-ponto-saida-intervalo/90 shadow-[0_4px_16px_rgba(245,158,11,0.4)]",
     dot: "bg-ponto-saida-intervalo",
   },
   entrada_intervalo: {
     label: "Entrada intervalo",
     acao: "Registrar entrada intervalo",
+    botao: "Confirmar Volta do Intervalo",
     colorClass:
-      "bg-ponto-entrada-intervalo text-ponto-entrada-intervalo-foreground hover:bg-ponto-entrada-intervalo/90",
+      "bg-ponto-entrada-intervalo text-ponto-entrada-intervalo-foreground hover:bg-ponto-entrada-intervalo/90 shadow-[0_4px_16px_rgba(59,130,246,0.4)]",
     dot: "bg-ponto-entrada-intervalo",
   },
   saida: {
     label: "Saída",
     acao: "Registrar saída",
-    colorClass: "bg-ponto-saida text-ponto-saida-foreground hover:bg-ponto-saida/90",
+    botao: "Confirmar minha Saída",
+    colorClass:
+      "bg-ponto-saida text-ponto-saida-foreground hover:bg-ponto-saida/90 shadow-[0_4px_16px_rgba(239,68,68,0.4)]",
     dot: "bg-ponto-saida",
   },
 };
