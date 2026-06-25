@@ -245,7 +245,7 @@ function PontoPage() {
               setTimeInput(v);
               setIsManual(v.trim() !== "");
             }}
-            className="h-12 text-center text-lg font-semibold tabular-nums"
+            className="h-12 rounded-xl text-center text-2xl font-bold tabular-nums text-primary"
           />
           {foiEditado && (
             <div className="space-y-1.5 rounded-xl border border-border bg-secondary/50 p-3">
