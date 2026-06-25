@@ -203,7 +203,8 @@ export function MonthNav({
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
-      <span className="text-sm font-semibold capitalize text-foreground">
+      <span className="text-sm font-semibold lowercase first-letter:uppercase text-foreground">
+
         {label}
       </span>
       <button
