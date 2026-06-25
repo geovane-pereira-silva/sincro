@@ -329,7 +329,7 @@ function AuthPage() {
           )}
         </div>
 
-        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
+        <p className="mt-6 text-center text-[13px] leading-relaxed text-muted-foreground/70">
           Usado por autônomos, freelancers e MEIs para controlar a própria
           jornada.
         </p>
