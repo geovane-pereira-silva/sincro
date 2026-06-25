@@ -248,6 +248,7 @@ function AuthPage() {
                 disabled={indicacaoTravada}
                 autoComplete="off"
                 autoCapitalize="characters"
+                className="h-13"
               />
               {indicacaoTravada && (
                 <p className="text-xs font-medium text-primary">
@@ -261,7 +262,7 @@ function AuthPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="h-11 w-full rounded-full text-base font-semibold"
+            className="h-13 w-full rounded-xl bg-primary text-base font-semibold hover:bg-[#1E3A5F]"
           >
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
             {modo === "login" && "Entrar"}
@@ -282,7 +283,7 @@ function AuthPage() {
                 variant="outline"
                 onClick={handleGoogle}
                 disabled={googleLoading}
-                className="h-11 w-full rounded-full text-base font-medium"
+                className="h-13 w-full rounded-xl border-border text-base font-medium"
               >
                 {googleLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
