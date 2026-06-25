@@ -30,11 +30,25 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
+  const [codigoIndicacao, setCodigoIndicacao] = useState("");
+  const [indicacaoTravada, setIndicacaoTravada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checando, setChecando] = useState(true);
 
   useEffect(() => {
+    let codigoSalvo = "";
+    try {
+      codigoSalvo = sessionStorage.getItem("ref_code") ?? "";
+    } catch {
+      codigoSalvo = "";
+    }
+    if (codigoSalvo) {
+      setCodigoIndicacao(codigoSalvo);
+      setIndicacaoTravada(true);
+      setModo("cadastro");
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         navigate({ to: "/ponto", replace: true });
@@ -43,6 +57,7 @@ function AuthPage() {
       }
     });
   }, [navigate]);
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,6 +74,14 @@ function AuthPage() {
       }
 
       if (modo === "cadastro") {
+        if (senha.length < 8 || !/\d/.test(senha)) {
+          toast.error(
+            "Sua senha precisa ter pelo menos 8 caracteres e 1 número — para proteger seus dados 🔒",
+          );
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password: senha,
@@ -68,10 +91,23 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+
+        const codigo = codigoIndicacao.trim();
+        if (codigo) {
+          // Aplica a indicação silenciosamente; código inválido nunca bloqueia.
+          await supabase.rpc("aplicar_indicacao", { _codigo: codigo });
+        }
+        try {
+          sessionStorage.removeItem("ref_code");
+        } catch {
+          // ignora
+        }
+
         toast.success("Conta criada! Bem-vindo ao PontoLivre.");
         navigate({ to: "/ponto", replace: true });
         return;
       }
+
 
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -186,8 +222,36 @@ function AuthPage() {
                   modo === "cadastro" ? "new-password" : "current-password"
                 }
               />
+              {modo === "cadastro" && (
+                <p className="text-xs text-muted-foreground">
+                  Pelo menos 8 caracteres e 1 número.
+                </p>
+              )}
             </div>
           )}
+
+          {modo === "cadastro" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="indicacao">Código de indicação (opcional)</Label>
+              <Input
+                id="indicacao"
+                value={codigoIndicacao}
+                onChange={(e) =>
+                  setCodigoIndicacao(e.target.value.toUpperCase())
+                }
+                placeholder="Ex: JOAO2847"
+                disabled={indicacaoTravada}
+                autoComplete="off"
+                autoCapitalize="characters"
+              />
+              {indicacaoTravada && (
+                <p className="text-xs font-medium text-primary">
+                  Indicado por um amigo ✓
+                </p>
+              )}
+            </div>
+          )}
+
 
           <Button
             type="submit"

@@ -101,6 +101,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "PontoLivre — Controle de ponto" },
+      {
+        name: "twitter:description",
+        content:
+          "Controle de ponto pessoal para profissionais independentes. Abriu o app, já pode bater ponto.",
+      },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
