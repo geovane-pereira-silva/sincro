@@ -30,11 +30,25 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
+  const [codigoIndicacao, setCodigoIndicacao] = useState("");
+  const [indicacaoTravada, setIndicacaoTravada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checando, setChecando] = useState(true);
 
   useEffect(() => {
+    let codigoSalvo = "";
+    try {
+      codigoSalvo = sessionStorage.getItem("ref_code") ?? "";
+    } catch {
+      codigoSalvo = "";
+    }
+    if (codigoSalvo) {
+      setCodigoIndicacao(codigoSalvo);
+      setIndicacaoTravada(true);
+      setModo("cadastro");
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         navigate({ to: "/ponto", replace: true });
@@ -43,6 +57,7 @@ function AuthPage() {
       }
     });
   }, [navigate]);
+
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
