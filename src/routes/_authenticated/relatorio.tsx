@@ -262,8 +262,8 @@ function RelatorioPage() {
         )}
 
         <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground">
-          Relatório gerado com base nos registros inseridos por você. O
-          PontoLivre não valida nem certifica os dados.
+          Relatório gerado com base nos registros inseridos por você. O SINCRO
+          não valida nem certifica os dados.
         </p>
       </div>
     </AppShell>
