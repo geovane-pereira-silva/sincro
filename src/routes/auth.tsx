@@ -325,6 +325,11 @@ function AuthPage() {
             </button>
           )}
         </div>
+
+        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
+          Usado por autônomos, freelancers e MEIs para controlar a própria
+          jornada.
+        </p>
       </div>
     </div>
   );
