@@ -50,6 +50,30 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_access: {
+        Row: {
+          created_at: string
+          id: string
+          motivo: string
+          user_id: string
+          valido_ate: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          motivo: string
+          user_id: string
+          valido_ate: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          motivo?: string
+          user_id?: string
+          valido_ate?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -58,7 +82,11 @@ export type Database = {
           email: string
           id: string
           nome_completo: string | null
+          onboarding_concluido: boolean
           profissao: string | null
+          referral_code: string | null
+          referral_count: number
+          referred_by: string | null
           timezone: string
           updated_at: string
         }
@@ -69,7 +97,11 @@ export type Database = {
           email: string
           id: string
           nome_completo?: string | null
+          onboarding_concluido?: boolean
           profissao?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -80,7 +112,11 @@ export type Database = {
           email?: string
           id?: string
           nome_completo?: string | null
+          onboarding_concluido?: boolean
           profissao?: string | null
+          referral_code?: string | null
+          referral_count?: number
+          referred_by?: string | null
           timezone?: string
           updated_at?: string
         }
@@ -91,7 +127,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: { Args: { nome: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
