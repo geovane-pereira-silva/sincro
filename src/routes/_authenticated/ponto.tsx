@@ -146,10 +146,6 @@ function PontoPage() {
 
   async function handleBater() {
     if (!user || !proximo) return;
-    if (foiEditado && justificativa.trim().length < 10) {
-      toast.error("Informe uma justificativa de pelo menos 10 caracteres.");
-      return;
-    }
     if (!/^\d{2}:\d{2}$/.test(timeInput)) {
       toast.error("Horário inválido.");
       return;
