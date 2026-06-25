@@ -157,10 +157,13 @@ function AuthPage() {
             <Clock className="h-7 w-7" />
           </div>
           <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-foreground">
-            PontoLivre
+            SINCRO
           </h1>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            Seu tempo, seu controle.
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {modo === "login" && "Entre para bater seu ponto"}
+            {modo === "login" && "Entre para registrar sua jornada"}
             {modo === "cadastro" && "Crie sua conta gratuita"}
             {modo === "recuperar" && "Recupere o acesso à sua conta"}
           </p>
