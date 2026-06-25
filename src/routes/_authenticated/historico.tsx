@@ -102,7 +102,7 @@ function HistoricoPage() {
                 <AccordionItem
                   key={dayKey}
                   value={dayKey}
-                  className="overflow-hidden rounded-xl border border-border bg-card"
+                  className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft"
                 >
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex w-full items-center justify-between pr-2">
