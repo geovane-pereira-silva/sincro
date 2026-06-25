@@ -34,10 +34,10 @@ export function OnboardingScreen({ profile }: { profile: Profile }) {
           <Clock className="h-8 w-8" />
         </div>
         <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-foreground">
-          Bem-vindo ao PontoLivre
+          Bem-vindo ao SINCRO
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
-          O PontoLivre é sua ferramenta pessoal de controle de jornada. Você
+          O SINCRO é sua ferramenta pessoal de controle de jornada. Você
           registra, você edita, você é responsável pelos seus dados. Nós
           guardamos exatamente o que você inseriu.
         </p>
