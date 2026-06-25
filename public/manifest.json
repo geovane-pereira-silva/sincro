@@ -1,0 +1,17 @@
+{
+  "name": "SINCRO",
+  "short_name": "SINCRO",
+  "description": "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0A2540",
+  "background_color": "#0A2540",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
