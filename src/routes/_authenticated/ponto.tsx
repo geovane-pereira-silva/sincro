@@ -185,7 +185,7 @@ function PontoPage() {
           <p className="font-mono text-5xl font-bold tabular-nums tracking-tight text-foreground">
             {relogio}
           </p>
-          <p className="mt-1 text-sm capitalize text-muted-foreground">
+          <p className="mt-1 text-sm lowercase first-letter:uppercase text-muted-foreground">
             {formatDateLong(now, tz)}
           </p>
         </div>
