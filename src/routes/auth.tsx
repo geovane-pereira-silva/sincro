@@ -225,6 +225,7 @@ function AuthPage() {
                 autoComplete={
                   modo === "cadastro" ? "new-password" : "current-password"
                 }
+                className="h-13"
               />
               {modo === "cadastro" && (
                 <p className="text-xs text-muted-foreground">
