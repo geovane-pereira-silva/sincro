@@ -22,7 +22,7 @@ import { mensagemErro } from "@/lib/erros";
 import { TIMEZONES_BR } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
-  head: () => ({ meta: [{ title: "Configurações — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Configurações — SINCRO" }] }),
   component: ConfiguracoesPage,
 });
 

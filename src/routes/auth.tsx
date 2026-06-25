@@ -12,10 +12,10 @@ import { mensagemErro } from "@/lib/erros";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — PontoLivre" },
+      { title: "Entrar — SINCRO" },
       {
         name: "description",
-        content: "Acesse sua conta PontoLivre e comece a bater ponto.",
+        content: "Acesse sua conta SINCRO e registre sua jornada.",
       },
     ],
   }),
@@ -103,7 +103,7 @@ function AuthPage() {
           // ignora
         }
 
-        toast.success("Conta criada! Bem-vindo ao PontoLivre.");
+        toast.success("Conta criada! Bem-vindo ao SINCRO.");
         navigate({ to: "/ponto", replace: true });
         return;
       }
@@ -157,10 +157,13 @@ function AuthPage() {
             <Clock className="h-7 w-7" />
           </div>
           <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-foreground">
-            PontoLivre
+            SINCRO
           </h1>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            Seu tempo, seu controle.
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {modo === "login" && "Entre para bater seu ponto"}
+            {modo === "login" && "Entre para registrar sua jornada"}
             {modo === "cadastro" && "Crie sua conta gratuita"}
             {modo === "recuperar" && "Recupere o acesso à sua conta"}
           </p>
@@ -322,6 +325,11 @@ function AuthPage() {
             </button>
           )}
         </div>
+
+        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground">
+          Usado por autônomos, freelancers e MEIs para controlar a própria
+          jornada.
+        </p>
       </div>
     </div>
   );

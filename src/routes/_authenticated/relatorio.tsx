@@ -23,7 +23,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/relatorio")({
-  head: () => ({ meta: [{ title: "Relatório mensal — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Relatório — SINCRO" }] }),
   component: RelatorioPage,
 });
 
@@ -122,7 +122,7 @@ function RelatorioPage() {
       ["Saldo do mês", formatSaldo(totais.saldo)],
       [],
       [
-        `Documento gerado pelo usuário via PontoLivre. Responsabilidade pelos dados: ${
+        `Documento gerado pelo usuário via SINCRO. Responsabilidade pelos dados: ${
           profile?.nome_completo || profile?.email || "usuário"
         }.`,
       ],
@@ -136,7 +136,7 @@ function RelatorioPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `pontolivre-${ano}-${String(mes).padStart(2, "0")}.csv`;
+    a.download = `sincro-${ano}-${String(mes).padStart(2, "0")}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Relatório exportado.");
@@ -262,8 +262,8 @@ function RelatorioPage() {
         )}
 
         <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground">
-          Relatório gerado com base nos registros inseridos por você. O
-          PontoLivre não valida nem certifica os dados.
+          Relatório gerado com base nos registros inseridos por você. O SINCRO
+          não valida nem certifica os dados.
         </p>
       </div>
     </AppShell>

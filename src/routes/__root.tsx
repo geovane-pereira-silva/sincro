@@ -85,30 +85,40 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
       },
-      { title: "PontoLivre — Controle de ponto para autônomos" },
+      { title: "SINCRO — Controle de Jornada" },
       {
         name: "description",
         content:
-          "Bata seu ponto em segundos. Controle de jornada, banco de horas e espelho de ponto para profissionais independentes. Grátis e simples.",
+          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
       },
-      { name: "author", content: "PontoLivre" },
-      { name: "theme-color", content: "#1a7a4a" },
-      { property: "og:title", content: "PontoLivre — Controle de ponto" },
+      { name: "author", content: "SINCRO" },
+      { name: "theme-color", content: "#0A2540" },
+      { property: "og:title", content: "SINCRO — Controle de Jornada" },
       {
         property: "og:description",
         content:
-          "Controle de ponto pessoal para profissionais independentes. Abriu o app, já pode bater ponto.",
+          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "PontoLivre — Controle de ponto" },
+      { name: "twitter:title", content: "SINCRO — Controle de Jornada" },
       {
         name: "twitter:description",
         content:
-          "Controle de ponto pessoal para profissionais independentes. Abriu o app, já pode bater ponto.",
+          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
       },
     ],
     links: [
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href:
+          "data:image/svg+xml," +
+          encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#0A2540"/><text x="50%" y="50%" dy="0.02em" text-anchor="middle" dominant-baseline="central" font-family="Inter, system-ui, sans-serif" font-size="38" font-weight="700" fill="#20C997">S</text></svg>',
+          ),
+      },
+      { rel: "manifest", href: "/manifest.json" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",

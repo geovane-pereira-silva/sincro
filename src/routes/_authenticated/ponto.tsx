@@ -29,7 +29,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/ponto")({
-  head: () => ({ meta: [{ title: "Bater ponto — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Meu Ponto — SINCRO" }] }),
   component: PontoPage,
 });
 
@@ -179,7 +179,7 @@ function PontoPage() {
       if (error) throw error;
 
       toast.success(
-        `${TIPO_INFO[proximo].label} registrada às ${formatTime(dataHora.toISOString(), tz)}`,
+        `✓ Registro confirmado pelo SINCRO às ${formatTime(dataHora.toISOString(), tz)}`,
       );
       setIsManual(false);
       setJustificativa("");

@@ -1,4 +1,4 @@
-// Lógica de negócio e utilidades de fuso horário do PontoLivre.
+// Lógica de negócio e utilidades de fuso horário do SINCRO.
 
 export const TIPO_ORDEM = [
   "entrada",
