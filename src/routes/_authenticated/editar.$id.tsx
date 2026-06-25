@@ -76,10 +76,6 @@ function EditarPage() {
       toast.error("Horário inválido.");
       return;
     }
-    if (justificativa.trim().length < 10) {
-      toast.error("A justificativa deve ter pelo menos 10 caracteres.");
-      return;
-    }
 
     setSaving(true);
     try {
@@ -87,12 +83,13 @@ function EditarPage() {
       const p = getZonedParts(new Date(registro.data_hora), tz);
       const novaData = zonedWallToUtc(p.year, p.month, p.day, hh, mm, 0, tz);
 
+      const obs = justificativa.trim();
       const { error } = await supabase
         .from("ponto_registros")
         .update({
           data_hora: novaData.toISOString(),
           foi_editado: true,
-          justificativa: justificativa.trim(),
+          justificativa: obs.length > 0 ? obs : null,
         })
         .eq("id", registro.id);
       if (error) throw error;
