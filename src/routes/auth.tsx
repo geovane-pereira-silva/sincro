@@ -222,8 +222,36 @@ function AuthPage() {
                   modo === "cadastro" ? "new-password" : "current-password"
                 }
               />
+              {modo === "cadastro" && (
+                <p className="text-xs text-muted-foreground">
+                  Pelo menos 8 caracteres e 1 número.
+                </p>
+              )}
             </div>
           )}
+
+          {modo === "cadastro" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="indicacao">Código de indicação (opcional)</Label>
+              <Input
+                id="indicacao"
+                value={codigoIndicacao}
+                onChange={(e) =>
+                  setCodigoIndicacao(e.target.value.toUpperCase())
+                }
+                placeholder="Ex: JOAO2847"
+                disabled={indicacaoTravada}
+                autoComplete="off"
+                autoCapitalize="characters"
+              />
+              {indicacaoTravada && (
+                <p className="text-xs font-medium text-primary">
+                  Indicado por um amigo ✓
+                </p>
+              )}
+            </div>
+          )}
+
 
           <Button
             type="submit"
