@@ -74,6 +74,14 @@ function AuthPage() {
       }
 
       if (modo === "cadastro") {
+        if (senha.length < 8 || !/\d/.test(senha)) {
+          toast.error(
+            "Sua senha precisa ter pelo menos 8 caracteres e 1 número — para proteger seus dados 🔒",
+          );
+          setLoading(false);
+          return;
+        }
+
         const { error } = await supabase.auth.signUp({
           email,
           password: senha,
@@ -83,10 +91,23 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+
+        const codigo = codigoIndicacao.trim();
+        if (codigo) {
+          // Aplica a indicação silenciosamente; código inválido nunca bloqueia.
+          await supabase.rpc("aplicar_indicacao", { _codigo: codigo });
+        }
+        try {
+          sessionStorage.removeItem("ref_code");
+        } catch {
+          // ignora
+        }
+
         toast.success("Conta criada! Bem-vindo ao PontoLivre.");
         navigate({ to: "/ponto", replace: true });
         return;
       }
+
 
       const { error } = await supabase.auth.signInWithPassword({
         email,
