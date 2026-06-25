@@ -181,6 +181,7 @@ function AuthPage() {
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Seu nome"
                 autoComplete="name"
+                className="h-13"
               />
             </div>
           )}
@@ -195,6 +196,7 @@ function AuthPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="voce@email.com"
               autoComplete="email"
+              className="h-13"
             />
           </div>
 
