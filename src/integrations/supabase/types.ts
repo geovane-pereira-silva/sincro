@@ -127,6 +127,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      aplicar_indicacao: { Args: { _codigo: string }; Returns: undefined }
       generate_referral_code: { Args: { nome: string }; Returns: string }
     }
     Enums: {
