@@ -29,6 +29,7 @@ export interface Profile {
   profissao: string | null;
   carga_horaria_diaria: number;
   timezone: string;
+  onboarding_concluido: boolean;
 }
 
 export const TIPO_INFO: Record<
