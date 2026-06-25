@@ -154,16 +154,14 @@ function AuthPage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-sm">
-            <Clock className="h-7 w-7" />
-          </div>
-          <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-foreground">
+          <SincroMark size={64} className="shadow-soft" />
+          <h1 className="mt-4 text-[28px] font-extrabold tracking-tight text-primary">
             SINCRO
           </h1>
-          <p className="mt-1 text-sm font-medium text-foreground">
+          <p className="mt-1 text-base text-muted-foreground">
             Seu tempo, seu controle.
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-muted-foreground/80">
             {modo === "login" && "Entre para registrar sua jornada"}
             {modo === "cadastro" && "Crie sua conta gratuita"}
             {modo === "recuperar" && "Recupere o acesso à sua conta"}
