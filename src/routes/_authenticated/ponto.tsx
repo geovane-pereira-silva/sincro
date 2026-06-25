@@ -29,7 +29,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/ponto")({
-  head: () => ({ meta: [{ title: "Bater ponto — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Meu Ponto — SINCRO" }] }),
   component: PontoPage,
 });
 

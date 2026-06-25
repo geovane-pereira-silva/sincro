@@ -23,7 +23,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/editar/$id")({
-  head: () => ({ meta: [{ title: "Editar batida — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Editar registro — SINCRO" }] }),
   component: EditarPage,
   errorComponent: () => (
     <div className="p-6 text-center text-sm text-muted-foreground">

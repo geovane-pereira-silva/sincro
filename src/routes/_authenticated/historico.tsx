@@ -26,7 +26,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/historico")({
-  head: () => ({ meta: [{ title: "Histórico — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Histórico — SINCRO" }] }),
   component: HistoricoPage,
 });
 

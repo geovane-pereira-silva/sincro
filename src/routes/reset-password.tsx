@@ -10,7 +10,7 @@ import { mensagemErro } from "@/lib/erros";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
-    meta: [{ title: "Redefinir senha — PontoLivre" }],
+    meta: [{ title: "Redefinir senha — SINCRO" }],
   }),
   component: ResetPasswordPage,
 });

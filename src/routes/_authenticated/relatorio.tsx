@@ -23,7 +23,7 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/relatorio")({
-  head: () => ({ meta: [{ title: "Relatório mensal — PontoLivre" }] }),
+  head: () => ({ meta: [{ title: "Relatório — SINCRO" }] }),
   component: RelatorioPage,
 });
 
