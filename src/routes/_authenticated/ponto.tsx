@@ -165,6 +165,7 @@ function PontoPage() {
 
       const editadoReal =
         Math.abs(dataHora.getTime() - original.getTime()) > 60000;
+      const obs = justificativa.trim();
 
       const { error } = await supabase.from("ponto_registros").insert({
         user_id: user.id,
@@ -172,7 +173,7 @@ function PontoPage() {
         data_hora: dataHora.toISOString(),
         data_hora_original: original.toISOString(),
         foi_editado: editadoReal,
-        justificativa: editadoReal ? justificativa.trim() : null,
+        justificativa: editadoReal && obs.length > 0 ? obs : null,
         origem: "web",
       });
       if (error) throw error;
@@ -186,6 +187,7 @@ function PontoPage() {
       queryClient.invalidateQueries({
         queryKey: ["registros", user.id, `dia-${hojeKey}`],
       });
+      queryClient.invalidateQueries({ queryKey: ["streak", user.id] });
     } catch (err) {
       toast.error(mensagemErro(err));
     } finally {
