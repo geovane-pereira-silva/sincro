@@ -194,6 +194,29 @@ export function saudacao(tz: string): string {
   return "Boa noite";
 }
 
+// --- Sequência de dias consecutivos (streak) -------------------------------
+
+// Conta dias consecutivos com registro terminando hoje (precisa incluir hoje).
+export function calcularStreak(
+  diasComRegistro: Set<string>,
+  tz: string,
+): number {
+  let streak = 0;
+  // Começa ao meio-dia para evitar problemas de borda de fuso.
+  let cursor = new Date();
+  cursor.setHours(12, 0, 0, 0);
+  for (;;) {
+    const key = dayKeyInTz(cursor, tz);
+    if (diasComRegistro.has(key)) {
+      streak++;
+      cursor = new Date(cursor.getTime() - 24 * 3600 * 1000);
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
 // --- Cálculo de horas ------------------------------------------------------
 
 export interface DiaResumo {
