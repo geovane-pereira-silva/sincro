@@ -13,6 +13,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPontoRouteImport } from './routes/_authenticated/ponto'
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 
@@ -35,6 +36,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRelatorioRoute = AuthenticatedRelatorioRouteImport.update({
+  id: '/relatorio',
+  path: '/relatorio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPontoRoute = AuthenticatedPontoRouteImport.update({
   id: '/ponto',
   path: '/ponto',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/ponto': typeof AuthenticatedPontoRoute
+  '/relatorio': typeof AuthenticatedRelatorioRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/historico': typeof AuthenticatedHistoricoRoute
   '/ponto': typeof AuthenticatedPontoRoute
+  '/relatorio': typeof AuthenticatedRelatorioRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +76,19 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/historico': typeof AuthenticatedHistoricoRoute
   '/_authenticated/ponto': typeof AuthenticatedPontoRoute
+  '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/reset-password' | '/historico' | '/ponto'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/historico'
+    | '/ponto'
+    | '/relatorio'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/reset-password' | '/historico' | '/ponto'
+  to: '/' | '/auth' | '/reset-password' | '/historico' | '/ponto' | '/relatorio'
   id:
     | '__root__'
     | '/'
@@ -82,6 +97,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/historico'
     | '/_authenticated/ponto'
+    | '/_authenticated/relatorio'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -121,6 +137,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/relatorio': {
+      id: '/_authenticated/relatorio'
+      path: '/relatorio'
+      fullPath: '/relatorio'
+      preLoaderRoute: typeof AuthenticatedRelatorioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ponto': {
       id: '/_authenticated/ponto'
       path: '/ponto'
@@ -141,11 +164,13 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHistoricoRoute: typeof AuthenticatedHistoricoRoute
   AuthenticatedPontoRoute: typeof AuthenticatedPontoRoute
+  AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHistoricoRoute: AuthenticatedHistoricoRoute,
   AuthenticatedPontoRoute: AuthenticatedPontoRoute,
+  AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
