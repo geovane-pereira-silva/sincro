@@ -241,7 +241,7 @@ function PontoPage() {
             <div className="space-y-1.5 rounded-xl border border-border bg-secondary/50 p-3">
               <Label htmlFor="just" className="flex items-center gap-1.5 text-xs">
                 <Pencil className="h-3.5 w-3.5" />
-                Justificativa (obrigatória — horário ajustado)
+                Observação (opcional)
               </Label>
               <Textarea
                 id="just"
@@ -251,35 +251,63 @@ function PontoPage() {
                 rows={2}
                 className="resize-none bg-card"
               />
-              <p className="text-right text-xs text-muted-foreground">
-                {justificativa.trim().length}/10
-              </p>
             </div>
           )}
         </div>
 
         {/* Botão principal */}
         {proximo ? (
-          <Button
-            onClick={handleBater}
-            disabled={submitting}
-            className={cn(
-              "h-16 w-full rounded-full text-lg font-bold shadow-sm",
-              TIPO_INFO[proximo].colorClass,
-            )}
-          >
-            {submitting ? (
-              <Loader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              TIPO_INFO[proximo].acao.toUpperCase()
-            )}
-          </Button>
+          <div className="space-y-2">
+            <p className="text-center text-sm text-muted-foreground">
+              Próximo registro:{" "}
+              <span className="font-semibold text-foreground">
+                {TIPO_INFO[proximo].label}
+              </span>
+            </p>
+            <Button
+              onClick={handleBater}
+              disabled={submitting}
+              className={cn(
+                "h-16 w-full rounded-full text-lg font-bold shadow-sm",
+                TIPO_INFO[proximo].colorClass,
+              )}
+            >
+              {submitting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Confirmar meu registro"
+              )}
+            </Button>
+          </div>
         ) : (
           <div className="flex h-16 w-full items-center justify-center gap-2 rounded-full border border-ponto-entrada/30 bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada">
             <Check className="h-5 w-5" />
             Jornada de hoje concluída
           </div>
         )}
+
+        {/* Streak de dias consecutivos */}
+        {streak >= 2 && (
+          <div
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold",
+              streak >= 7
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400"
+                : "bg-secondary text-muted-foreground",
+            )}
+          >
+            <Flame
+              className={cn(
+                "h-4 w-4",
+                streak >= 7 ? "text-amber-500" : "text-orange-500",
+              )}
+            />
+            {streak >= 7
+              ? `${streak} dias seguidos — você é consistente!`
+              : `${streak} dias seguidos registrando`}
+          </div>
+        )}
+
 
         {/* Status do dia */}
         <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
