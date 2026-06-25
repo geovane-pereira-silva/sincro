@@ -122,7 +122,7 @@ function RelatorioPage() {
       ["Saldo do mês", formatSaldo(totais.saldo)],
       [],
       [
-        `Documento gerado pelo usuário via PontoLivre. Responsabilidade pelos dados: ${
+        `Documento gerado pelo usuário via SINCRO. Responsabilidade pelos dados: ${
           profile?.nome_completo || profile?.email || "usuário"
         }.`,
       ],
