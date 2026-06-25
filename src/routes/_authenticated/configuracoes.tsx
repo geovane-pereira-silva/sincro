@@ -181,8 +181,10 @@ function ConfiguracoesPage() {
           </Button>
         </form>
 
-        <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-foreground">Conta</h2>
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Conta
+        </p>
+        <div className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card">
           <div className="space-y-1.5">
             <Label htmlFor="email">E-mail</Label>
             <Input id="email" value={profile?.email ?? ""} disabled />
@@ -192,7 +194,7 @@ function ConfiguracoesPage() {
             type="button"
             variant="outline"
             onClick={handleResetSenha}
-            className="h-11 w-full justify-start rounded-full"
+            className="h-11 w-full justify-start rounded-xl border-border"
           >
             <KeyRound className="h-4 w-4" />
             Alterar senha
@@ -200,9 +202,9 @@ function ConfiguracoesPage() {
 
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             onClick={handleLogout}
-            className="h-11 w-full justify-start rounded-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+            className="h-11 w-full justify-start rounded-xl border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <LogOut className="h-4 w-4" />
             Sair
