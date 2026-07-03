@@ -18,7 +18,7 @@ import {
 } from "@/components/premium-gate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { copiarLinkReferral } from "@/lib/premium";
+
 import {
   agruparPorDia,
   diasDoMes,
