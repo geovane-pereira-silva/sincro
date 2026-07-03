@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogOut, KeyRound } from "lucide-react";
+import { Loader2, LogOut, KeyRound, Sparkles, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
+import { usePremium } from "@/components/premium-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { mensagemErro } from "@/lib/erros";
+import { verificarRecompensasPremium, formatPremiumUntil } from "@/lib/premium";
 import { TIMEZONES_BR } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({

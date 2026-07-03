@@ -30,6 +30,10 @@ export interface Profile {
   carga_horaria_diaria: number;
   timezone: string;
   onboarding_concluido: boolean;
+  created_at?: string;
+  referral_code?: string | null;
+  referred_by?: string | null;
+  referral_count?: number;
 }
 
 export const TIPO_INFO: Record<

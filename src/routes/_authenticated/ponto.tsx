@@ -15,6 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
+import { verificarRecompensasPremium } from "@/lib/premium";
+import { HomeUpsellBanner } from "@/components/home-upsell-banner";
 import {
   TIPO_INFO,
   calcularStreak,
@@ -188,6 +190,8 @@ function PontoPage() {
         queryKey: ["registros", user.id, `dia-${hojeKey}`],
       });
       queryClient.invalidateQueries({ queryKey: ["streak", user.id] });
+      // Confere recompensas premium (ex.: 7 dias seguidos) após a batida.
+      void verificarRecompensasPremium(user.id, queryClient);
     } catch (err) {
       toast.error(mensagemErro(err));
     } finally {
@@ -287,6 +291,13 @@ function PontoPage() {
             Jornada de hoje concluída
           </div>
         )}
+
+        {/* Banner contextual de indicação (usuários gratuitos, +5 dias de uso) */}
+        {profile && (
+          <HomeUpsellBanner profile={profile} tz={tz} carga={carga} />
+        )}
+
+
 
 
 

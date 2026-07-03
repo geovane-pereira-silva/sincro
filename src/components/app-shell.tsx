@@ -21,6 +21,9 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { saudacao, type Profile } from "@/lib/ponto";
 import { OnboardingScreen } from "@/components/onboarding-screen";
+import { PremiumProvider } from "@/components/premium-context";
+import { PremiumPill } from "@/components/premium-gate";
+import { usePremiumStatus } from "@/hooks/use-premium";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -58,6 +61,7 @@ export function AppShell({
     profile?.email?.split("@")[0] ||
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
+  const { isPremium } = usePremiumStatus(profile?.id);
 
   // Onboarding obrigatório de primeiro acesso (não pulável).
   if (profile && !profile.onboarding_concluido) {
@@ -73,22 +77,29 @@ export function AppShell({
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
-      <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-6 text-primary-foreground">
-        <div className="flex min-w-0 items-center gap-3">
-          <Avatar className="h-10 w-10 border border-white/10">
-            {profile?.avatar_url && (
-              <AvatarImage src={profile.avatar_url} alt={nome} />
-            )}
-            <AvatarFallback className="bg-[#1E3A5F] text-sm font-bold text-ponto-entrada">
-              {iniciais(profile?.nome_completo || profile?.email || "P")}
-            </AvatarFallback>
-          </Avatar>
-          <p className="truncate text-base font-medium">
-            <span className="capitalize">{saudacao(tz)}</span>,{" "}
-            <span className="font-semibold capitalize">{nome}</span>
-          </p>
-        </div>
+    <PremiumProvider
+      userId={profile?.id}
+      referralCode={profile?.referral_code ?? null}
+    >
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
+        <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-6 text-primary-foreground">
+          <div className="flex min-w-0 items-center gap-3">
+            <Avatar className="h-10 w-10 border border-white/10">
+              {profile?.avatar_url && (
+                <AvatarImage src={profile.avatar_url} alt={nome} />
+              )}
+              <AvatarFallback className="bg-[#1E3A5F] text-sm font-bold text-ponto-entrada">
+                {iniciais(profile?.nome_completo || profile?.email || "P")}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="truncate text-base font-medium">
+                <span className="capitalize">{saudacao(tz)}</span>,{" "}
+                <span className="font-semibold capitalize">{nome}</span>
+              </p>
+              {isPremium && <PremiumPill />}
+            </div>
+          </div>
 
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
@@ -159,7 +170,8 @@ export function AppShell({
         </Sheet>
       </header>
 
-      <main className="flex-1 px-4 py-5">{children}</main>
-    </div>
+        <main className="flex-1 px-4 py-5">{children}</main>
+      </div>
+    </PremiumProvider>
   );
 }

@@ -157,6 +157,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      verificar_recompensas_premium: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "superadmin" | "user"
