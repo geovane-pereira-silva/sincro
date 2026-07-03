@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /ponto
+Disallow: /historico
+Disallow: /relatorio
+Disallow: /configuracoes
+
+Sitemap: https://sincro.app/sitemap.xml
