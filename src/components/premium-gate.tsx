@@ -165,3 +165,53 @@ export function UpsellBanner({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Card de status Premium (tela de configurações)                      */
+/* ------------------------------------------------------------------ */
+export function PremiumStatusCard() {
+  const { isPremium, premiumUntil, isLoading, openUpsell } = usePremium();
+
+  if (isLoading) {
+    return (
+      <div className="h-[92px] animate-pulse rounded-2xl border border-border bg-card" />
+    );
+  }
+
+  if (isPremium) {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-ponto-entrada/30 bg-ponto-entrada/8 p-5">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ponto-entrada/15">
+          <Sparkles className="h-5 w-5 text-ponto-entrada" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-foreground">SINCRO Premium ativo</p>
+          <p className="text-xs text-muted-foreground">
+            Ativo até {formatPremiumUntil(premiumUntil)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-bold text-foreground">Plano gratuito</p>
+        <p className="text-xs text-muted-foreground">
+          Desbloqueie recursos premium sem pagar nada.
+        </p>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => openUpsell()}
+        className="shrink-0 rounded-full border-ponto-entrada/40 text-ponto-entrada hover:bg-ponto-entrada/10 hover:text-ponto-entrada"
+      >
+        Ver como desbloquear
+      </Button>
+    </div>
+  );
+}
+
