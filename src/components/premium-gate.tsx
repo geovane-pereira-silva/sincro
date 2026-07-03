@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import { Lock, Sparkles, Share2, X } from "lucide-react";
 import { usePremium } from "@/components/premium-context";
+import { formatPremiumUntil } from "@/lib/premium";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
