@@ -85,28 +85,40 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover",
       },
-      { title: "SINCRO — Controle de Jornada" },
+      { title: "SINCRO — Seu tempo, seu controle." },
       {
         name: "description",
         content:
-          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
+          "Controle de jornada para autônomos, freelancers e MEIs. Simples, gratuito e no seu ritmo.",
       },
       { name: "author", content: "SINCRO" },
       { name: "theme-color", content: "#0A2540" },
-      { property: "og:title", content: "SINCRO — Controle de Jornada" },
+      // PWA / iOS standalone
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      {
+        name: "apple-mobile-web-app-status-bar-style",
+        content: "black-translucent",
+      },
+      { name: "apple-mobile-web-app-title", content: "SINCRO" },
+      // Open Graph
+      { property: "og:title", content: "SINCRO — Seu tempo, seu controle." },
       {
         property: "og:description",
-        content:
-          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
+        content: "Controle de jornada para autônomos, freelancers e MEIs.",
       },
+      { property: "og:url", content: "https://sincro.app" },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "SINCRO — Controle de Jornada" },
+      { property: "og:site_name", content: "SINCRO" },
+      { property: "og:image", content: "https://sincro.app/og-image.png" },
+      // Twitter
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SINCRO — Seu tempo, seu controle." },
       {
         name: "twitter:description",
-        content:
-          "Registre sua jornada de trabalho de forma simples e autônoma. Você controla, você decide.",
+        content: "Controle de jornada para autônomos, freelancers e MEIs.",
       },
+      { name: "twitter:image", content: "https://sincro.app/og-image.png" },
     ],
     links: [
       {
@@ -119,6 +131,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           ),
       },
       { rel: "manifest", href: "/manifest.json" },
+      { rel: "apple-touch-icon", href: "/icon-192.svg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
