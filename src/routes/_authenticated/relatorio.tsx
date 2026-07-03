@@ -1,15 +1,24 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, FileText, Mail } from "lucide-react";
 import { toast } from "sonner";
+import type { User } from "@supabase/supabase-js";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useRegistros } from "@/hooks/use-registros";
 import { AppShell } from "@/components/app-shell";
 import { MonthNav } from "@/routes/_authenticated/historico";
+import { usePremium } from "@/components/premium-context";
+import {
+  LockedButton,
+  LockedOverlay,
+  UpsellBanner,
+  UpsellGateCard,
+} from "@/components/premium-gate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
 import {
   agruparPorDia,
   diasDoMes,
@@ -20,6 +29,7 @@ import {
   resumoDoDia,
   zonedWallToUtc,
   type PontoRegistro,
+  type Profile,
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/relatorio")({
@@ -30,6 +40,22 @@ export const Route = createFileRoute("/_authenticated/relatorio")({
 function RelatorioPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
+
+  return (
+    <AppShell profile={profile ?? null}>
+      <RelatorioConteudo user={user} profile={profile ?? null} />
+    </AppShell>
+  );
+}
+
+function RelatorioConteudo({
+  user,
+  profile,
+}: {
+  user: User | null;
+  profile: Profile | null;
+}) {
+  const { isPremium, openUpsell } = usePremium();
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
 
@@ -54,6 +80,28 @@ function RelatorioPage() {
     fromIso,
     toIso,
     scope,
+  );
+
+  // Mês anterior (usado no comparativo premium)
+  const prevMes = mes === 1 ? 12 : mes - 1;
+  const prevAno = mes === 1 ? ano - 1 : ano;
+  const prev = useMemo(() => {
+    const start = zonedWallToUtc(prevAno, prevMes, 1, 0, 0, 0, tz);
+    const nMes = prevMes === 12 ? 1 : prevMes + 1;
+    const nAno = prevMes === 12 ? prevAno + 1 : prevAno;
+    const end = zonedWallToUtc(nAno, nMes, 1, 0, 0, 0, tz);
+    return {
+      fromIso: start.toISOString(),
+      toIso: end.toISOString(),
+      scope: `mes-${prevAno}-${prevMes}`,
+    };
+  }, [prevAno, prevMes, tz]);
+
+  const { data: registrosPrev = [] } = useRegistros(
+    isPremium ? user?.id : undefined,
+    prev.fromIso,
+    prev.toIso,
+    prev.scope,
   );
 
   const porDia = useMemo(() => {
@@ -84,6 +132,20 @@ function RelatorioPage() {
     }
     return { trabalhado, saldo };
   }, [linhas]);
+
+  const totalPrev = useMemo(() => {
+    let trabalhado = 0;
+    for (const grupo of agruparPorDia(registrosPrev, tz)) {
+      const resumo = resumoDoDia(grupo.registros, carga);
+      if (resumo.entrada && resumo.saida) trabalhado += resumo.trabalhadoMin;
+    }
+    return trabalhado;
+  }, [registrosPrev, tz, carga]);
+
+  const maxMin = useMemo(
+    () => Math.max(1, ...linhas.map((l) => (l.completo ? l.resumo.trabalhadoMin : 0))),
+    [linhas],
+  );
 
   function navegar(delta: number) {
     let m = mes + delta;
@@ -142,11 +204,31 @@ function RelatorioPage() {
     toast.success("Relatório exportado.");
   }
 
+  // Ações premium (habilitadas apenas para assinantes)
+  function exportarPDF() {
+    toast.success("Preparando PDF… use 'Salvar como PDF' na janela de impressão.");
+    setTimeout(() => window.print(), 300);
+  }
+
+  function enviarEmail() {
+    const assunto = `Espelho de ponto SINCRO — ${nomeMes(ano, mes)}`;
+    const corpo = [
+      `Espelho de ponto — ${nomeMes(ano, mes)}`,
+      `Total trabalhado: ${formatDuracao(totais.trabalhado)}`,
+      `Saldo do mês: ${formatSaldo(totais.saldo)}`,
+      "",
+      "Gerado via SINCRO.",
+    ].join("\n");
+    window.location.href = `mailto:?subject=${encodeURIComponent(
+      assunto,
+    )}&body=${encodeURIComponent(corpo)}`;
+  }
+
   return (
-    <AppShell profile={profile ?? null}>
-      <div className="space-y-5">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Espelho de ponto</h1>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-xl font-bold text-foreground">Espelho de ponto</h1>
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
             variant="outline"
@@ -156,116 +238,246 @@ function RelatorioPage() {
             <Download className="h-4 w-4" />
             CSV
           </Button>
+          {isPremium ? (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={exportarPDF}
+                className="rounded-full"
+              >
+                <FileText className="h-4 w-4" />
+                PDF
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={enviarEmail}
+                className="rounded-full"
+              >
+                <Mail className="h-4 w-4" />
+                E-mail
+              </Button>
+            </>
+          ) : (
+            <>
+              <LockedButton feature="o relatório em PDF" icon={<FileText className="h-4 w-4" />}>
+                PDF
+              </LockedButton>
+              <LockedButton feature="o envio por e-mail" icon={<Mail className="h-4 w-4" />}>
+                E-mail
+              </LockedButton>
+            </>
+          )}
         </div>
+      </div>
 
-        <MonthNav
-          label={nomeMes(ano, mes)}
-          onPrev={() => navegar(-1)}
-          onNext={() => navegar(1)}
+      {!isPremium && (
+        <UpsellBanner
+          texto="Precisa de relatório em PDF com sua assinatura? Desbloqueie o SINCRO Premium →"
+          actionLabel="Ver como desbloquear"
+          onAction={() => openUpsell("o relatório em PDF")}
         />
+      )}
 
-        {isLoading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
-        ) : (
-          <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="border-b border-border bg-secondary/50 text-muted-foreground">
-                    <th className="px-2 py-2 text-left font-semibold">Dia</th>
-                    <th className="px-1.5 py-2 text-center font-semibold">Ent</th>
-                    <th className="px-1.5 py-2 text-center font-semibold">
-                      S.Int
-                    </th>
-                    <th className="px-1.5 py-2 text-center font-semibold">
-                      E.Int
-                    </th>
-                    <th className="px-1.5 py-2 text-center font-semibold">Saí</th>
-                    <th className="px-1.5 py-2 text-center font-semibold">
-                      Total
-                    </th>
-                    <th className="px-2 py-2 text-right font-semibold">Saldo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {linhas.map((l) => {
-                    const r = l.resumo;
-                    const dia = Number(l.dayKey.split("-")[2]);
-                    return (
-                      <tr
-                        key={l.dayKey}
-                        className={cn(
-                          "border-b border-border/60 last:border-0 tabular-nums",
-                          !l.temRegistros && "text-muted-foreground/60",
-                        )}
-                      >
-                        <td className="px-2 py-2 text-left font-medium">
-                          {String(dia).padStart(2, "0")}
-                        </td>
-                        <td className="px-1.5 py-2 text-center">
-                          {r.entrada ? formatTime(r.entrada.data_hora, tz) : "·"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center">
-                          {r.saidaIntervalo
-                            ? formatTime(r.saidaIntervalo.data_hora, tz)
-                            : "·"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center">
-                          {r.entradaIntervalo
-                            ? formatTime(r.entradaIntervalo.data_hora, tz)
-                            : "·"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center">
-                          {r.saida ? formatTime(r.saida.data_hora, tz) : "·"}
-                        </td>
-                        <td className="px-1.5 py-2 text-center font-medium">
-                          {l.completo ? formatDuracao(r.trabalhadoMin) : "·"}
-                        </td>
-                        <td
-                          className={cn(
-                            "px-2 py-2 text-right font-semibold",
-                            l.completo &&
-                              (r.saldoMin >= 0
-                                ? "text-positivo"
-                                : "text-negativo"),
-                          )}
-                        >
-                          {l.completo ? formatSaldo(r.saldoMin) : "·"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-border bg-secondary/50 font-bold">
-                    <td colSpan={5} className="px-2 py-3 text-left">
-                      Total do mês
-                    </td>
-                    <td className="px-1.5 py-3 text-center tabular-nums">
-                      {formatDuracao(totais.trabalhado)}
-                    </td>
-                    <td
+      <MonthNav
+        label={nomeMes(ano, mes)}
+        onPrev={() => navegar(-1)}
+        onNext={() => navegar(1)}
+      />
+
+      {isLoading ? (
+        <div className="flex justify-center py-10">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-border bg-secondary/50 text-muted-foreground">
+                  <th className="px-2 py-2 text-left font-semibold">Dia</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Ent</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">S.Int</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">E.Int</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Saí</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Total</th>
+                  <th className="px-2 py-2 text-right font-semibold">Saldo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {linhas.map((l) => {
+                  const r = l.resumo;
+                  const dia = Number(l.dayKey.split("-")[2]);
+                  return (
+                    <tr
+                      key={l.dayKey}
                       className={cn(
-                        "px-2 py-3 text-right tabular-nums",
-                        totais.saldo >= 0 ? "text-positivo" : "text-negativo",
+                        "border-b border-border/60 last:border-0 tabular-nums",
+                        !l.temRegistros && "text-muted-foreground/60",
                       )}
                     >
-                      {formatSaldo(totais.saldo)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                      <td className="px-2 py-2 text-left font-medium">
+                        {String(dia).padStart(2, "0")}
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {r.entrada ? formatTime(r.entrada.data_hora, tz) : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {r.saidaIntervalo
+                          ? formatTime(r.saidaIntervalo.data_hora, tz)
+                          : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {r.entradaIntervalo
+                          ? formatTime(r.entradaIntervalo.data_hora, tz)
+                          : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {r.saida ? formatTime(r.saida.data_hora, tz) : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center font-medium">
+                        {l.completo ? formatDuracao(r.trabalhadoMin) : "·"}
+                      </td>
+                      <td
+                        className={cn(
+                          "px-2 py-2 text-right font-semibold",
+                          l.completo &&
+                            (r.saldoMin >= 0
+                              ? "text-positivo"
+                              : "text-negativo"),
+                        )}
+                      >
+                        {l.completo ? formatSaldo(r.saldoMin) : "·"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-border bg-secondary/50 font-bold">
+                  <td colSpan={5} className="px-2 py-3 text-left">
+                    Total do mês
+                  </td>
+                  <td className="px-1.5 py-3 text-center tabular-nums">
+                    {formatDuracao(totais.trabalhado)}
+                  </td>
+                  <td
+                    className={cn(
+                      "px-2 py-3 text-right tabular-nums",
+                      totais.saldo >= 0 ? "text-positivo" : "text-negativo",
+                    )}
+                  >
+                    {formatSaldo(totais.saldo)}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
-        )}
+        </div>
+      )}
 
-        <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground">
-          Relatório gerado com base nos registros inseridos por você. O SINCRO
-          não valida nem certifica os dados.
-        </p>
+      {/* Gráfico mensal de produtividade */}
+      {!isLoading && (
+        <section className="space-y-2">
+          <h2 className="px-1 text-sm font-bold text-primary">
+            Produtividade do mês
+          </h2>
+          {isPremium ? (
+            <ProdutividadeChart linhas={linhas} maxMin={maxMin} />
+          ) : (
+            <LockedOverlay feature="os gráficos de produtividade">
+              <ProdutividadeChart linhas={linhas} maxMin={maxMin} />
+            </LockedOverlay>
+          )}
+        </section>
+      )}
+
+      {/* Comparativo entre meses */}
+      {!isLoading && (
+        <section className="space-y-2">
+          <h2 className="px-1 text-sm font-bold text-primary">
+            Comparativo entre meses
+          </h2>
+          {isPremium ? (
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {nomeMes(prevAno, prevMes)}
+                  </p>
+                  <p className="text-lg font-bold tabular-nums text-foreground">
+                    {formatDuracao(totalPrev)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    {nomeMes(ano, mes)}
+                  </p>
+                  <p className="text-lg font-bold tabular-nums text-foreground">
+                    {formatDuracao(totais.trabalhado)}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-center text-xs font-semibold text-ponto-entrada">
+                {totais.trabalhado >= totalPrev ? "▲" : "▼"}{" "}
+                {formatDuracao(Math.abs(totais.trabalhado - totalPrev))} em relação
+                ao mês anterior
+              </p>
+            </div>
+          ) : (
+            <UpsellGateCard
+              feature="o comparativo entre meses"
+              title="Comparativo entre meses é premium"
+              description="Acompanhe sua evolução mês a mês desbloqueando o SINCRO Premium."
+            />
+          )}
+        </section>
+      )}
+
+      {/* Espelho de ponto detalhado */}
+      {!isLoading && !isPremium && (
+        <UpsellGateCard
+          feature="o espelho de ponto detalhado"
+          title="Espelho detalhado é premium"
+          description="Versão com foto, atestados e assinatura. Desbloqueie o SINCRO Premium."
+        />
+      )}
+
+      <p className="px-1 text-center text-xs leading-relaxed text-muted-foreground">
+        Relatório gerado com base nos registros inseridos por você. O SINCRO não
+        valida nem certifica os dados.
+      </p>
+    </div>
+  );
+}
+
+function ProdutividadeChart({
+  linhas,
+  maxMin,
+}: {
+  linhas: { dayKey: string; completo: boolean; resumo: { trabalhadoMin: number } }[];
+  maxMin: number;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+      <div className="flex h-32 items-end gap-[2px]">
+        {linhas.map((l) => {
+          const min = l.completo ? l.resumo.trabalhadoMin : 0;
+          const h = Math.round((min / maxMin) * 100);
+          return (
+            <div
+              key={l.dayKey}
+              className="flex-1 rounded-t-sm bg-ponto-entrada/70"
+              style={{ height: `${Math.max(2, h)}%` }}
+              title={`${l.dayKey}: ${formatDuracao(min)}`}
+            />
+          );
+        })}
       </div>
-    </AppShell>
+      <p className="mt-2 text-center text-[11px] text-muted-foreground">
+        Horas trabalhadas por dia
+      </p>
+    </div>
   );
 }

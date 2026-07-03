@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
+import { PremiumStatusCard } from "@/components/premium-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { mensagemErro } from "@/lib/erros";
+import { verificarRecompensasPremium } from "@/lib/premium";
 import { TIMEZONES_BR } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/configuracoes")({
@@ -69,6 +71,8 @@ function ConfiguracoesPage() {
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
       toast.success("Alterações salvas.");
+      // Confere recompensa de perfil 100% completo.
+      void verificarRecompensasPremium(user.id, queryClient);
     } catch (err) {
       toast.error(mensagemErro(err));
     } finally {
@@ -111,6 +115,13 @@ function ConfiguracoesPage() {
     <AppShell profile={profile ?? null}>
       <div className="space-y-6">
         <h1 className="text-xl font-bold text-foreground">Configurações</h1>
+
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Plano
+        </p>
+        <PremiumStatusCard />
+
+
 
         <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
           Perfil
