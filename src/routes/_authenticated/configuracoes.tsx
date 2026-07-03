@@ -71,6 +71,8 @@ function ConfiguracoesPage() {
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
       toast.success("Alterações salvas.");
+      // Confere recompensa de perfil 100% completo.
+      void verificarRecompensasPremium(user.id, queryClient);
     } catch (err) {
       toast.error(mensagemErro(err));
     } finally {
