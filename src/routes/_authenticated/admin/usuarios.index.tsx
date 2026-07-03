@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Search, ChevronLeft, ChevronRight, Flame, Loader2 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,12 @@ import {
   useAdminRegistros,
 } from "@/hooks/use-admin";
 import { premiumMap, computeStreaks, formatDataCurta } from "@/lib/admin";
+import {
+  EmptyState,
+  InitialsAvatar,
+  PremiumBadge,
+  ListRowsSkeleton,
+} from "@/components/admin-ui";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios/")({
@@ -74,95 +80,103 @@ function AdminUsuarios() {
         />
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-2xl bg-card shadow-card">
-          {/* Cabeçalho desktop */}
-          <div className="hidden grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 border-b border-border px-5 py-3 text-xs font-bold uppercase tracking-wide text-muted-foreground md:grid">
-            <span>Usuário</span>
-            <span>Cadastro</span>
-            <span>Streak</span>
-            <span>Indicações</span>
-            <span className="text-right">Status</span>
+      <div className="overflow-hidden rounded-2xl bg-card shadow-card">
+        {loading ? (
+          <div className="px-5">
+            <ListRowsSkeleton rows={8} />
           </div>
+        ) : visiveis.length === 0 ? (
+          <EmptyState
+            title="Nenhum usuário encontrado"
+            description={
+              busca.trim()
+                ? `Nenhum resultado para "${busca.trim()}". Tente outro termo.`
+                : "Ainda não há usuários cadastrados."
+            }
+          />
+        ) : (
+          <>
+            <p className="px-4 pt-3 text-[11px] text-muted-foreground md:hidden">
+              Deslize para o lado para ver mais →
+            </p>
+            <div className="overflow-x-auto">
+              <div className="min-w-[720px]">
+                {/* Cabeçalho */}
+                <div className="grid grid-cols-[2.5fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-border bg-secondary px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span>Usuário</span>
+                  <span>Cadastro</span>
+                  <span>Streak</span>
+                  <span>Status</span>
+                  <span className="text-right">Ação</span>
+                </div>
 
-          <ul className="divide-y divide-border">
-            {visiveis.map((p) => {
-              const prem = pmap.get(p.id);
-              const streak = streaks[p.id] ?? 0;
-              return (
-                <li
-                  key={p.id}
-                  className="grid grid-cols-1 gap-2 px-5 py-4 md:grid-cols-[2fr_1fr_1fr_1fr_auto] md:items-center md:gap-4"
-                >
-                  <div className="min-w-0">
-                    <Link
-                      to="/admin/usuarios/$id"
-                      params={{ id: p.id }}
-                      className="truncate text-sm font-semibold text-primary hover:underline"
-                    >
-                      {p.nome_completo || "Sem nome"}
-                    </Link>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {p.email}
-                    </p>
-                  </div>
+                <ul>
+                  {visiveis.map((p) => {
+                    const prem = pmap.get(p.id);
+                    const streak = streaks[p.id] ?? 0;
+                    return (
+                      <li
+                        key={p.id}
+                        className="grid grid-cols-[2.5fr_1fr_1fr_1fr_auto] items-center gap-4 border-b border-border px-5 py-3 transition-colors last:border-0 hover:bg-secondary"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <InitialsAvatar
+                            name={p.nome_completo}
+                            email={p.email}
+                            size={38}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-primary">
+                              {p.nome_completo || "Sem nome"}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {p.email}
+                            </p>
+                          </div>
+                        </div>
 
-                  <span className="text-sm text-muted-foreground">
-                    <span className="md:hidden">Cadastro: </span>
-                    {formatDataCurta(p.created_at)}
-                  </span>
+                        <span className="text-sm text-muted-foreground">
+                          {formatDataCurta(p.created_at)}
+                        </span>
 
-                  <span className="inline-flex items-center gap-1 text-sm text-foreground">
-                    <Flame
-                      className={cn(
-                        "h-3.5 w-3.5",
-                        streak >= 2 ? "text-[#EA580C]" : "text-muted-foreground/40",
-                      )}
-                    />
-                    {streak} {streak === 1 ? "dia" : "dias"}
-                  </span>
+                        <span className="inline-flex items-center gap-1 text-sm text-foreground">
+                          <Flame
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              streak >= 2
+                                ? "text-[#EA580C]"
+                                : "text-muted-foreground/40",
+                            )}
+                          />
+                          {streak} {streak === 1 ? "dia" : "dias"}
+                        </span>
 
-                  <span className="text-sm text-foreground">
-                    <span className="md:hidden">Indicações: </span>
-                    {p.referral_count}
-                  </span>
+                        <PremiumBadge validoAte={prem?.valido_ate} />
 
-                  <div className="flex items-center justify-between gap-3 md:justify-end">
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-1 text-[11px] font-bold",
-                        prem
-                          ? "bg-ponto-entrada/15 text-ponto-entrada"
-                          : "bg-muted text-muted-foreground",
-                      )}
-                    >
-                      {prem
-                        ? `Premium até ${formatDataCurta(prem.valido_ate)}`
-                        : "Gratuito"}
-                    </span>
-                    <Link
-                      to="/admin/usuarios/$id"
-                      params={{ id: p.id }}
-                      className="shrink-0 text-xs font-semibold text-ponto-entrada hover:underline"
-                    >
-                      Ver detalhes
-                    </Link>
-                  </div>
-                </li>
-              );
-            })}
-            {visiveis.length === 0 && (
-              <li className="py-10 text-center text-sm text-muted-foreground">
-                Nenhum usuário encontrado.
-              </li>
-            )}
-          </ul>
-        </div>
-      )}
+                        <div className="text-right">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="h-8 rounded-lg border-ponto-entrada text-ponto-entrada hover:bg-ponto-entrada/10 hover:text-ponto-entrada"
+                          >
+                            <Link
+                              to="/admin/usuarios/$id"
+                              params={{ id: p.id }}
+                            >
+                              Ver detalhes
+                            </Link>
+                          </Button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between">

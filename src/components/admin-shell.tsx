@@ -18,13 +18,13 @@ function useActive() {
 
 function AdminBrand() {
   return (
-    <div className="flex items-center gap-3">
-      <SincroMark size={40} />
-      <div className="leading-tight">
-        <span className="text-lg font-bold tracking-tight text-sidebar-foreground">
+    <div className="flex items-center gap-2.5">
+      <SincroMark size={36} />
+      <div className="flex items-center gap-2">
+        <span className="text-lg font-bold tracking-tight text-primary-foreground">
           SINCRO
         </span>
-        <span className="ml-2 rounded-full bg-ponto-entrada/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-ponto-entrada">
+        <span className="rounded-full bg-ponto-entrada px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ponto-entrada-foreground">
           Admin
         </span>
       </div>
@@ -38,75 +38,74 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen w-full bg-background">
-      {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-[280px] flex-col bg-sidebar p-5 text-sidebar-foreground md:flex">
-        <div className="px-1 py-2">
-          <AdminBrand />
-        </div>
+      {/* Header topo (desktop + mobile) */}
+      <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 bg-primary px-4 text-primary-foreground md:px-8">
+        <AdminBrand />
 
-        <nav className="mt-6 flex flex-1 flex-col gap-1">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium transition-all",
-                isActive(item.to, item.exact)
-                  ? "bg-white/10 text-sidebar-foreground"
-                  : "text-sidebar-foreground/80 hover:bg-white/10",
-              )}
-            >
-              <item.icon className="h-5 w-5 text-ponto-entrada" />
-              {item.label}
-            </Link>
-          ))}
+        {/* Nav desktop */}
+        <nav className="ml-6 hidden flex-1 items-center gap-1 md:flex">
+          {NAV.map((item) => {
+            const active = isActive(item.to, item.exact);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  "relative px-3 py-2 text-sm font-medium transition-colors",
+                  active
+                    ? "text-primary-foreground"
+                    : "text-primary-foreground/70 hover:text-primary-foreground",
+                )}
+              >
+                {item.label}
+                {active && (
+                  <span className="absolute inset-x-3 -bottom-[26px] h-[3px] rounded-full bg-ponto-entrada" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         <button
           onClick={() => navigate({ to: "/ponto" })}
-          className="flex items-center gap-3 rounded-xl px-4 py-3 text-[15px] font-medium text-sidebar-foreground/80 transition-all hover:bg-white/10"
+          className="ml-auto hidden items-center gap-2 rounded-xl border border-primary-foreground/30 px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/10 md:inline-flex"
         >
-          <ArrowLeft className="h-5 w-5" />
-          Voltar ao app
-        </button>
-      </aside>
-
-      {/* Header mobile */}
-      <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-5 text-primary-foreground md:hidden">
-        <AdminBrand />
-        <button
-          onClick={() => navigate({ to: "/ponto" })}
-          aria-label="Voltar ao app"
-          className="flex h-10 w-10 items-center justify-center rounded-full transition-all hover:bg-white/10"
-        >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4" /> Voltar ao app
         </button>
       </header>
 
       {/* Conteúdo */}
-      <main className="md:pl-[280px]">
-        <div className="mx-auto max-w-5xl px-4 py-6 pb-28 md:px-8 md:pb-10">
+      <main>
+        <div className="mx-auto max-w-5xl px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-12">
           {children}
         </div>
       </main>
 
-      {/* Bottom nav mobile */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-white/10 bg-sidebar text-sidebar-foreground md:hidden">
-        {NAV.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={cn(
-              "flex flex-1 flex-col items-center gap-1 py-3 text-[11px] font-medium transition-all",
-              isActive(item.to, item.exact)
-                ? "text-ponto-entrada"
-                : "text-sidebar-foreground/70",
-            )}
-          >
-            <item.icon className="h-5 w-5" />
-            {item.label}
-          </Link>
-        ))}
+      {/* Bottom nav mobile (4 itens) */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-sidebar text-sidebar-foreground md:hidden">
+        {NAV.map((item) => {
+          const active = isActive(item.to, item.exact);
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
+                active ? "text-ponto-entrada" : "text-sidebar-foreground/70",
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+        <button
+          onClick={() => navigate({ to: "/ponto" })}
+          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-sidebar-foreground/70 transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          Voltar
+        </button>
       </nav>
     </div>
   );

@@ -22,10 +22,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { mensagemErro } from "@/lib/erros";
 import { formatDataCurta, formatDataHora } from "@/lib/admin";
-import { TIPO_INFO, formatTime, type Tipo } from "@/lib/ponto";
-import { cn } from "@/lib/utils";
+import { formatTime } from "@/lib/ponto";
+import {
+  EmptyState,
+  InitialsAvatar,
+  PremiumBadge,
+  TipoPill,
+  CardSkeleton,
+} from "@/components/admin-ui";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios/$id")({
   component: AdminUsuarioDetalhe,
@@ -95,12 +100,13 @@ function AdminUsuarioDetalhe() {
         valido_ate: validoAte.toISOString(),
       });
       if (error) throw error;
+      return validoAte;
     },
-    onSuccess: () => {
-      toast.success("✓ 30 dias de Premium concedidos");
+    onSuccess: (validoAte) => {
+      toast.success(`✓ Premium concedido até ${formatDataCurta(validoAte.toISOString())}`);
       invalidarTudo();
     },
-    onError: (err) => toast.error(mensagemErro(err)),
+    onError: () => toast.error("Erro ao executar ação. Tente novamente."),
   });
 
   const revoke = useMutation({
@@ -113,32 +119,42 @@ function AdminUsuarioDetalhe() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Premium revogado");
+      toast.success("✓ Premium revogado com sucesso");
       invalidarTudo();
     },
-    onError: (err) => toast.error(mensagemErro(err)),
+    onError: () => toast.error("Erro ao executar ação. Tente novamente."),
   });
 
   const acting = grant.isPending || revoke.isPending;
-
   const registros30 = useMemo(() => registros, [registros]);
 
   if (lp) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      <div className="space-y-6">
+        <CardSkeleton />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+        <CardSkeleton />
       </div>
     );
   }
 
   if (!perfil) {
     return (
-      <div className="space-y-4 py-10 text-center">
-        <p className="text-muted-foreground">Usuário não encontrado.</p>
-        <Link to="/admin/usuarios" className="text-sm font-semibold text-ponto-entrada">
-          Voltar à lista
-        </Link>
-      </div>
+      <EmptyState
+        title="Usuário não encontrado"
+        description="O usuário pode ter sido removido."
+        illustration={
+          <Link
+            to="/admin/usuarios"
+            className="mt-2 text-sm font-semibold text-ponto-entrada hover:underline"
+          >
+            Voltar à lista
+          </Link>
+        }
+      />
     );
   }
 
@@ -146,39 +162,44 @@ function AdminUsuarioDetalhe() {
     <div className="space-y-6">
       <Link
         to="/admin/usuarios"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
         <ArrowLeft className="h-4 w-4" /> Usuários
       </Link>
 
-      {/* Cabeçalho */}
+      {/* Cabeçalho de perfil */}
       <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-xl font-bold text-primary">
-              {perfil.nome_completo || "Sem nome"}
-            </h1>
-            <p className="text-sm text-muted-foreground">{perfil.email}</p>
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 sm:flex sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-4">
+            <InitialsAvatar
+              name={perfil.nome_completo}
+              email={perfil.email}
+              size={56}
+            />
+            <div className="min-w-0">
+              <h1 className="truncate text-xl font-bold text-primary">
+                {perfil.nome_completo || "Sem nome"}
+              </h1>
+              <p className="truncate text-sm text-muted-foreground">
+                {perfil.email}
+              </p>
+              {perfil.profissao && (
+                <p className="truncate text-xs text-muted-foreground">
+                  {perfil.profissao}
+                </p>
+              )}
+            </div>
           </div>
-          <span
-            className={cn(
-              "rounded-full px-3 py-1 text-xs font-bold",
-              premiumAtivo
-                ? "bg-ponto-entrada/15 text-ponto-entrada"
-                : "bg-muted text-muted-foreground",
-            )}
-          >
-            {premiumAtivo
-              ? `Premium até ${formatDataCurta(premiumAtivo.valido_ate)}`
-              : "Gratuito"}
-          </span>
+          <div className="col-span-2 shrink-0">
+            <PremiumBadge validoAte={premiumAtivo?.valido_ate} />
+          </div>
         </div>
       </div>
 
-      {/* Dados do perfil */}
+      {/* Dados do perfil + Indicações */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-2xl bg-card p-5 shadow-card">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             Perfil
           </h2>
           <dl className="space-y-2 text-sm">
@@ -197,7 +218,7 @@ function AdminUsuarioDetalhe() {
         </div>
 
         <div className="rounded-2xl bg-card p-5 shadow-card">
-          <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+          <h2 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
             Indicações
           </h2>
           <div className="flex items-center gap-3">
@@ -209,7 +230,9 @@ function AdminUsuarioDetalhe() {
               <p className="text-xs text-muted-foreground">indicações feitas</p>
             </div>
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">Código de indicação</p>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Código de indicação
+          </p>
           <p className="font-mono text-base font-bold tracking-wider text-primary">
             {perfil.referral_code || "—"}
           </p>
@@ -218,23 +241,34 @@ function AdminUsuarioDetalhe() {
 
       {/* Premium e ações */}
       <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
-        <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <h2 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           Acesso Premium
         </h2>
+
         {lpr ? (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         ) : premiumAtivo ? (
-          <p className="text-sm text-foreground">
-            Ativo — motivo <span className="font-semibold">{premiumAtivo.motivo}</span>,
-            válido até{" "}
-            <span className="font-semibold">
-              {formatDataHora(premiumAtivo.valido_ate)}
-            </span>
-          </p>
+          <div className="rounded-xl bg-ponto-entrada/10 px-4 py-3">
+            <p className="text-sm font-semibold text-ponto-entrada">
+              Premium ativo
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Motivo{" "}
+              <span className="font-medium text-foreground">
+                {premiumAtivo.motivo}
+              </span>{" "}
+              · válido até{" "}
+              <span className="font-medium text-foreground">
+                {formatDataHora(premiumAtivo.valido_ate)}
+              </span>
+            </p>
+          </div>
         ) : (
-          <p className="text-sm text-muted-foreground">
-            Sem acesso premium ativo.
-          </p>
+          <div className="rounded-xl bg-muted px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              Sem acesso premium ativo.
+            </p>
+          </div>
         )}
 
         <div className="mt-4 flex flex-wrap gap-3">
@@ -243,7 +277,12 @@ function AdminUsuarioDetalhe() {
             disabled={acting}
             className="bg-ponto-entrada text-ponto-entrada-foreground hover:bg-ponto-entrada/90"
           >
-            <Crown className="h-4 w-4" /> Conceder 30 dias Premium
+            {grant.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Crown className="h-4 w-4" />
+            )}
+            Conceder 30 dias Premium
           </Button>
           <Button
             variant="outline"
@@ -251,61 +290,69 @@ function AdminUsuarioDetalhe() {
             disabled={acting || !premiumAtivo}
             className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
-            <ShieldOff className="h-4 w-4" /> Revogar Premium
+            {revoke.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ShieldOff className="h-4 w-4" />
+            )}
+            Revogar Premium
           </Button>
         </div>
       </div>
 
       {/* Histórico 30 dias */}
       <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
-        <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        <h2 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           <Clock className="h-4 w-4" /> Registros (últimos 30 dias)
         </h2>
         {lr ? (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <div className="space-y-3 py-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-6 animate-pulse rounded-md bg-primary/10"
+              />
+            ))}
+          </div>
         ) : registros30.length === 0 ? (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            Nenhum registro nos últimos 30 dias.
-          </p>
+          <EmptyState title="Nenhuma batida nos últimos 30 dias" />
         ) : (
           <ul className="divide-y divide-border">
-            {registros30.map((r) => {
-              const info = TIPO_INFO[r.tipo as Tipo];
-              return (
-                <li key={r.id} className="flex items-center gap-3 py-2.5">
-                  <span
-                    className={cn("h-2.5 w-2.5 shrink-0 rounded-full", info?.dot)}
-                  />
-                  <span className="flex-1 text-sm text-foreground">
-                    {info?.label ?? r.tipo}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDataCurta(r.data_hora)}
-                  </span>
-                  <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
-                    {formatTime(r.data_hora, tz)}
-                  </span>
-                </li>
-              );
-            })}
+            {registros30.map((r) => (
+              <li key={r.id} className="flex items-center gap-3 py-2.5">
+                <TipoPill tipo={r.tipo} />
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {formatDataCurta(r.data_hora)}
+                </span>
+                <span className="font-mono text-sm font-semibold tabular-nums text-foreground">
+                  {formatTime(r.data_hora, tz)}
+                </span>
+              </li>
+            ))}
           </ul>
         )}
       </div>
 
       <AlertDialog open={acao !== null} onOpenChange={(o) => !o && setAcao(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar?</AlertDialogTitle>
+            <AlertDialogTitle className="text-lg font-bold text-primary">
+              {acao === "grant" ? "Conceder Premium?" : "Revogar Premium?"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {acao === "grant"
-                ? "Conceder 30 dias de acesso Premium a este usuário."
-                : "Revogar o acesso Premium ativo deste usuário."}
+                ? "Serão concedidos 30 dias de acesso Premium a este usuário."
+                : "O acesso Premium ativo deste usuário será removido imediatamente."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-ponto-entrada text-ponto-entrada-foreground hover:bg-ponto-entrada/90"
+              className={
+                acao === "revoke"
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-ponto-entrada text-ponto-entrada-foreground hover:bg-ponto-entrada/90"
+              }
               onClick={() => {
                 if (acao === "grant") grant.mutate();
                 if (acao === "revoke") revoke.mutate();
