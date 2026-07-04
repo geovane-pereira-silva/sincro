@@ -9,6 +9,7 @@ import { useRegistros } from "@/hooks/use-registros";
 import { AppShell } from "@/components/app-shell";
 import { usePremium } from "@/components/premium-context";
 import { UpsellGateCard } from "@/components/premium-gate";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +17,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+  STATUS_INFO,
+} from "@/lib/calculoTrabalhista";
 import {
   TIPO_INFO,
   agruparPorDia,
@@ -54,6 +62,7 @@ function HistoricoConteudo({
   profile: Profile | null;
 }) {
   const { isPremium } = usePremium();
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
 
@@ -137,6 +146,15 @@ function HistoricoConteudo({
             <Accordion type="single" collapsible className="space-y-2">
               {dias.map(({ dayKey, registros: regs }) => {
                 const resumo = resumoDoDia(regs, carga);
+                const [y, m, d] = dayKey.split("-").map(Number);
+                const calc = calcularDia({
+                  date: new Date(Date.UTC(y, m - 1, d, 12)),
+                  batidas: regs,
+                  config: jornadaConfig ?? JORNADA_CONFIG_DEFAULT,
+                  cargaHorariaDiaria: carga,
+                  tz,
+                });
+                const statusInfo = STATUS_INFO[calc.status];
                 return (
                   <AccordionItem
                     key={dayKey}
@@ -144,34 +162,57 @@ function HistoricoConteudo({
                     className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft"
                   >
                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex w-full items-center justify-between pr-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold capitalize text-foreground">
+                      <div className="flex w-full items-center justify-between gap-2 pr-2">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="truncate text-sm font-semibold capitalize text-foreground">
                             {formatDayKey(dayKey)}
                           </span>
-                          <div className="flex gap-1">
-                            {regs.map((r) => (
-                              <span
-                                key={r.id}
-                                className={cn(
-                                  "h-2 w-2 rounded-full",
-                                  TIPO_INFO[r.tipo].dot,
-                                )}
-                              />
-                            ))}
-                          </div>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold",
+                              statusInfo.classes,
+                            )}
+                          >
+                            {statusInfo.label}
+                          </span>
                         </div>
-                        {resumo.entrada && resumo.saida ? (
-                          <span className="rounded-full bg-positivo/10 px-2.5 py-1 text-xs font-bold text-positivo">
-                            {formatDuracao(resumo.trabalhadoMin)}
-                          </span>
-                        ) : (
-                          <span className="text-sm font-medium text-muted-foreground">
-                            —
-                          </span>
-                        )}
+                        <div className="flex shrink-0 items-center gap-1.5">
+                          {calc.horasExtras > 0 && (
+                            <span className="rounded-full bg-ponto-entrada/10 px-2 py-0.5 text-[10px] font-bold text-ponto-entrada">
+                              +{formatHoraMin(calc.horasExtras)}
+                            </span>
+                          )}
+                          {calc.horasFalta > 0 && (
+                            <span className="rounded-full bg-negativo/10 px-2 py-0.5 text-[10px] font-bold text-negativo">
+                              -{formatHoraMin(calc.horasFalta)}
+                            </span>
+                          )}
+                          {jornadaConfig?.banco_horas_ativo &&
+                            calc.bancoDia !== 0 && (
+                              <span
+                                className={cn(
+                                  "rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums",
+                                  calc.bancoDia >= 0
+                                    ? "bg-positivo/10 text-positivo"
+                                    : "bg-negativo/10 text-negativo",
+                                )}
+                              >
+                                {formatBanco(calc.bancoDia)}
+                              </span>
+                            )}
+                          {resumo.entrada && resumo.saida ? (
+                            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-foreground">
+                              {formatDuracao(resumo.trabalhadoMin)}
+                            </span>
+                          ) : (
+                            <span className="text-sm font-medium text-muted-foreground">
+                              —
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </AccordionTrigger>
+
                     <AccordionContent className="px-4 pb-3">
                       <ul className="space-y-1.5">
                         {regs.map((r) => (

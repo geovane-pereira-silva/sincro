@@ -18,6 +18,15 @@ import {
 } from "@/components/premium-gate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+  STATUS_INFO,
+  type CalculoDia,
+} from "@/lib/calculoTrabalhista";
 
 import {
   agruparPorDia,
@@ -56,8 +65,10 @@ function RelatorioConteudo({
   profile: Profile | null;
 }) {
   const { isPremium, openUpsell } = usePremium();
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
+  const config = jornadaConfig ?? JORNADA_CONFIG_DEFAULT;
 
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
@@ -113,24 +124,71 @@ function RelatorioConteudo({
   }, [registros, tz]);
 
   const linhas = useMemo(() => {
+    let bhAcum = 0;
     return diasDoMes(ano, mes).map((dayKey) => {
       const regs = porDia.get(dayKey) ?? [];
       const resumo = resumoDoDia(regs, carga);
       const completo = !!(resumo.entrada && resumo.saida);
-      return { dayKey, resumo, completo, temRegistros: regs.length > 0 };
+      const [y, m, d] = dayKey.split("-").map(Number);
+      const calc: CalculoDia = calcularDia({
+        date: new Date(Date.UTC(y, m - 1, d, 12)),
+        batidas: regs,
+        config,
+        cargaHorariaDiaria: carga,
+        tz,
+      });
+      bhAcum += calc.bancoDia;
+      return {
+        dayKey,
+        resumo,
+        completo,
+        temRegistros: regs.length > 0,
+        calc,
+        bhAcumulado: bhAcum,
+      };
     });
-  }, [ano, mes, porDia, carga]);
+  }, [ano, mes, porDia, carga, config, tz]);
 
   const totais = useMemo(() => {
     let trabalhado = 0;
+    let previsto = 0;
     let saldo = 0;
+    let extras = 0;
+    let falta = 0;
+    let atrasos = 0;
+    let noturno = 0;
+    let bh = 0;
+    let diasTrabalhados = 0;
+    let diasFolga = 0;
+    let diasFalta = 0;
     for (const l of linhas) {
+      previsto += l.calc.horasPrevistas;
+      extras += l.calc.horasExtras;
+      falta += l.calc.horasFalta;
+      atrasos += l.calc.atraso;
+      noturno += l.calc.adicionalNoturno;
+      bh += l.calc.bancoDia;
       if (l.completo) {
         trabalhado += l.resumo.trabalhadoMin;
         saldo += l.resumo.saldoMin;
       }
+      if (l.calc.status === "folga" || l.calc.status === "feriado") diasFolga++;
+      else if (l.calc.status === "falta") diasFalta++;
+      else if (l.temRegistros) diasTrabalhados++;
     }
-    return { trabalhado, saldo };
+    return {
+      trabalhado,
+      previsto,
+      saldo,
+      extras,
+      falta,
+      atrasos,
+      noturno,
+      bh,
+      diasTrabalhados,
+      diasFolga,
+      diasFalta,
+    };
   }, [linhas]);
 
   const totalPrev = useMemo(() => {
@@ -164,7 +222,21 @@ function RelatorioConteudo({
   function exportarCSV() {
     const hifen = "-";
     const linhasCSV = [
-      ["Data", "Entrada", "Saida Int.", "Entrada Int.", "Saida", "Total", "Saldo"],
+      [
+        "Data",
+        "Entrada",
+        "Saida Int.",
+        "Entrada Int.",
+        "Saida",
+        "Previsto",
+        "Trabalhado",
+        "Extra",
+        "Falta",
+        "Atraso",
+        "BH dia",
+        "BH acumulado",
+        "Status",
+      ],
       ...linhas.map((l) => {
         const r = l.resumo;
         return [
@@ -175,13 +247,32 @@ function RelatorioConteudo({
             ? formatTime(r.entradaIntervalo.data_hora, tz)
             : hifen,
           r.saida ? formatTime(r.saida.data_hora, tz) : hifen,
-          l.completo ? formatDuracao(r.trabalhadoMin) : hifen,
-          l.completo ? formatSaldo(r.saldoMin) : hifen,
+          formatHoraMin(l.calc.horasPrevistas),
+          l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : hifen,
+          l.calc.horasExtras > 0 ? formatHoraMin(l.calc.horasExtras) : hifen,
+          l.calc.horasFalta > 0 ? formatHoraMin(l.calc.horasFalta) : hifen,
+          l.calc.atraso > 0 ? formatHoraMin(l.calc.atraso) : hifen,
+          config.banco_horas_ativo ? formatBanco(l.calc.bancoDia) : hifen,
+          config.banco_horas_ativo ? formatBanco(l.bhAcumulado) : hifen,
+          STATUS_INFO[l.calc.status].label,
         ];
       }),
       [],
+      ["Total previsto", formatDuracao(totais.previsto)],
       ["Total trabalhado", formatDuracao(totais.trabalhado)],
+      ["Total extras", formatDuracao(totais.extras)],
+      ["Total falta", formatDuracao(totais.falta)],
+      ["Total atrasos", formatDuracao(totais.atrasos)],
       ["Saldo do mês", formatSaldo(totais.saldo)],
+      ...(config.banco_horas_ativo
+        ? [["Saldo banco de horas do mês", formatBanco(totais.bh)]]
+        : []),
+      ...(config.adicional_noturno
+        ? [["Adicional noturno total", formatHoraMin(totais.noturno)]]
+        : []),
+      ["Dias trabalhados", String(totais.diasTrabalhados)],
+      ["Dias de folga/feriado", String(totais.diasFolga)],
+      ["Dias de falta", String(totais.diasFalta)],
       [],
       [
         `Documento gerado pelo usuário via SINCRO. Responsabilidade pelos dados: ${
@@ -286,6 +377,42 @@ function RelatorioConteudo({
         onNext={() => navegar(1)}
       />
 
+      {!isLoading && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ResumoCard label="Trabalhado" valor={formatDuracao(totais.trabalhado)} />
+          <ResumoCard label="Previsto" valor={formatDuracao(totais.previsto)} />
+          <ResumoCard
+            label="Extras"
+            valor={formatDuracao(totais.extras)}
+            classe="text-ponto-entrada"
+          />
+          <ResumoCard
+            label="Falta"
+            valor={formatDuracao(totais.falta)}
+            classe="text-negativo"
+          />
+          <ResumoCard label="Atrasos" valor={formatHoraMin(totais.atrasos)} />
+          {config.banco_horas_ativo && (
+            <ResumoCard
+              label="Banco de horas (mês)"
+              valor={formatBanco(totais.bh)}
+              classe={totais.bh >= 0 ? "text-positivo" : "text-negativo"}
+            />
+          )}
+          {config.adicional_noturno && (
+            <ResumoCard
+              label="Adicional noturno"
+              valor={formatHoraMin(totais.noturno)}
+            />
+          )}
+          <ResumoCard
+            label="Dias trab. / folga / falta"
+            valor={`${totais.diasTrabalhados}/${totais.diasFolga}/${totais.diasFalta}`}
+          />
+        </div>
+      )}
+
+
       {isLoading ? (
         <div className="flex justify-center py-10">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -298,17 +425,26 @@ function RelatorioConteudo({
                 <tr className="border-b border-border bg-secondary/50 text-muted-foreground">
                   <th className="px-2 py-2 text-left font-semibold">Dia</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Ent</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">S.Int</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">E.Int</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Saí</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">Total</th>
-                  <th className="px-2 py-2 text-right font-semibold">Saldo</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Prev</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Trab</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Extra</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Falta</th>
+                  <th className="px-1.5 py-2 text-center font-semibold">Atr</th>
+                  {config.banco_horas_ativo && (
+                    <>
+                      <th className="px-1.5 py-2 text-center font-semibold">BH</th>
+                      <th className="px-1.5 py-2 text-center font-semibold">BH ac.</th>
+                    </>
+                  )}
+                  <th className="px-2 py-2 text-right font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {linhas.map((l) => {
                   const r = l.resumo;
                   const dia = Number(l.dayKey.split("-")[2]);
+                  const st = STATUS_INFO[l.calc.status];
                   return (
                     <tr
                       key={l.dayKey}
@@ -324,31 +460,64 @@ function RelatorioConteudo({
                         {r.entrada ? formatTime(r.entrada.data_hora, tz) : "·"}
                       </td>
                       <td className="px-1.5 py-2 text-center">
-                        {r.saidaIntervalo
-                          ? formatTime(r.saidaIntervalo.data_hora, tz)
-                          : "·"}
-                      </td>
-                      <td className="px-1.5 py-2 text-center">
-                        {r.entradaIntervalo
-                          ? formatTime(r.entradaIntervalo.data_hora, tz)
-                          : "·"}
-                      </td>
-                      <td className="px-1.5 py-2 text-center">
                         {r.saida ? formatTime(r.saida.data_hora, tz) : "·"}
                       </td>
-                      <td className="px-1.5 py-2 text-center font-medium">
-                        {l.completo ? formatDuracao(r.trabalhadoMin) : "·"}
+                      <td className="px-1.5 py-2 text-center">
+                        {l.calc.horasPrevistas > 0
+                          ? formatHoraMin(l.calc.horasPrevistas)
+                          : "·"}
                       </td>
-                      <td
-                        className={cn(
-                          "px-2 py-2 text-right font-semibold",
-                          l.completo &&
-                            (r.saldoMin >= 0
-                              ? "text-positivo"
-                              : "text-negativo"),
-                        )}
-                      >
-                        {l.completo ? formatSaldo(r.saldoMin) : "·"}
+                      <td className="px-1.5 py-2 text-center font-medium">
+                        {l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center text-ponto-entrada">
+                        {l.calc.horasExtras > 0
+                          ? formatHoraMin(l.calc.horasExtras)
+                          : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center text-negativo">
+                        {l.calc.horasFalta > 0
+                          ? formatHoraMin(l.calc.horasFalta)
+                          : "·"}
+                      </td>
+                      <td className="px-1.5 py-2 text-center">
+                        {l.calc.atraso > 0 ? formatHoraMin(l.calc.atraso) : "·"}
+                      </td>
+                      {config.banco_horas_ativo && (
+                        <>
+                          <td
+                            className={cn(
+                              "px-1.5 py-2 text-center",
+                              l.calc.bancoDia >= 0
+                                ? "text-positivo"
+                                : "text-negativo",
+                            )}
+                          >
+                            {l.temRegistros || l.calc.bancoDia !== 0
+                              ? formatBanco(l.calc.bancoDia)
+                              : "·"}
+                          </td>
+                          <td
+                            className={cn(
+                              "px-1.5 py-2 text-center",
+                              l.bhAcumulado >= 0
+                                ? "text-positivo"
+                                : "text-negativo",
+                            )}
+                          >
+                            {formatBanco(l.bhAcumulado)}
+                          </td>
+                        </>
+                      )}
+                      <td className="px-2 py-2 text-right">
+                        <span
+                          className={cn(
+                            "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                            st.classes,
+                          )}
+                        >
+                          {st.label}
+                        </span>
                       </td>
                     </tr>
                   );
@@ -356,23 +525,42 @@ function RelatorioConteudo({
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-border bg-secondary/50 font-bold">
-                  <td colSpan={5} className="px-2 py-3 text-left">
+                  <td colSpan={3} className="px-2 py-3 text-left">
                     Total do mês
                   </td>
                   <td className="px-1.5 py-3 text-center tabular-nums">
-                    {formatDuracao(totais.trabalhado)}
+                    {formatHoraMin(totais.previsto)}
                   </td>
-                  <td
-                    className={cn(
-                      "px-2 py-3 text-right tabular-nums",
-                      totais.saldo >= 0 ? "text-positivo" : "text-negativo",
-                    )}
-                  >
-                    {formatSaldo(totais.saldo)}
+                  <td className="px-1.5 py-3 text-center tabular-nums">
+                    {formatHoraMin(totais.trabalhado)}
                   </td>
+                  <td className="px-1.5 py-3 text-center tabular-nums text-ponto-entrada">
+                    {formatHoraMin(totais.extras)}
+                  </td>
+                  <td className="px-1.5 py-3 text-center tabular-nums text-negativo">
+                    {formatHoraMin(totais.falta)}
+                  </td>
+                  <td className="px-1.5 py-3 text-center tabular-nums">
+                    {formatHoraMin(totais.atrasos)}
+                  </td>
+                  {config.banco_horas_ativo && (
+                    <>
+                      <td
+                        className={cn(
+                          "px-1.5 py-3 text-center tabular-nums",
+                          totais.bh >= 0 ? "text-positivo" : "text-negativo",
+                        )}
+                      >
+                        {formatBanco(totais.bh)}
+                      </td>
+                      <td className="px-1.5 py-3" />
+                    </>
+                  )}
+                  <td className="px-2 py-3" />
                 </tr>
               </tfoot>
             </table>
+
           </div>
         </div>
       )}
@@ -451,6 +639,27 @@ function RelatorioConteudo({
     </div>
   );
 }
+
+function ResumoCard({
+  label,
+  valor,
+  classe,
+}: {
+  label: string;
+  valor: string;
+  classe?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+      <p className="text-[11px] leading-tight text-muted-foreground">{label}</p>
+      <p className={cn("mt-1 text-base font-bold tabular-nums text-foreground", classe)}>
+        {valor}
+      </p>
+    </div>
+  );
+}
+
+
 
 function ProdutividadeChart({
   linhas,

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
 import { PremiumStatusCard } from "@/components/premium-gate";
+import { JornadaConfigForm } from "@/components/jornada-config-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -191,6 +192,16 @@ function ConfiguracoesPage() {
             Salvar alterações
           </Button>
         </form>
+
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Minha Jornada
+        </p>
+        <JornadaConfigForm
+          userId={user?.id}
+          cargaHorariaDiaria={Number(carga.replace(",", ".")) || 8}
+        />
+
+
 
         <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
           Conta

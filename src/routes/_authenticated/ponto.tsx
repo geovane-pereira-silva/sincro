@@ -17,13 +17,21 @@ import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
 import { verificarRecompensasPremium } from "@/lib/premium";
 import { HomeUpsellBanner } from "@/components/home-upsell-banner";
+import { StatusDiaCard } from "@/components/status-dia-card";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
+import { useBancoHoras } from "@/hooks/use-banco-horas";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+} from "@/lib/calculoTrabalhista";
 import {
   TIPO_INFO,
   calcularStreak,
   dayKeyInTz,
   formatDateLong,
   formatTime,
-  formatSaldo,
   getZonedParts,
   nextTipo,
   resumoDoDia,
@@ -139,6 +147,44 @@ function PontoPage() {
   const proximo = nextTipo(registros.length);
   const resumo = resumoDoDia(registros, carga);
 
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
+  const banco = useBancoHoras();
+
+  const calculo = useMemo(
+    () =>
+      calcularDia({
+        date: now,
+        batidas: registros,
+        config: jornadaConfig ?? JORNADA_CONFIG_DEFAULT,
+        cargaHorariaDiaria: carga,
+        tz,
+      }),
+    // `now` muda a cada segundo; só depende da data efetiva, não do relógio.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [registros, jornadaConfig, carga, tz],
+  );
+
+  // Contador ao vivo enquanto está no turno (após entrada, antes de saída).
+  const emTurno = !!resumo.entrada && !resumo.saida;
+  const trabalhadoAoVivoMin = useMemo(() => {
+    if (!resumo.entrada) return 0;
+    const inicio = new Date(resumo.entrada.data_hora).getTime();
+    let intervalo = 0;
+    if (resumo.saidaIntervalo && resumo.entradaIntervalo) {
+      intervalo =
+        (new Date(resumo.entradaIntervalo.data_hora).getTime() -
+          new Date(resumo.saidaIntervalo.data_hora).getTime()) /
+        60000;
+    } else if (resumo.saidaIntervalo && !resumo.entradaIntervalo) {
+      intervalo = (now.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
+    }
+    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : now.getTime();
+    return Math.max(0, (fim - inicio) / 60000 - Math.max(0, intervalo));
+  }, [resumo, now]);
+
+  const previstoMin = carga * 60;
+  const faltaMin = previstoMin - trabalhadoAoVivoMin;
+
   const relogio = useMemo(() => {
     const p = getZonedParts(now, tz);
     return `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}:${String(p.second).padStart(2, "0")}`;
@@ -218,12 +264,39 @@ function PontoPage() {
           <p className="mt-2 text-sm lowercase first-letter:uppercase text-muted-foreground">
             {formatDateLong(now, tz)}
           </p>
-          {streak >= 2 && (
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
-              <Flame className="h-3.5 w-3.5" />
-              {streak >= 7
-                ? `${streak} dias seguidos — você é consistente!`
-                : `${streak} dias seguidos`}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            {streak >= 2 && (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
+                <Flame className="h-3.5 w-3.5" />
+                {streak >= 7
+                  ? `${streak} dias seguidos — você é consistente!`
+                  : `${streak} dias seguidos`}
+              </div>
+            )}
+            {banco.ativo && !banco.isLoading && (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold tabular-nums",
+                  banco.saldoAtual >= 0
+                    ? "bg-positivo/10 text-positivo"
+                    : "bg-negativo/10 text-negativo",
+                )}
+              >
+                BH: {banco.saldoFormatado}
+              </span>
+            )}
+          </div>
+
+          {emTurno && (
+            <div className="mt-3 border-t border-border pt-3">
+              <p className="font-mono text-2xl font-bold tabular-nums text-foreground">
+                {formatHoraMin(trabalhadoAoVivoMin)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {faltaMin > 0
+                  ? `Faltam ${formatHoraMin(faltaMin)} para completar a jornada`
+                  : `${formatHoraMin(-faltaMin)} de extra hoje`}
+              </p>
             </div>
           )}
         </div>
@@ -301,23 +374,15 @@ function PontoPage() {
 
 
 
-        {/* Status do dia */}
+        {/* Status do dia — cálculo trabalhista completo */}
+        {!loadingRegistros && registros.length > 0 && (
+          <StatusDiaCard calculo={calculo} tz={tz} />
+        )}
+
+        {/* Batidas de hoje */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary">Hoje</h2>
-            {resumo.entrada && resumo.saida && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold",
-                  resumo.saldoMin >= 0
-                    ? "bg-positivo/10 text-positivo"
-                    : "bg-negativo/10 text-negativo",
-                )}
-              >
-                {resumo.saldoMin >= 0 ? "▲" : "▼"} {formatSaldo(resumo.saldoMin)}
-              </span>
-            )}
-          </div>
+          <h2 className="mb-3 text-sm font-bold text-primary">Batidas de hoje</h2>
+
 
           {loadingRegistros ? (
             <div className="flex justify-center py-4">
