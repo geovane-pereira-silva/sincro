@@ -65,8 +65,10 @@ function RelatorioConteudo({
   profile: Profile | null;
 }) {
   const { isPremium, openUpsell } = usePremium();
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
+  const config = jornadaConfig ?? JORNADA_CONFIG_DEFAULT;
 
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
