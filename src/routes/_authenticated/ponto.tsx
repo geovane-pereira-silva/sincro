@@ -264,12 +264,39 @@ function PontoPage() {
           <p className="mt-2 text-sm lowercase first-letter:uppercase text-muted-foreground">
             {formatDateLong(now, tz)}
           </p>
-          {streak >= 2 && (
-            <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
-              <Flame className="h-3.5 w-3.5" />
-              {streak >= 7
-                ? `${streak} dias seguidos — você é consistente!`
-                : `${streak} dias seguidos`}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            {streak >= 2 && (
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
+                <Flame className="h-3.5 w-3.5" />
+                {streak >= 7
+                  ? `${streak} dias seguidos — você é consistente!`
+                  : `${streak} dias seguidos`}
+              </div>
+            )}
+            {banco.ativo && !banco.isLoading && (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full px-3 py-1 text-xs font-bold tabular-nums",
+                  banco.saldoAtual >= 0
+                    ? "bg-positivo/10 text-positivo"
+                    : "bg-negativo/10 text-negativo",
+                )}
+              >
+                BH: {banco.saldoFormatado}
+              </span>
+            )}
+          </div>
+
+          {emTurno && (
+            <div className="mt-3 border-t border-border pt-3">
+              <p className="font-mono text-2xl font-bold tabular-nums text-foreground">
+                {formatHoraMin(trabalhadoAoVivoMin)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {faltaMin > 0
+                  ? `Faltam ${formatHoraMin(faltaMin)} para completar a jornada`
+                  : `${formatHoraMin(-faltaMin)} de extra hoje`}
+              </p>
             </div>
           )}
         </div>
