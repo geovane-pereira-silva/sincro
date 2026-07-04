@@ -374,23 +374,15 @@ function PontoPage() {
 
 
 
-        {/* Status do dia */}
+        {/* Status do dia — cálculo trabalhista completo */}
+        {!loadingRegistros && registros.length > 0 && (
+          <StatusDiaCard calculo={calculo} tz={tz} />
+        )}
+
+        {/* Batidas de hoje */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-bold text-primary">Hoje</h2>
-            {resumo.entrada && resumo.saida && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-bold",
-                  resumo.saldoMin >= 0
-                    ? "bg-positivo/10 text-positivo"
-                    : "bg-negativo/10 text-negativo",
-                )}
-              >
-                {resumo.saldoMin >= 0 ? "▲" : "▼"} {formatSaldo(resumo.saldoMin)}
-              </span>
-            )}
-          </div>
+          <h2 className="mb-3 text-sm font-bold text-primary">Batidas de hoje</h2>
+
 
           {loadingRegistros ? (
             <div className="flex justify-center py-4">
