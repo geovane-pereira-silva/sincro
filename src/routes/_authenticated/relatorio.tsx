@@ -222,7 +222,21 @@ function RelatorioConteudo({
   function exportarCSV() {
     const hifen = "-";
     const linhasCSV = [
-      ["Data", "Entrada", "Saida Int.", "Entrada Int.", "Saida", "Total", "Saldo"],
+      [
+        "Data",
+        "Entrada",
+        "Saida Int.",
+        "Entrada Int.",
+        "Saida",
+        "Previsto",
+        "Trabalhado",
+        "Extra",
+        "Falta",
+        "Atraso",
+        "BH dia",
+        "BH acumulado",
+        "Status",
+      ],
       ...linhas.map((l) => {
         const r = l.resumo;
         return [
@@ -233,13 +247,32 @@ function RelatorioConteudo({
             ? formatTime(r.entradaIntervalo.data_hora, tz)
             : hifen,
           r.saida ? formatTime(r.saida.data_hora, tz) : hifen,
-          l.completo ? formatDuracao(r.trabalhadoMin) : hifen,
-          l.completo ? formatSaldo(r.saldoMin) : hifen,
+          formatHoraMin(l.calc.horasPrevistas),
+          l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : hifen,
+          l.calc.horasExtras > 0 ? formatHoraMin(l.calc.horasExtras) : hifen,
+          l.calc.horasFalta > 0 ? formatHoraMin(l.calc.horasFalta) : hifen,
+          l.calc.atraso > 0 ? formatHoraMin(l.calc.atraso) : hifen,
+          config.banco_horas_ativo ? formatBanco(l.calc.bancoDia) : hifen,
+          config.banco_horas_ativo ? formatBanco(l.bhAcumulado) : hifen,
+          STATUS_INFO[l.calc.status].label,
         ];
       }),
       [],
+      ["Total previsto", formatDuracao(totais.previsto)],
       ["Total trabalhado", formatDuracao(totais.trabalhado)],
+      ["Total extras", formatDuracao(totais.extras)],
+      ["Total falta", formatDuracao(totais.falta)],
+      ["Total atrasos", formatDuracao(totais.atrasos)],
       ["Saldo do mês", formatSaldo(totais.saldo)],
+      ...(config.banco_horas_ativo
+        ? [["Saldo banco de horas do mês", formatBanco(totais.bh)]]
+        : []),
+      ...(config.adicional_noturno
+        ? [["Adicional noturno total", formatHoraMin(totais.noturno)]]
+        : []),
+      ["Dias trabalhados", String(totais.diasTrabalhados)],
+      ["Dias de folga/feriado", String(totais.diasFolga)],
+      ["Dias de falta", String(totais.diasFalta)],
       [],
       [
         `Documento gerado pelo usuário via SINCRO. Responsabilidade pelos dados: ${
