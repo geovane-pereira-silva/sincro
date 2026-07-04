@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      jornada_config: {
+        Row: {
+          adicional_noturno: boolean
+          banco_horas_ativo: boolean
+          banco_horas_limite_horas: number | null
+          created_at: string
+          dias_trabalho: string[]
+          horario_entrada: string
+          horario_saida: string
+          id: string
+          intervalo_minutos: number
+          tolerancia_minutos: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          adicional_noturno?: boolean
+          banco_horas_ativo?: boolean
+          banco_horas_limite_horas?: number | null
+          created_at?: string
+          dias_trabalho?: string[]
+          horario_entrada?: string
+          horario_saida?: string
+          id?: string
+          intervalo_minutos?: number
+          tolerancia_minutos?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          adicional_noturno?: boolean
+          banco_horas_ativo?: boolean
+          banco_horas_limite_horas?: number | null
+          created_at?: string
+          dias_trabalho?: string[]
+          horario_entrada?: string
+          horario_saida?: string
+          id?: string
+          intervalo_minutos?: number
+          tolerancia_minutos?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ponto_registros: {
         Row: {
           created_at: string
