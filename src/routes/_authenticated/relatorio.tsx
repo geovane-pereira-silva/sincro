@@ -640,6 +640,27 @@ function RelatorioConteudo({
   );
 }
 
+function ResumoCard({
+  label,
+  valor,
+  classe,
+}: {
+  label: string;
+  valor: string;
+  classe?: string;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+      <p className="text-[11px] leading-tight text-muted-foreground">{label}</p>
+      <p className={cn("mt-1 text-base font-bold tabular-nums text-foreground", classe)}>
+        {valor}
+      </p>
+    </div>
+  );
+}
+
+
+
 function ProdutividadeChart({
   linhas,
   maxMin,
