@@ -9,6 +9,7 @@ import { useRegistros } from "@/hooks/use-registros";
 import { AppShell } from "@/components/app-shell";
 import { usePremium } from "@/components/premium-context";
 import { UpsellGateCard } from "@/components/premium-gate";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
 import {
   Accordion,
   AccordionContent,
@@ -16,6 +17,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+  STATUS_INFO,
+} from "@/lib/calculoTrabalhista";
 import {
   TIPO_INFO,
   agruparPorDia,
