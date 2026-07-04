@@ -124,24 +124,71 @@ function RelatorioConteudo({
   }, [registros, tz]);
 
   const linhas = useMemo(() => {
+    let bhAcum = 0;
     return diasDoMes(ano, mes).map((dayKey) => {
       const regs = porDia.get(dayKey) ?? [];
       const resumo = resumoDoDia(regs, carga);
       const completo = !!(resumo.entrada && resumo.saida);
-      return { dayKey, resumo, completo, temRegistros: regs.length > 0 };
+      const [y, m, d] = dayKey.split("-").map(Number);
+      const calc: CalculoDia = calcularDia({
+        date: new Date(Date.UTC(y, m - 1, d, 12)),
+        batidas: regs,
+        config,
+        cargaHorariaDiaria: carga,
+        tz,
+      });
+      bhAcum += calc.bancoDia;
+      return {
+        dayKey,
+        resumo,
+        completo,
+        temRegistros: regs.length > 0,
+        calc,
+        bhAcumulado: bhAcum,
+      };
     });
-  }, [ano, mes, porDia, carga]);
+  }, [ano, mes, porDia, carga, config, tz]);
 
   const totais = useMemo(() => {
     let trabalhado = 0;
+    let previsto = 0;
     let saldo = 0;
+    let extras = 0;
+    let falta = 0;
+    let atrasos = 0;
+    let noturno = 0;
+    let bh = 0;
+    let diasTrabalhados = 0;
+    let diasFolga = 0;
+    let diasFalta = 0;
     for (const l of linhas) {
+      previsto += l.calc.horasPrevistas;
+      extras += l.calc.horasExtras;
+      falta += l.calc.horasFalta;
+      atrasos += l.calc.atraso;
+      noturno += l.calc.adicionalNoturno;
+      bh += l.calc.bancoDia;
       if (l.completo) {
         trabalhado += l.resumo.trabalhadoMin;
         saldo += l.resumo.saldoMin;
       }
+      if (l.calc.status === "folga" || l.calc.status === "feriado") diasFolga++;
+      else if (l.calc.status === "falta") diasFalta++;
+      else if (l.temRegistros) diasTrabalhados++;
     }
-    return { trabalhado, saldo };
+    return {
+      trabalhado,
+      previsto,
+      saldo,
+      extras,
+      falta,
+      atrasos,
+      noturno,
+      bh,
+      diasTrabalhados,
+      diasFolga,
+      diasFalta,
+    };
   }, [linhas]);
 
   const totalPrev = useMemo(() => {
