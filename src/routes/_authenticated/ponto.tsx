@@ -17,13 +17,21 @@ import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
 import { verificarRecompensasPremium } from "@/lib/premium";
 import { HomeUpsellBanner } from "@/components/home-upsell-banner";
+import { StatusDiaCard } from "@/components/status-dia-card";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
+import { useBancoHoras } from "@/hooks/use-banco-horas";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+} from "@/lib/calculoTrabalhista";
 import {
   TIPO_INFO,
   calcularStreak,
   dayKeyInTz,
   formatDateLong,
   formatTime,
-  formatSaldo,
   getZonedParts,
   nextTipo,
   resumoDoDia,
