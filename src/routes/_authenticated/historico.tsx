@@ -62,6 +62,7 @@ function HistoricoConteudo({
   profile: Profile | null;
 }) {
   const { isPremium } = usePremium();
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
 
