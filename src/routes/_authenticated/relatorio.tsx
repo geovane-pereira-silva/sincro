@@ -18,6 +18,15 @@ import {
 } from "@/components/premium-gate";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useJornadaConfig } from "@/hooks/use-jornada-config";
+import {
+  calcularDia,
+  formatBanco,
+  formatHoraMin,
+  JORNADA_CONFIG_DEFAULT,
+  STATUS_INFO,
+  type CalculoDia,
+} from "@/lib/calculoTrabalhista";
 
 import {
   agruparPorDia,
