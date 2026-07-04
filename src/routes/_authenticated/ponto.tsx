@@ -147,6 +147,44 @@ function PontoPage() {
   const proximo = nextTipo(registros.length);
   const resumo = resumoDoDia(registros, carga);
 
+  const { data: jornadaConfig } = useJornadaConfig(user?.id);
+  const banco = useBancoHoras();
+
+  const calculo = useMemo(
+    () =>
+      calcularDia({
+        date: now,
+        batidas: registros,
+        config: jornadaConfig ?? JORNADA_CONFIG_DEFAULT,
+        cargaHorariaDiaria: carga,
+        tz,
+      }),
+    // `now` muda a cada segundo; só depende da data efetiva, não do relógio.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [registros, jornadaConfig, carga, tz],
+  );
+
+  // Contador ao vivo enquanto está no turno (após entrada, antes de saída).
+  const emTurno = !!resumo.entrada && !resumo.saida;
+  const trabalhadoAoVivoMin = useMemo(() => {
+    if (!resumo.entrada) return 0;
+    const inicio = new Date(resumo.entrada.data_hora).getTime();
+    let intervalo = 0;
+    if (resumo.saidaIntervalo && resumo.entradaIntervalo) {
+      intervalo =
+        (new Date(resumo.entradaIntervalo.data_hora).getTime() -
+          new Date(resumo.saidaIntervalo.data_hora).getTime()) /
+        60000;
+    } else if (resumo.saidaIntervalo && !resumo.entradaIntervalo) {
+      intervalo = (now.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
+    }
+    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : now.getTime();
+    return Math.max(0, (fim - inicio) / 60000 - Math.max(0, intervalo));
+  }, [resumo, now]);
+
+  const previstoMin = carga * 60;
+  const faltaMin = previstoMin - trabalhadoAoVivoMin;
+
   const relogio = useMemo(() => {
     const p = getZonedParts(now, tz);
     return `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}:${String(p.second).padStart(2, "0")}`;
