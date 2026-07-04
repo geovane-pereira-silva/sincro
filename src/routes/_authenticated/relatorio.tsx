@@ -377,6 +377,42 @@ function RelatorioConteudo({
         onNext={() => navegar(1)}
       />
 
+      {!isLoading && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <ResumoCard label="Trabalhado" valor={formatDuracao(totais.trabalhado)} />
+          <ResumoCard label="Previsto" valor={formatDuracao(totais.previsto)} />
+          <ResumoCard
+            label="Extras"
+            valor={formatDuracao(totais.extras)}
+            classe="text-ponto-entrada"
+          />
+          <ResumoCard
+            label="Falta"
+            valor={formatDuracao(totais.falta)}
+            classe="text-negativo"
+          />
+          <ResumoCard label="Atrasos" valor={formatHoraMin(totais.atrasos)} />
+          {config.banco_horas_ativo && (
+            <ResumoCard
+              label="Banco de horas (mês)"
+              valor={formatBanco(totais.bh)}
+              classe={totais.bh >= 0 ? "text-positivo" : "text-negativo"}
+            />
+          )}
+          {config.adicional_noturno && (
+            <ResumoCard
+              label="Adicional noturno"
+              valor={formatHoraMin(totais.noturno)}
+            />
+          )}
+          <ResumoCard
+            label="Dias trab. / folga / falta"
+            valor={`${totais.diasTrabalhados}/${totais.diasFolga}/${totais.diasFalta}`}
+          />
+        </div>
+      )}
+
+
       {isLoading ? (
         <div className="flex justify-center py-10">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
