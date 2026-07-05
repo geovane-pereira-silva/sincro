@@ -34,6 +34,7 @@ export interface Profile {
   referral_code?: string | null;
   referred_by?: string | null;
   referral_count?: number;
+  bloqueado?: boolean;
 }
 
 export const TIPO_INFO: Record<
