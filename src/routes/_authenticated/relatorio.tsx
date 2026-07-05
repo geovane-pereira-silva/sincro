@@ -525,10 +525,14 @@ function RelatorioConteudo({
                 })}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-border bg-secondary/50 font-bold">
+                <tr
+                  className="border-t-2 border-border font-bold"
+                  style={{ backgroundColor: "#F8FAFC" }}
+                >
                   <td colSpan={3} className="px-2 py-3 text-left">
                     Total do mês
                   </td>
+
                   <td className="px-1.5 py-3 text-center tabular-nums">
                     {formatHoraMin(totais.previsto)}
                   </td>
