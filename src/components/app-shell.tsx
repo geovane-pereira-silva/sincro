@@ -203,6 +203,10 @@ export function AppShell({
         </Sheet>
       </header>
 
+        {config?.mensagem_sistema && (
+          <SystemBanner mensagem={config.mensagem_sistema} />
+        )}
+
         <main className="flex-1 px-4 py-5">{children}</main>
       </div>
     </PremiumProvider>
