@@ -379,19 +379,20 @@ function RelatorioConteudo({
 
       {!isLoading && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <ResumoCard label="Trabalhado" valor={formatDuracao(totais.trabalhado)} />
-          <ResumoCard label="Previsto" valor={formatDuracao(totais.previsto)} />
+          <ResumoCard label="Trabalhado" valor={formatHoraMin(totais.trabalhado)} />
+          <ResumoCard label="Previsto" valor={formatHoraMin(totais.previsto)} />
           <ResumoCard
             label="Extras"
-            valor={formatDuracao(totais.extras)}
+            valor={formatHoraMin(totais.extras)}
             classe="text-ponto-entrada"
           />
           <ResumoCard
             label="Falta"
-            valor={formatDuracao(totais.falta)}
+            valor={formatHoraMin(totais.falta)}
             classe="text-negativo"
           />
           <ResumoCard label="Atrasos" valor={formatHoraMin(totais.atrasos)} />
+
           {config.banco_horas_ativo && (
             <ResumoCard
               label="Banco de horas (mês)"
