@@ -193,13 +193,17 @@ function ConfiguracoesPage() {
           </Button>
         </form>
 
-        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <p
+          id="minha-jornada"
+          className="scroll-mt-20 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70"
+        >
           Minha Jornada
         </p>
         <JornadaConfigForm
           userId={user?.id}
           cargaHorariaDiaria={Number(carga.replace(",", ".")) || 8}
         />
+
 
 
 
