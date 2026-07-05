@@ -53,3 +53,60 @@ export function formatDataHora(iso: string): string {
     minute: "2-digit",
   }).format(new Date(iso));
 }
+
+/* ------------------------------------------------------------------ */
+/* Rótulos e utilidades do painel expandido                           */
+/* ------------------------------------------------------------------ */
+
+export const MOTIVO_PREMIUM_LABEL: Record<string, string> = {
+  referral: "Indicação",
+  streak_7: "Streak 7 dias",
+  perfil_completo: "Perfil completo",
+  indicado_compartilhou: "Indicado indicou",
+  admin_manual: "Concessão manual",
+  campanha: "Campanha",
+  erro_sistema: "Correção (erro sistema)",
+};
+
+export function motivoPremiumLabel(motivo: string): string {
+  return MOTIVO_PREMIUM_LABEL[motivo] ?? motivo;
+}
+
+export const ORIGEM_LABEL: Record<string, string> = {
+  web: "Web",
+  mobile_pwa: "PWA",
+};
+
+export function origemLabel(origem: string): string {
+  return ORIGEM_LABEL[origem] ?? origem;
+}
+
+/** Dias restantes (arredondado pra cima) até uma data ISO. */
+export function diasRestantes(iso: string): number {
+  const ms = new Date(iso).getTime() - Date.now();
+  return Math.ceil(ms / (24 * 3600 * 1000));
+}
+
+/** Gera e dispara o download de um CSV a partir de linhas. */
+export function baixarCsv(
+  nomeArquivo: string,
+  cabecalho: string[],
+  linhas: (string | number)[][],
+): void {
+  const escape = (v: string | number) => {
+    const s = String(v ?? "");
+    return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const conteudo = [cabecalho, ...linhas]
+    .map((row) => row.map(escape).join(";"))
+    .join("\n");
+  const blob = new Blob(["\uFEFF" + conteudo], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nomeArquivo;
+  a.click();
+  URL.revokeObjectURL(url);
+}
