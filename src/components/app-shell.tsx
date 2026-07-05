@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Menu,
@@ -23,7 +23,11 @@ import { saudacao, type Profile } from "@/lib/ponto";
 import { OnboardingScreen } from "@/components/onboarding-screen";
 import { PremiumProvider } from "@/components/premium-context";
 import { PremiumPill } from "@/components/premium-gate";
+import { SystemBanner } from "@/components/system-banner";
+import { MaintenanceScreen } from "@/components/maintenance-screen";
 import { usePremiumStatus } from "@/hooks/use-premium";
+import { useAdminConfig } from "@/hooks/use-admin-config";
+import { useIsSuperadmin } from "@/hooks/use-is-superadmin";
 import { cn } from "@/lib/utils";
 
 const NAV = [
