@@ -386,10 +386,12 @@ function PontoPage() {
 
 
 
-        {/* Status do dia — cálculo trabalhista completo */}
+        {/* Status do dia — cálculo trabalhista completo. Expandido por padrão
+            quando já há pelo menos uma batida no dia. */}
         {!loadingRegistros && registros.length > 0 && (
-          <StatusDiaCard calculo={calculo} tz={tz} />
+          <StatusDiaCard calculo={calculo} tz={tz} defaultAberto />
         )}
+
 
         {/* Batidas de hoje */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
