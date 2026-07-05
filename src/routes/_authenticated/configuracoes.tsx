@@ -50,6 +50,22 @@ function ConfiguracoesPage() {
     }
   }, [profile]);
 
+  // Rola até a seção "Minha Jornada" quando aberta via #minha-jornada.
+  useEffect(() => {
+    if (isLoading) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#minha-jornada") return;
+    const el = document.getElementById("minha-jornada");
+    if (el) {
+      const t = setTimeout(
+        () => el.scrollIntoView({ behavior: "smooth", block: "start" }),
+        100,
+      );
+      return () => clearTimeout(t);
+    }
+  }, [isLoading]);
+
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
@@ -193,13 +209,17 @@ function ConfiguracoesPage() {
           </Button>
         </form>
 
-        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+        <p
+          id="minha-jornada"
+          className="scroll-mt-20 px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70"
+        >
           Minha Jornada
         </p>
         <JornadaConfigForm
           userId={user?.id}
           cargaHorariaDiaria={Number(carga.replace(",", ".")) || 8}
         />
+
 
 
 

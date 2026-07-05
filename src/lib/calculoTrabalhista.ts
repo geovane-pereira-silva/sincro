@@ -213,17 +213,32 @@ export function calcularDia(params: {
 
   const temEntrada = !!resumo.entrada;
   const temSaida = !!resumo.saida;
-  const completo = temEntrada && temSaida;
+
+  // Edge case: batida de saída anterior (ou igual) à entrada = dado inválido.
+  // Ignoramos o par e o dia é tratado como incompleto.
+  const saidaInvalida =
+    temEntrada &&
+    temSaida &&
+    new Date(resumo.saida!.data_hora).getTime() <=
+      new Date(resumo.entrada!.data_hora).getTime();
+
+  const saidaValida = temSaida && !saidaInvalida;
+  const completo = temEntrada && saidaValida;
 
   const intervaloRealizado = Math.max(0, Math.round(resumo.intervaloMin));
 
-  // Base bruta trabalhada (já líquida do intervalo em resumoDoDia).
+  // Presença bruta (entrada→saída), da qual se descontam os intervalos.
+  const brutoPresenca = completo
+    ? Math.round(resumo.trabalhadoMin + intervaloRealizado)
+    : 0;
+
+  // Base líquida trabalhada (já descontado o intervalo realizado).
   let horasTrabalhadas = completo ? Math.round(resumo.trabalhadoMin) : 0;
 
   // --- Intervalo insuficiente (CLT Art. 71) -------------------------------
   // Mínimo legal calculado sobre a jornada; usa o maior entre o legal e o
   // mínimo configurado pelo usuário.
-  const minimoLegal = intervaloMinimoLegal(horasTrabalhadas + intervaloRealizado);
+  const minimoLegal = intervaloMinimoLegal(brutoPresenca);
   const intervaloMinimo = Math.max(minimoLegal, Math.max(0, config.intervalo_minutos));
 
   let intervaloInsuficiente = false;
@@ -231,47 +246,55 @@ export function calcularDia(params: {
   if (completo && intervaloMinimo > 0 && intervaloRealizado < intervaloMinimo) {
     intervaloInsuficiente = true;
     descontoIntervalo = intervaloMinimo - intervaloRealizado;
-    horasTrabalhadas = Math.max(0, horasTrabalhadas - descontoIntervalo);
+    // Considera o intervalo mínimo como consumido e ainda desconta a
+    // diferença suprimida (Art. 71 §4) das horas contadas.
+    horasTrabalhadas = Math.max(
+      0,
+      brutoPresenca - intervaloMinimo - descontoIntervalo,
+    );
   }
 
   // --- Tolerância na entrada / saída (Portaria 671 Art. 19) ---------------
+  // Ao ultrapassar a tolerância, computa apenas o excedente (a tolerância é
+  // sempre "perdoada").
   let atraso = 0;
   let saidaAntecipada = 0;
   let entradaComTolerancia = true;
   let saidaComTolerancia = true;
 
-  if (ehDiaTrabalho && temEntrada) {
+  if (ehDiaTrabalho && !ehFeriado && temEntrada && !saidaInvalida) {
     const entMin = minutosDoDia(resumo.entrada!.data_hora, tz);
     const previstoEnt = parseHoraParaMinutos(config.horario_entrada);
     const diff = entMin - previstoEnt;
     if (diff > tol) {
-      atraso = diff; // atraso total; a tolerância "perdoa" só o enquadramento
+      atraso = diff - tol;
       entradaComTolerancia = false;
     }
   }
 
-  if (ehDiaTrabalho && temSaida) {
+  if (ehDiaTrabalho && !ehFeriado && saidaValida) {
     const saiMin = minutosDoDia(resumo.saida!.data_hora, tz);
     const previstoSai = parseHoraParaMinutos(config.horario_saida);
     const diff = previstoSai - saiMin;
     if (diff > tol) {
-      saidaAntecipada = diff;
+      saidaAntecipada = diff - tol;
       saidaComTolerancia = false;
     }
   }
 
   // --- Horas extras / falta ----------------------------------------------
+  // Extra conta integralmente; falta é perdoada até a tolerância.
   let horasExtras = 0;
   let horasFalta = 0;
-  if (completo && ehDiaTrabalho) {
+  if (completo && ehDiaTrabalho && !ehFeriado) {
     const delta = horasTrabalhadas - horasPrevistas;
     if (delta > tol) {
       horasExtras = delta;
-    } else if (delta < -tol) {
-      horasFalta = -delta;
+    } else if (-delta > tol) {
+      horasFalta = -delta - tol;
     }
-  } else if (ehDiaTrabalho && !completo) {
-    // Dia de trabalho sem par completo: não computa extra;
+  } else if (ehDiaTrabalho && !ehFeriado && !completo) {
+    // Dia de trabalho sem par completo: não computa extra nem atraso;
     // a falta só é contabilizada quando não há nenhuma batida (status falta).
     if (batidas.length === 0) {
       horasFalta = horasPrevistas;
@@ -294,12 +317,12 @@ export function calcularDia(params: {
   // Crédito/débito do dia = trabalhado - previsto (em dias de trabalho).
   let bancoDia = 0;
   if (config.banco_horas_ativo) {
-    if (ehDiaTrabalho && completo) {
+    if (ehDiaTrabalho && !ehFeriado && completo) {
       bancoDia = horasTrabalhadas - horasPrevistas;
-    } else if (!ehDiaTrabalho && completo) {
+    } else if ((!ehDiaTrabalho || ehFeriado) && completo) {
       // Trabalho em folga/feriado entra 100% como crédito.
       bancoDia = horasTrabalhadas;
-    } else if (ehDiaTrabalho && batidas.length === 0) {
+    } else if (ehDiaTrabalho && !ehFeriado && batidas.length === 0) {
       bancoDia = -horasPrevistas;
     }
   }
@@ -307,23 +330,30 @@ export function calcularDia(params: {
   // --- DSR (referência futura) -------------------------------------------
   // Proporção diária do descanso semanal: 1 dia de descanso a cada 6
   // trabalhados => carga/6 por dia efetivamente trabalhado.
-  const dsrDia = completo && ehDiaTrabalho ? Math.round(horasPrevistas / 6) : 0;
+  const dsrDia =
+    completo && ehDiaTrabalho && !ehFeriado
+      ? Math.round(horasPrevistas / 6)
+      : 0;
 
   // --- Status -------------------------------------------------------------
   let status: StatusDia;
-  if (!ehDiaTrabalho && !ehFeriado) {
-    status = "folga";
-  } else if (ehFeriado) {
+  if (ehFeriado) {
     status = "feriado";
+  } else if (!ehDiaTrabalho) {
+    status = "folga";
   } else if (batidas.length === 0) {
     status = "falta";
   } else if (!completo) {
     status = "incompleto";
   } else if (horasExtras > 0) {
     status = "extra";
+  } else if (horasFalta > 0) {
+    status = "falta";
   } else {
     status = "normal";
   }
+
+
 
   return {
     batidas,

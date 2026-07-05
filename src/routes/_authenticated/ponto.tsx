@@ -18,6 +18,8 @@ import { mensagemErro } from "@/lib/erros";
 import { verificarRecompensasPremium } from "@/lib/premium";
 import { HomeUpsellBanner } from "@/components/home-upsell-banner";
 import { StatusDiaCard } from "@/components/status-dia-card";
+import { JornadaOnboardingModal } from "@/components/jornada-onboarding-modal";
+
 import { useJornadaConfig } from "@/hooks/use-jornada-config";
 import { useBancoHoras } from "@/hooks/use-banco-horas";
 import {
@@ -51,12 +53,21 @@ function PontoPage() {
 
   const queryClient = useQueryClient();
 
-  // Relógio em tempo real
+  // Relógio em tempo real (segundos) — só o display do relógio.
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Contador ao vivo de horas trabalhadas: recalcula a cada 30s (evita
+  // re-renders/recalcs desnecessários a cada segundo).
+  const [nowSlow, setNowSlow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNowSlow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
 
   // Intervalo de "hoje" no fuso do usuário
   const { fromIso, toIso, hojeKey } = useMemo(() => {
@@ -176,11 +187,12 @@ function PontoPage() {
           new Date(resumo.saidaIntervalo.data_hora).getTime()) /
         60000;
     } else if (resumo.saidaIntervalo && !resumo.entradaIntervalo) {
-      intervalo = (now.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
+      intervalo = (nowSlow.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
     }
-    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : now.getTime();
+    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : nowSlow.getTime();
     return Math.max(0, (fim - inicio) / 60000 - Math.max(0, intervalo));
-  }, [resumo, now]);
+  }, [resumo, nowSlow]);
+
 
   const previstoMin = carga * 60;
   const faltaMin = previstoMin - trabalhadoAoVivoMin;
@@ -255,7 +267,9 @@ function PontoPage() {
 
   return (
     <AppShell profile={profile ?? null}>
+      <JornadaOnboardingModal userId={user?.id} />
       <div className="space-y-6">
+
         {/* Relógio */}
         <div className="rounded-[20px] border border-border bg-card p-6 text-center shadow-card">
           <p className="font-mono text-[56px] font-bold leading-none tabular-nums tracking-tight text-primary">
@@ -374,10 +388,12 @@ function PontoPage() {
 
 
 
-        {/* Status do dia — cálculo trabalhista completo */}
+        {/* Status do dia — cálculo trabalhista completo. Expandido por padrão
+            quando já há pelo menos uma batida no dia. */}
         {!loadingRegistros && registros.length > 0 && (
-          <StatusDiaCard calculo={calculo} tz={tz} />
+          <StatusDiaCard calculo={calculo} tz={tz} defaultAberto />
         )}
+
 
         {/* Batidas de hoje */}
         <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
