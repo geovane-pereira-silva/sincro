@@ -267,7 +267,9 @@ function PontoPage() {
 
   return (
     <AppShell profile={profile ?? null}>
+      <JornadaOnboardingModal userId={user?.id} />
       <div className="space-y-6">
+
         {/* Relógio */}
         <div className="rounded-[20px] border border-border bg-card p-6 text-center shadow-card">
           <p className="font-mono text-[56px] font-bold leading-none tabular-nums tracking-tight text-primary">
