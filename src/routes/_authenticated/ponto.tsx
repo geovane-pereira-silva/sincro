@@ -51,12 +51,21 @@ function PontoPage() {
 
   const queryClient = useQueryClient();
 
-  // Relógio em tempo real
+  // Relógio em tempo real (segundos) — só o display do relógio.
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // Contador ao vivo de horas trabalhadas: recalcula a cada 30s (evita
+  // re-renders/recalcs desnecessários a cada segundo).
+  const [nowSlow, setNowSlow] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNowSlow(new Date()), 30000);
+    return () => clearInterval(id);
+  }, []);
+
 
   // Intervalo de "hoje" no fuso do usuário
   const { fromIso, toIso, hojeKey } = useMemo(() => {
