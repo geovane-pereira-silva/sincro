@@ -12,13 +12,16 @@ import { formatTime } from "@/lib/ponto";
 export function StatusDiaCard({
   calculo,
   tz,
+  defaultAberto = false,
 }: {
   calculo: CalculoDia;
   tz: string;
+  defaultAberto?: boolean;
 }) {
-  const [aberto, setAberto] = useState(false);
+  const [aberto, setAberto] = useState(defaultAberto);
   const info = STATUS_INFO[calculo.status];
   const { batidas } = calculo;
+
 
   const entrada = batidas.find((b) => b.tipo === "entrada");
   const saida = [...batidas].reverse().find((b) => b.tipo === "saida");
