@@ -185,11 +185,12 @@ function PontoPage() {
           new Date(resumo.saidaIntervalo.data_hora).getTime()) /
         60000;
     } else if (resumo.saidaIntervalo && !resumo.entradaIntervalo) {
-      intervalo = (now.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
+      intervalo = (nowSlow.getTime() - new Date(resumo.saidaIntervalo.data_hora).getTime()) / 60000;
     }
-    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : now.getTime();
+    const fim = resumo.saida ? new Date(resumo.saida.data_hora).getTime() : nowSlow.getTime();
     return Math.max(0, (fim - inicio) / 60000 - Math.max(0, intervalo));
-  }, [resumo, now]);
+  }, [resumo, nowSlow]);
+
 
   const previstoMin = carga * 60;
   const faltaMin = previstoMin - trabalhadoAoVivoMin;
