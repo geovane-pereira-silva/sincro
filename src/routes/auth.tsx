@@ -110,11 +110,27 @@ function AuthPage() {
       }
 
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: senha,
-      });
+      const { data: loginData, error } =
+        await supabase.auth.signInWithPassword({
+          email,
+          password: senha,
+        });
       if (error) throw error;
+
+      // Bloqueio de conta: impede o acesso.
+      if (loginData.user) {
+        const { data: perfil } = await supabase
+          .from("profiles")
+          .select("bloqueado")
+          .eq("id", loginData.user.id)
+          .maybeSingle();
+        if (perfil?.bloqueado) {
+          await supabase.auth.signOut();
+          toast.error("Conta suspensa. Entre em contato com o suporte.");
+          return;
+        }
+      }
+
       navigate({ to: "/ponto", replace: true });
     } catch (err) {
       toast.error(mensagemErro(err));

@@ -23,6 +23,10 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEditarIdRouteImport } from './routes/_authenticated/editar.$id'
 import { Route as AuthenticatedAdminGamificacaoRouteImport } from './routes/_authenticated/admin/gamificacao'
 import { Route as AuthenticatedAdminUsuariosIndexRouteImport } from './routes/_authenticated/admin/usuarios.index'
+import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin/suporte.index'
+import { Route as AuthenticatedAdminRegistrosIndexRouteImport } from './routes/_authenticated/admin/registros.index'
+import { Route as AuthenticatedAdminPremiumIndexRouteImport } from './routes/_authenticated/admin/premium.index'
+import { Route as AuthenticatedAdminConfigIndexRouteImport } from './routes/_authenticated/admin/config.index'
 import { Route as AuthenticatedAdminUsuariosIdRouteImport } from './routes/_authenticated/admin/usuarios.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -97,6 +101,30 @@ const AuthenticatedAdminUsuariosIndexRoute =
     path: '/usuarios/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSuporteIndexRoute =
+  AuthenticatedAdminSuporteIndexRouteImport.update({
+    id: '/suporte/',
+    path: '/suporte/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminRegistrosIndexRoute =
+  AuthenticatedAdminRegistrosIndexRouteImport.update({
+    id: '/registros/',
+    path: '/registros/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPremiumIndexRoute =
+  AuthenticatedAdminPremiumIndexRouteImport.update({
+    id: '/premium/',
+    path: '/premium/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminConfigIndexRoute =
+  AuthenticatedAdminConfigIndexRouteImport.update({
+    id: '/config/',
+    path: '/config/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminUsuariosIdRoute =
   AuthenticatedAdminUsuariosIdRouteImport.update({
     id: '/usuarios/$id',
@@ -118,6 +146,10 @@ export interface FileRoutesByFullPath {
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
+  '/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
+  '/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/admin/usuarios/': typeof AuthenticatedAdminUsuariosIndexRoute
 }
 export interface FileRoutesByTo {
@@ -133,6 +165,10 @@ export interface FileRoutesByTo {
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/admin/config': typeof AuthenticatedAdminConfigIndexRoute
+  '/admin/premium': typeof AuthenticatedAdminPremiumIndexRoute
+  '/admin/registros': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosIndexRoute
 }
 export interface FileRoutesById {
@@ -151,6 +187,10 @@ export interface FileRoutesById {
   '/_authenticated/editar/$id': typeof AuthenticatedEditarIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/_authenticated/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
+  '/_authenticated/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
+  '/_authenticated/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/admin/usuarios/': typeof AuthenticatedAdminUsuariosIndexRoute
 }
 export interface FileRouteTypes {
@@ -169,6 +209,10 @@ export interface FileRouteTypes {
     | '/editar/$id'
     | '/admin/'
     | '/admin/usuarios/$id'
+    | '/admin/config/'
+    | '/admin/premium/'
+    | '/admin/registros/'
+    | '/admin/suporte/'
     | '/admin/usuarios/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -184,6 +228,10 @@ export interface FileRouteTypes {
     | '/editar/$id'
     | '/admin'
     | '/admin/usuarios/$id'
+    | '/admin/config'
+    | '/admin/premium'
+    | '/admin/registros'
+    | '/admin/suporte'
     | '/admin/usuarios'
   id:
     | '__root__'
@@ -201,6 +249,10 @@ export interface FileRouteTypes {
     | '/_authenticated/editar/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/usuarios/$id'
+    | '/_authenticated/admin/config/'
+    | '/_authenticated/admin/premium/'
+    | '/_authenticated/admin/registros/'
+    | '/_authenticated/admin/suporte/'
     | '/_authenticated/admin/usuarios/'
   fileRoutesById: FileRoutesById
 }
@@ -312,6 +364,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsuariosIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/suporte/': {
+      id: '/_authenticated/admin/suporte/'
+      path: '/suporte'
+      fullPath: '/admin/suporte/'
+      preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/registros/': {
+      id: '/_authenticated/admin/registros/'
+      path: '/registros'
+      fullPath: '/admin/registros/'
+      preLoaderRoute: typeof AuthenticatedAdminRegistrosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/premium/': {
+      id: '/_authenticated/admin/premium/'
+      path: '/premium'
+      fullPath: '/admin/premium/'
+      preLoaderRoute: typeof AuthenticatedAdminPremiumIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/config/': {
+      id: '/_authenticated/admin/config/'
+      path: '/config'
+      fullPath: '/admin/config/'
+      preLoaderRoute: typeof AuthenticatedAdminConfigIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/usuarios/$id': {
       id: '/_authenticated/admin/usuarios/$id'
       path: '/usuarios/$id'
@@ -326,6 +406,10 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminGamificacaoRoute: typeof AuthenticatedAdminGamificacaoRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminUsuariosIdRoute: typeof AuthenticatedAdminUsuariosIdRoute
+  AuthenticatedAdminConfigIndexRoute: typeof AuthenticatedAdminConfigIndexRoute
+  AuthenticatedAdminPremiumIndexRoute: typeof AuthenticatedAdminPremiumIndexRoute
+  AuthenticatedAdminRegistrosIndexRoute: typeof AuthenticatedAdminRegistrosIndexRoute
+  AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
   AuthenticatedAdminUsuariosIndexRoute: typeof AuthenticatedAdminUsuariosIndexRoute
 }
 
@@ -334,6 +418,11 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminGamificacaoRoute: AuthenticatedAdminGamificacaoRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminUsuariosIdRoute: AuthenticatedAdminUsuariosIdRoute,
+    AuthenticatedAdminConfigIndexRoute: AuthenticatedAdminConfigIndexRoute,
+    AuthenticatedAdminPremiumIndexRoute: AuthenticatedAdminPremiumIndexRoute,
+    AuthenticatedAdminRegistrosIndexRoute:
+      AuthenticatedAdminRegistrosIndexRoute,
+    AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
     AuthenticatedAdminUsuariosIndexRoute: AuthenticatedAdminUsuariosIndexRoute,
   }
 
@@ -373,3 +462,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

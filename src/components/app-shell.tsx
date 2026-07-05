@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   Menu,
@@ -23,7 +23,11 @@ import { saudacao, type Profile } from "@/lib/ponto";
 import { OnboardingScreen } from "@/components/onboarding-screen";
 import { PremiumProvider } from "@/components/premium-context";
 import { PremiumPill } from "@/components/premium-gate";
+import { SystemBanner } from "@/components/system-banner";
+import { MaintenanceScreen } from "@/components/maintenance-screen";
 import { usePremiumStatus } from "@/hooks/use-premium";
+import { useAdminConfig } from "@/hooks/use-admin-config";
+import { useIsSuperadmin } from "@/hooks/use-is-superadmin";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -62,11 +66,8 @@ export function AppShell({
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const { isPremium } = usePremiumStatus(profile?.id);
-
-  // Onboarding obrigatório de primeiro acesso (não pulável).
-  if (profile && !profile.onboarding_concluido) {
-    return <OnboardingScreen profile={profile} />;
-  }
+  const { data: config } = useAdminConfig();
+  const { data: isAdmin } = useIsSuperadmin(profile?.id);
 
   async function handleLogout() {
     setOpen(false);
@@ -74,6 +75,38 @@ export function AppShell({
     queryClient.clear();
     await supabase.auth.signOut();
     navigate({ to: "/auth", replace: true });
+  }
+
+  // Conta bloqueada: encerra a sessão imediatamente.
+  const bloqueado = profile?.bloqueado === true;
+  useEffect(() => {
+    if (!bloqueado) return;
+    (async () => {
+      await queryClient.cancelQueries();
+      queryClient.clear();
+      await supabase.auth.signOut();
+      navigate({ to: "/auth", replace: true });
+    })();
+  }, [bloqueado, navigate, queryClient]);
+
+  if (bloqueado) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          Conta suspensa. Entre em contato com o suporte.
+        </p>
+      </div>
+    );
+  }
+
+  // Modo manutenção: usuários não-admin veem a tela de manutenção.
+  if (config?.modo_manutencao && !isAdmin) {
+    return <MaintenanceScreen horario={config.horario_manutencao} />;
+  }
+
+  // Onboarding obrigatório de primeiro acesso (não pulável).
+  if (profile && !profile.onboarding_concluido) {
+    return <OnboardingScreen profile={profile} />;
   }
 
   return (
@@ -169,6 +202,10 @@ export function AppShell({
           </SheetContent>
         </Sheet>
       </header>
+
+        {config?.mensagem_sistema && (
+          <SystemBanner mensagem={config.mensagem_sistema} />
+        )}
 
         <main className="flex-1 px-4 py-5">{children}</main>
       </div>

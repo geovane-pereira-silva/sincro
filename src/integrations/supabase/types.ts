@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          acao: string
+          admin_id: string
+          created_at: string
+          dados_anteriores: Json | null
+          id: string
+          motivo: string | null
+          registro_id: string
+          tabela: string
+        }
+        Insert: {
+          acao: string
+          admin_id: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          id?: string
+          motivo?: string | null
+          registro_id: string
+          tabela: string
+        }
+        Update: {
+          acao?: string
+          admin_id?: string
+          created_at?: string
+          dados_anteriores?: Json | null
+          id?: string
+          motivo?: string | null
+          registro_id?: string
+          tabela?: string
+        }
+        Relationships: []
+      }
+      admin_config: {
+        Row: {
+          chave: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+          valor: string
+        }
+        Insert: {
+          chave: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          valor: string
+        }
+        Update: {
+          chave?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          valor?: string
+        }
+        Relationships: []
+      }
       jornada_config: {
         Row: {
           adicional_noturno: boolean
@@ -121,7 +178,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_notes: string | null
           avatar_url: string | null
+          bloqueado: boolean
           carga_horaria_diaria: number
           created_at: string
           email: string
@@ -136,7 +195,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admin_notes?: string | null
           avatar_url?: string | null
+          bloqueado?: boolean
           carga_horaria_diaria?: number
           created_at?: string
           email: string
@@ -151,7 +212,9 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admin_notes?: string | null
           avatar_url?: string | null
+          bloqueado?: boolean
           carga_horaria_diaria?: number
           created_at?: string
           email?: string

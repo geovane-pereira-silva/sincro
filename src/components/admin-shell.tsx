@@ -1,13 +1,25 @@
 import { type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Trophy, ArrowLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users,
+  Clock,
+  Crown,
+  LifeBuoy,
+  Settings,
+  ArrowLeft,
+} from "lucide-react";
 import { SincroMark } from "@/components/sincro-logo";
+import { AdminGlobalSearch } from "@/components/admin-global-search";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/usuarios", label: "Usuários", icon: Users, exact: false },
-  { to: "/admin/gamificacao", label: "Gamificação", icon: Trophy, exact: false },
+  { to: "/admin/registros", label: "Registros", icon: Clock, exact: false },
+  { to: "/admin/premium", label: "Premium", icon: Crown, exact: false },
+  { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
+  { to: "/admin/config", label: "Config", icon: Settings, exact: false },
 ] as const;
 
 function useActive() {
@@ -39,11 +51,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen w-full bg-background">
       {/* Header topo (desktop + mobile) */}
-      <header className="sticky top-0 z-30 flex h-[72px] items-center gap-4 bg-primary px-4 text-primary-foreground md:px-8">
+      <header className="sticky top-0 z-30 flex h-[72px] items-center gap-3 bg-primary px-4 text-primary-foreground md:px-8">
         <AdminBrand />
 
         {/* Nav desktop */}
-        <nav className="ml-6 hidden flex-1 items-center gap-1 md:flex">
+        <nav className="ml-4 hidden flex-1 items-center gap-0.5 lg:flex">
           {NAV.map((item) => {
             const active = isActive(item.to, item.exact);
             return (
@@ -51,7 +63,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "relative px-3 py-2 text-sm font-medium transition-colors",
+                  "relative px-2.5 py-2 text-sm font-medium transition-colors",
                   active
                     ? "text-primary-foreground"
                     : "text-primary-foreground/70 hover:text-primary-foreground",
@@ -59,20 +71,27 @@ export function AdminShell({ children }: { children: ReactNode }) {
               >
                 {item.label}
                 {active && (
-                  <span className="absolute inset-x-3 -bottom-[26px] h-[3px] rounded-full bg-ponto-entrada" />
+                  <span className="absolute inset-x-2.5 -bottom-[26px] h-[3px] rounded-full bg-ponto-entrada" />
                 )}
               </Link>
             );
           })}
         </nav>
 
+        <AdminGlobalSearch className="relative ml-auto hidden w-64 md:block lg:ml-4 lg:w-56" />
+
         <button
           onClick={() => navigate({ to: "/ponto" })}
-          className="ml-auto hidden items-center gap-2 rounded-xl border border-primary-foreground/30 px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/10 md:inline-flex"
+          className="hidden items-center gap-2 rounded-xl border border-primary-foreground/30 px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-white/10 lg:inline-flex"
         >
-          <ArrowLeft className="h-4 w-4" /> Voltar ao app
+          <ArrowLeft className="h-4 w-4" /> App
         </button>
       </header>
+
+      {/* Busca mobile */}
+      <div className="border-b border-border bg-primary px-4 pb-3 md:hidden">
+        <AdminGlobalSearch className="relative" />
+      </div>
 
       {/* Conteúdo */}
       <main>
@@ -81,8 +100,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </main>
 
-      {/* Bottom nav mobile (4 itens) */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-white/10 bg-sidebar text-sidebar-foreground md:hidden">
+      {/* Bottom nav mobile (scrollável) */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex overflow-x-auto border-t border-white/10 bg-sidebar text-sidebar-foreground lg:hidden">
         {NAV.map((item) => {
           const active = isActive(item.to, item.exact);
           return (
@@ -90,7 +109,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               key={item.to}
               to={item.to}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
+                "flex min-w-[68px] flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
                 active ? "text-ponto-entrada" : "text-sidebar-foreground/70",
               )}
             >
@@ -99,13 +118,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </Link>
           );
         })}
-        <button
-          onClick={() => navigate({ to: "/ponto" })}
-          className="flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium text-sidebar-foreground/70 transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-          Voltar
-        </button>
       </nav>
     </div>
   );
