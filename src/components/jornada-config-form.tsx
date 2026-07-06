@@ -21,7 +21,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
 import {
-  parseHoraParaMinutos,
+  cargaDiariaMinutos,
+  formatHoraMin,
   type JornadaConfig,
 } from "@/lib/calculoTrabalhista";
 
@@ -44,18 +45,10 @@ const INTERVALO_OPCOES: { value: string; label: string }[] = [
   { value: "120", label: "2h" },
 ];
 
-function minutosParaHora(min: number): string {
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-}
-
 export function JornadaConfigForm({
   userId,
-  cargaHorariaDiaria,
 }: {
   userId: string | undefined;
-  cargaHorariaDiaria: number;
 }) {
   const { data: config, isLoading } = useJornadaConfig(userId);
   const queryClient = useQueryClient();
@@ -63,7 +56,6 @@ export function JornadaConfigForm({
   const [dias, setDias] = useState<string[]>([]);
   const [entrada, setEntrada] = useState("08:00");
   const [saida, setSaida] = useState("17:00");
-  const [saidaEditada, setSaidaEditada] = useState(false);
   const [intervalo, setIntervalo] = useState("60");
   const [tolerancia, setTolerancia] = useState(5);
   const [noturno, setNoturno] = useState(false);
@@ -88,16 +80,17 @@ export function JornadaConfigForm({
     }
   }, [config]);
 
-  // Saída prevista sugerida = entrada + carga + intervalo (a menos que editada).
-  const saidaSugerida = useMemo(() => {
-    const base = parseHoraParaMinutos(entrada);
-    const total = base + Math.round(cargaHorariaDiaria * 60) + Number(intervalo);
-    return minutosParaHora(((total % (24 * 60)) + 24 * 60) % (24 * 60));
-  }, [entrada, cargaHorariaDiaria, intervalo]);
-
-  useEffect(() => {
-    if (!saidaEditada) setSaida(saidaSugerida);
-  }, [saidaSugerida, saidaEditada]);
+  // Carga horária diária CALCULADA a partir dos horários informados
+  // (saída - entrada - intervalo). O usuário não informa o total.
+  const cargaMin = useMemo(
+    () =>
+      cargaDiariaMinutos({
+        horario_entrada: entrada,
+        horario_saida: saida,
+        intervalo_minutos: Number(intervalo),
+      }),
+    [entrada, saida, intervalo],
+  );
 
   function toggleDia(key: string) {
     setDias((prev) =>
@@ -107,6 +100,10 @@ export function JornadaConfigForm({
 
   async function handleSalvar() {
     if (!userId) return;
+    if (cargaMin <= 0) {
+      toast.error("A saída precisa ser depois da entrada (descontado o intervalo).");
+      return;
+    }
     setSaving(true);
     try {
       const payload: JornadaConfig & { user_id: string } = {
@@ -127,9 +124,19 @@ export function JornadaConfigForm({
         .from("jornada_config")
         .upsert(payload, { onConflict: "user_id" });
       if (error) throw error;
+
+      // A carga horária diária do perfil passa a ser a derivada dos horários,
+      // mantendo o resto do app (home, relatório, banco) coerente.
+      const { error: errProfile } = await supabase
+        .from("profiles")
+        .update({ carga_horaria_diaria: cargaMin / 60 })
+        .eq("id", userId);
+      if (errProfile) throw errProfile;
+
       await queryClient.invalidateQueries({
         queryKey: ["jornada-config", userId],
       });
+      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
       await queryClient.invalidateQueries({
         queryKey: ["banco-horas-registros", userId],
       });
@@ -196,20 +203,11 @@ export function JornadaConfigForm({
             id="sai"
             type="time"
             value={saida}
-            onChange={(e) => {
-              setSaida(e.target.value);
-              setSaidaEditada(true);
-            }}
+            onChange={(e) => setSaida(e.target.value)}
             className="tabular-nums"
           />
         </div>
       </div>
-      {!saidaEditada && (
-        <p className="-mt-2 text-xs text-muted-foreground">
-          Calculada por entrada + carga ({cargaHorariaDiaria}h) + intervalo. Você
-          pode editar.
-        </p>
-      )}
 
       {/* Intervalo mínimo */}
       <div className="space-y-1.5">
@@ -226,6 +224,21 @@ export function JornadaConfigForm({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Carga horária diária calculada (somente leitura) */}
+      <div className="flex items-center justify-between rounded-xl border border-primary/20 bg-primary/5 p-3">
+        <div>
+          <p className="text-sm font-medium text-foreground">
+            Carga horária diária
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Calculada: saída − entrada − intervalo
+          </p>
+        </div>
+        <span className="text-lg font-bold tabular-nums text-primary">
+          {formatHoraMin(cargaMin)}
+        </span>
       </div>
 
       {/* Tolerância */}

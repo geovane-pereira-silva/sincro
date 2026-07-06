@@ -37,7 +37,6 @@ function ConfiguracoesPage() {
 
   const [nome, setNome] = useState("");
   const [profissao, setProfissao] = useState("");
-  const [carga, setCarga] = useState("8");
   const [tz, setTz] = useState("America/Sao_Paulo");
   const [saving, setSaving] = useState(false);
 
@@ -45,7 +44,6 @@ function ConfiguracoesPage() {
     if (profile) {
       setNome(profile.nome_completo ?? "");
       setProfissao(profile.profissao ?? "");
-      setCarga(String(profile.carga_horaria_diaria ?? 8));
       setTz(profile.timezone ?? "America/Sao_Paulo");
     }
   }, [profile]);
@@ -69,11 +67,6 @@ function ConfiguracoesPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    const cargaNum = Number(carga.replace(",", "."));
-    if (Number.isNaN(cargaNum) || cargaNum <= 0 || cargaNum > 24) {
-      toast.error("Informe uma carga horária válida (entre 0 e 24).");
-      return;
-    }
     setSaving(true);
     try {
       const { error } = await supabase
@@ -81,7 +74,6 @@ function ConfiguracoesPage() {
         .update({
           nome_completo: nome.trim() || null,
           profissao: profissao.trim() || null,
-          carga_horaria_diaria: cargaNum,
           timezone: tz,
         })
         .eq("id", user.id);
@@ -168,22 +160,6 @@ function ConfiguracoesPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="carga">Carga horária diária (horas)</Label>
-            <Input
-              id="carga"
-              type="number"
-              step="0.5"
-              min="0"
-              max="24"
-              value={carga}
-              onChange={(e) => setCarga(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Usada para calcular seu saldo de horas.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
             <Label htmlFor="tz">Fuso horário</Label>
             <Select value={tz} onValueChange={setTz}>
               <SelectTrigger id="tz">
@@ -215,10 +191,7 @@ function ConfiguracoesPage() {
         >
           Minha Jornada
         </p>
-        <JornadaConfigForm
-          userId={user?.id}
-          cargaHorariaDiaria={Number(carga.replace(",", ".")) || 8}
-        />
+        <JornadaConfigForm userId={user?.id} />
 
 
 
