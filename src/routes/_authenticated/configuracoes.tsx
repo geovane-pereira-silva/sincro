@@ -37,7 +37,6 @@ function ConfiguracoesPage() {
 
   const [nome, setNome] = useState("");
   const [profissao, setProfissao] = useState("");
-  const [carga, setCarga] = useState("8");
   const [tz, setTz] = useState("America/Sao_Paulo");
   const [saving, setSaving] = useState(false);
 
@@ -45,7 +44,6 @@ function ConfiguracoesPage() {
     if (profile) {
       setNome(profile.nome_completo ?? "");
       setProfissao(profile.profissao ?? "");
-      setCarga(String(profile.carga_horaria_diaria ?? 8));
       setTz(profile.timezone ?? "America/Sao_Paulo");
     }
   }, [profile]);
