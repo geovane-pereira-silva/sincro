@@ -67,11 +67,6 @@ function ConfiguracoesPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    const cargaNum = Number(carga.replace(",", "."));
-    if (Number.isNaN(cargaNum) || cargaNum <= 0 || cargaNum > 24) {
-      toast.error("Informe uma carga horária válida (entre 0 e 24).");
-      return;
-    }
     setSaving(true);
     try {
       const { error } = await supabase
@@ -79,7 +74,6 @@ function ConfiguracoesPage() {
         .update({
           nome_completo: nome.trim() || null,
           profissao: profissao.trim() || null,
-          carga_horaria_diaria: cargaNum,
           timezone: tz,
         })
         .eq("id", user.id);
