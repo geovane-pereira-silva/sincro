@@ -183,22 +183,6 @@ function ConfiguracoesPage() {
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="tz">Fuso horário</Label>
-            <Select value={tz} onValueChange={setTz}>
-              <SelectTrigger id="tz">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIMEZONES_BR.map((z) => (
-                  <SelectItem key={z.value} value={z.value}>
-                    {z.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <Button
             type="submit"
             disabled={saving}
@@ -215,10 +199,7 @@ function ConfiguracoesPage() {
         >
           Minha Jornada
         </p>
-        <JornadaConfigForm
-          userId={user?.id}
-          cargaHorariaDiaria={Number(carga.replace(",", ".")) || 8}
-        />
+        <JornadaConfigForm userId={user?.id} />
 
 
 
