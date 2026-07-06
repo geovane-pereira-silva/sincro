@@ -168,19 +168,19 @@ function ConfiguracoesPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="carga">Carga horária diária (horas)</Label>
-            <Input
-              id="carga"
-              type="number"
-              step="0.5"
-              min="0"
-              max="24"
-              value={carga}
-              onChange={(e) => setCarga(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              Usada para calcular seu saldo de horas.
-            </p>
+            <Label htmlFor="tz">Fuso horário</Label>
+            <Select value={tz} onValueChange={setTz}>
+              <SelectTrigger id="tz">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TIMEZONES_BR.map((z) => (
+                  <SelectItem key={z.value} value={z.value}>
+                    {z.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
