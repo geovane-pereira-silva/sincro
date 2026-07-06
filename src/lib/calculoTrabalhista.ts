@@ -152,6 +152,20 @@ export function parseHoraParaMinutos(hora: string): number {
   return Number(hh) * 60 + Number(mm);
 }
 
+// Carga horária diária (em minutos) DERIVADA dos horários da jornada:
+// (saída - entrada - intervalo), tratando a virada de meia-noite.
+// É a única fonte da carga: o usuário informa os horários, não o total.
+export function cargaDiariaMinutos(config: {
+  horario_entrada: string;
+  horario_saida: string;
+  intervalo_minutos: number;
+}): number {
+  const ent = parseHoraParaMinutos(config.horario_entrada);
+  let sai = parseHoraParaMinutos(config.horario_saida);
+  if (sai <= ent) sai += 24 * 60; // cruza a meia-noite
+  return Math.max(0, sai - ent - Math.max(0, config.intervalo_minutos));
+}
+
 // Minutos desde a meia-noite (no fuso) de um instante ISO.
 function minutosDoDia(iso: string, tz: string): number {
   const p = getZonedParts(new Date(iso), tz);
