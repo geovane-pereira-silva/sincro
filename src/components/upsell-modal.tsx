@@ -39,6 +39,7 @@ export function UpsellModal({
   feature: string | null;
   referralCode: string | null;
 }) {
+  const navigate = useNavigate();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[480px] gap-0 overflow-hidden rounded-2xl border-0 bg-card p-0">
