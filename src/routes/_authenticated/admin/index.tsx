@@ -134,6 +134,72 @@ function AdminDashboard() {
         </div>
       )}
 
+      {/* Seção Empresas */}
+      <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            Empresas
+          </h2>
+          <Link
+            to="/admin/empresas"
+            className="text-xs font-semibold text-ponto-entrada hover:underline"
+          >
+            Ver todas
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl bg-muted/40 p-4">
+            <Building2 className="h-5 w-5 text-ponto-entrada" />
+            <p className="mt-2 text-2xl font-bold tabular-nums text-primary">
+              {empresasStats.ativas}
+            </p>
+            <p className="text-xs text-muted-foreground">Empresas ativas</p>
+          </div>
+          <div className="rounded-xl bg-muted/40 p-4">
+            <UsersRound className="h-5 w-5 text-ponto-entrada" />
+            <p className="mt-2 text-2xl font-bold tabular-nums text-primary">
+              {empresasStats.totalColab}
+            </p>
+            <p className="text-xs text-muted-foreground">Colaboradores</p>
+          </div>
+          <div className="rounded-xl bg-muted/40 p-4">
+            <p className="truncate text-lg font-bold text-primary">
+              {empresasStats.topNome}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Maior empresa ({empresasStats.topQtd})
+            </p>
+          </div>
+          <div className="rounded-xl bg-muted/40 p-4">
+            <p className="mb-1 text-xs text-muted-foreground">Por plano</p>
+            {empresasStats.pie.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Sem dados</p>
+            ) : (
+              <div className="h-20 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={empresasStats.pie}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={20}
+                      outerRadius={36}
+                    >
+                      {empresasStats.pie.map((_, i) => (
+                        <Cell key={i} fill={PIE_CORES[i % PIE_CORES.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+
+
       <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
         <h2 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           Usuários recentes
