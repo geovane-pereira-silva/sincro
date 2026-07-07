@@ -207,8 +207,17 @@ export function ConviteColaboradorDialog({
               <span className="truncate text-foreground">{link}</span>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Button variant="outline" onClick={enviarEmail}>
-                <Mail className="h-4 w-4" /> Email
+              <Button
+                variant="outline"
+                onClick={enviarEmail}
+                disabled={enviandoEmail}
+              >
+                {enviandoEmail ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="h-4 w-4" />
+                )}{" "}
+                Email
               </Button>
               <Button variant="outline" onClick={enviarWhats}>
                 <MessageCircle className="h-4 w-4" /> WhatsApp
