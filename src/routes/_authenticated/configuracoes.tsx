@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
 import { PremiumStatusCard } from "@/components/premium-gate";
+import { MinhaAssinaturaCard } from "@/components/minha-assinatura-card";
 import { JornadaConfigForm } from "@/components/jornada-config-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
