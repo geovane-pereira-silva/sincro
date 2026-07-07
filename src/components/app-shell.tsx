@@ -162,6 +162,11 @@ export function AppShell({
                   <p className="truncate font-semibold text-sidebar-foreground">
                     {profile?.nome_completo || nome}
                   </p>
+                  {profile?.username && (
+                    <p className="truncate text-[13px] font-medium text-ponto-entrada">
+                      @{profile.username.toUpperCase()}
+                    </p>
+                  )}
                   <p className="truncate text-[13px] text-sidebar-foreground/60">
                     {profile?.email}
                   </p>

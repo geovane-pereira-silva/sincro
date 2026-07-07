@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UsernameField } from "@/components/username-field";
+import { useUsernameCheck } from "@/hooks/use-cadastro-checks";
 import { mensagemErro } from "@/lib/erros";
 import { verificarRecompensasPremium } from "@/lib/premium";
 import { TIMEZONES_BR } from "@/lib/ponto";
@@ -38,6 +40,7 @@ function ConfiguracoesPage() {
   const [nome, setNome] = useState("");
   const [profissao, setProfissao] = useState("");
   const [tz, setTz] = useState("America/Sao_Paulo");
+  const [username, setUsername] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -45,8 +48,14 @@ function ConfiguracoesPage() {
       setNome(profile.nome_completo ?? "");
       setProfissao(profile.profissao ?? "");
       setTz(profile.timezone ?? "America/Sao_Paulo");
+      setUsername(profile.username ?? "");
     }
   }, [profile]);
+
+  const usernameOriginal = (profile?.username ?? "").toUpperCase();
+  const usernameMudou = username.toUpperCase() !== usernameOriginal;
+  const usernameCheckStatus = useUsernameCheck(username, usernameMudou);
+  const usernameStatus = usernameMudou ? usernameCheckStatus : "available";
 
   // Rola até a seção "Minha Jornada" quando aberta via #minha-jornada.
   useEffect(() => {
@@ -68,14 +77,25 @@ function ConfiguracoesPage() {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
+    if (usernameMudou && usernameStatus !== "available") {
+      toast.error(
+        usernameStatus === "taken"
+          ? "Este usuário já está em uso. Escolha outro."
+          : "Escolha um usuário válido e disponível.",
+      );
+      setSaving(false);
+      return;
+    }
     try {
+      const patch = {
+        nome_completo: nome.trim() || null,
+        profissao: profissao.trim() || null,
+        timezone: tz,
+        ...(usernameMudou ? { username: username.toUpperCase() } : {}),
+      };
       const { error } = await supabase
         .from("profiles")
-        .update({
-          nome_completo: nome.trim() || null,
-          profissao: profissao.trim() || null,
-          timezone: tz,
-        })
+        .update(patch)
         .eq("id", user.id);
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
@@ -149,6 +169,14 @@ function ConfiguracoesPage() {
               placeholder="Seu nome"
             />
           </div>
+
+          <UsernameField
+            value={username}
+            onChange={setUsername}
+            status={usernameStatus}
+          />
+
+
 
           <div className="space-y-1.5">
             <Label htmlFor="prof">Profissão / área de atuação</Label>

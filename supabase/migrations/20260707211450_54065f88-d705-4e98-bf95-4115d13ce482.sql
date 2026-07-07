@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.generate_username(text) FROM PUBLIC, anon, authenticated;

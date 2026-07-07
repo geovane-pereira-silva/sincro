@@ -75,6 +75,25 @@ export function diasConfigurados(j: JornadaEmpresa): number {
   }).length;
 }
 
+/* ------------------------------------------------------------------ */
+/* Status de convite do colaborador                                    */
+/* ------------------------------------------------------------------ */
+export type StatusConvite = "ativo" | "pendente" | "expirado" | "sem_convite";
+
+const CONVITE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+export function statusConvite(c: Colaborador): StatusConvite {
+  if (c.convite_pendente) {
+    const enviado = c.convite_enviado_em
+      ? new Date(c.convite_enviado_em).getTime()
+      : 0;
+    if (enviado && Date.now() - enviado > CONVITE_TTL_MS) return "expirado";
+    return "pendente";
+  }
+  if (c.convite_aceito_em) return "ativo";
+  return "sem_convite";
+}
+
 /** Normaliza "HH:MM:SS" -> "HH:MM"; retorna "—" quando vazio. */
 export function fmtHora(v: string | null | undefined): string {
   if (!v) return "—";
