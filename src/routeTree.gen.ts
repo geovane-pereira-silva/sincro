@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminUsuariosIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin/suporte.index'
 import { Route as AuthenticatedAdminRegistrosIndexRouteImport } from './routes/_authenticated/admin/registros.index'
 import { Route as AuthenticatedAdminPremiumIndexRouteImport } from './routes/_authenticated/admin/premium.index'
+import { Route as AuthenticatedAdminEmpresasIndexRouteImport } from './routes/_authenticated/admin/empresas.index'
 import { Route as AuthenticatedAdminConfigIndexRouteImport } from './routes/_authenticated/admin/config.index'
 import { Route as AuthenticatedAdminUsuariosIdRouteImport } from './routes/_authenticated/admin/usuarios.$id'
 
@@ -119,6 +120,12 @@ const AuthenticatedAdminPremiumIndexRoute =
     path: '/premium/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminEmpresasIndexRoute =
+  AuthenticatedAdminEmpresasIndexRouteImport.update({
+    id: '/empresas/',
+    path: '/empresas/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminConfigIndexRoute =
   AuthenticatedAdminConfigIndexRouteImport.update({
     id: '/config/',
@@ -147,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
+  '/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
   '/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
@@ -166,6 +174,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config': typeof AuthenticatedAdminConfigIndexRoute
+  '/admin/empresas': typeof AuthenticatedAdminEmpresasIndexRoute
   '/admin/premium': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros': typeof AuthenticatedAdminRegistrosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
@@ -188,6 +197,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/_authenticated/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
+  '/_authenticated/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
   '/_authenticated/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/_authenticated/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/usuarios/$id'
     | '/admin/config/'
+    | '/admin/empresas/'
     | '/admin/premium/'
     | '/admin/registros/'
     | '/admin/suporte/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/usuarios/$id'
     | '/admin/config'
+    | '/admin/empresas'
     | '/admin/premium'
     | '/admin/registros'
     | '/admin/suporte'
@@ -250,6 +262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/admin/usuarios/$id'
     | '/_authenticated/admin/config/'
+    | '/_authenticated/admin/empresas/'
     | '/_authenticated/admin/premium/'
     | '/_authenticated/admin/registros/'
     | '/_authenticated/admin/suporte/'
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPremiumIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/empresas/': {
+      id: '/_authenticated/admin/empresas/'
+      path: '/empresas'
+      fullPath: '/admin/empresas/'
+      preLoaderRoute: typeof AuthenticatedAdminEmpresasIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/config/': {
       id: '/_authenticated/admin/config/'
       path: '/config'
@@ -407,6 +427,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminUsuariosIdRoute: typeof AuthenticatedAdminUsuariosIdRoute
   AuthenticatedAdminConfigIndexRoute: typeof AuthenticatedAdminConfigIndexRoute
+  AuthenticatedAdminEmpresasIndexRoute: typeof AuthenticatedAdminEmpresasIndexRoute
   AuthenticatedAdminPremiumIndexRoute: typeof AuthenticatedAdminPremiumIndexRoute
   AuthenticatedAdminRegistrosIndexRoute: typeof AuthenticatedAdminRegistrosIndexRoute
   AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
@@ -419,6 +440,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminUsuariosIdRoute: AuthenticatedAdminUsuariosIdRoute,
     AuthenticatedAdminConfigIndexRoute: AuthenticatedAdminConfigIndexRoute,
+    AuthenticatedAdminEmpresasIndexRoute: AuthenticatedAdminEmpresasIndexRoute,
     AuthenticatedAdminPremiumIndexRoute: AuthenticatedAdminPremiumIndexRoute,
     AuthenticatedAdminRegistrosIndexRoute:
       AuthenticatedAdminRegistrosIndexRoute,
