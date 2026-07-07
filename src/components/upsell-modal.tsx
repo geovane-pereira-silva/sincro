@@ -103,17 +103,28 @@ export function UpsellModal({
           {/* Ações */}
           <div className="mt-6 space-y-2.5">
             <Button
+              onClick={() => {
+                onOpenChange(false);
+                void navigate({ to: "/planos" });
+              }}
+              className="h-12 w-full rounded-xl bg-primary text-base font-semibold text-primary-foreground hover:bg-primary/90"
+            >
+              <Sparkles className="h-4 w-4" />
+              Ver planos
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => copiarLinkReferral(referralCode)}
-              className="h-12 w-full rounded-xl bg-ponto-entrada text-base font-semibold text-ponto-entrada-foreground hover:bg-ponto-entrada/90"
+              className="h-12 w-full rounded-xl bg-ponto-entrada/10 text-base font-semibold text-ponto-entrada hover:bg-ponto-entrada/20"
             >
               <Share2 className="h-4 w-4" />
               Compartilhar meu link
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => onOpenChange(false)}
               className={cn(
-                "h-12 w-full rounded-xl border-border text-base font-medium text-muted-foreground",
+                "h-12 w-full rounded-xl text-base font-medium text-muted-foreground",
               )}
             >
               Fechar
