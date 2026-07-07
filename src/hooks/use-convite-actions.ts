@@ -40,3 +40,27 @@ export function useReenviarConvite() {
     onError: () => toast.error("Erro ao reenviar convite."),
   });
 }
+
+/**
+ * Envia o e-mail de convite. Nunca lança: retorna `true` em sucesso e
+ * `false` em falha, para o chamador aplicar o fallback (copiar link).
+ */
+export function useEnviarEmailConvite() {
+  const fn = useServerFn(enviarEmailConvite);
+  return useCallback(
+    async (data: {
+      email: string;
+      nome: string;
+      empresaNome: string;
+      link: string;
+    }): Promise<boolean> => {
+      try {
+        await fn({ data });
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [fn],
+  );
+}
