@@ -39,6 +39,8 @@ import {
   InitialsAvatar,
   ListRowsSkeleton,
 } from "@/components/admin-ui";
+import { PlanFilter, usePlanFilter } from "@/components/plan-filter";
+import { usePlanoPorUsuario } from "@/hooks/use-financeiro";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios/")({
