@@ -356,6 +356,7 @@ function ColaboradoresTab({
   const [toggle, setToggle] = useState<Colaborador | null>(null);
 
   const reenviarMut = useReenviarConvite();
+  const enviarEmailConvite = useEnviarEmailConvite();
   const excluirMut = useExcluirColaborador();
   const toggleMut = useToggleColaborador();
 
@@ -368,12 +369,32 @@ function ColaboradoresTab({
     const q = busca.trim().toLowerCase();
     return colaboradores.filter((c) => {
       if (setorFiltro !== "todos" && c.setor_id !== setorFiltro) return false;
-      if (statusFiltro === "ativo" && !c.ativo) return false;
-      if (statusFiltro === "demitido" && c.ativo) return false;
+      if (statusFiltro !== "todos" && colaboradorStatus(c) !== statusFiltro)
+        return false;
       if (q && !c.nome_completo.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [colaboradores, busca, setorFiltro, statusFiltro]);
+
+  /** Reenvia o convite (novo token) e dispara o e-mail; fallback: copiar link. */
+  async function reenviar(c: Colaborador) {
+    const r = await reenviarMut.mutateAsync({ id: c.id });
+    const link = `${window.location.origin}/convite/${r.token}`;
+    if (c.email) {
+      const ok = await enviarEmailConvite({
+        email: c.email,
+        nome: c.nome_completo,
+        empresaNome,
+        link,
+      });
+      if (ok) {
+        toast.success(`✓ Convite reenviado para ${c.email}`);
+        return;
+      }
+    }
+    await navigator.clipboard.writeText(link).catch(() => {});
+    toast.error("Email não enviado. Link copiado para área de transferência.");
+  }
 
   return (
     <div className="space-y-4">
