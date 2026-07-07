@@ -4,6 +4,8 @@ import { Trophy, Flame } from "lucide-react";
 import { useAdminProfiles, useAdminRegistros } from "@/hooks/use-admin";
 import { computeStreaks } from "@/lib/admin";
 import { EmptyState, InitialsAvatar, ListRowsSkeleton } from "@/components/admin-ui";
+import { PlanFilter, usePlanFilter } from "@/components/plan-filter";
+import { usePlanoPorUsuario } from "@/hooks/use-financeiro";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/gamificacao")({
@@ -13,8 +15,15 @@ export const Route = createFileRoute("/_authenticated/admin/gamificacao")({
 const MEDALHA = ["🥇", "🥈", "🥉"];
 
 function AdminGamificacao() {
-  const { data: profiles = [], isLoading: lp } = useAdminProfiles();
+  const { data: allProfiles = [], isLoading: lp } = useAdminProfiles();
   const { data: regs = [], isLoading: lr } = useAdminRegistros(45);
+  const { plano, setPlano } = usePlanFilter();
+  const { data: planoPorUsuario = {} } = usePlanoPorUsuario();
+
+  const profiles = useMemo(() => {
+    if (plano === "todos") return allProfiles;
+    return allProfiles.filter((p) => (planoPorUsuario[p.id] ?? "free") === plano);
+  }, [allProfiles, planoPorUsuario, plano]);
 
   const topIndicadores = useMemo(
     () =>
@@ -42,12 +51,16 @@ function AdminGamificacao() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">Gamificação</h1>
-        <p className="text-sm text-muted-foreground">
-          Ranking de indicações e sequências
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Gamificação</h1>
+          <p className="text-sm text-muted-foreground">
+            Ranking de indicações e sequências
+          </p>
+        </div>
+        <PlanFilter value={plano} onChange={setPlano} />
       </div>
+
 
       {loading ? (
         <div className="rounded-2xl bg-card p-5 shadow-card">

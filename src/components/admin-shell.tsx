@@ -5,6 +5,7 @@ import {
   Users,
   Building2,
   DollarSign,
+  FileBarChart,
   Clock,
   Crown,
   LifeBuoy,
@@ -13,18 +14,32 @@ import {
 } from "lucide-react";
 import { SincroMark } from "@/components/sincro-logo";
 import { AdminGlobalSearch } from "@/components/admin-global-search";
+import { usePlanFilter, PLANO_FILTRO_OPCOES } from "@/hooks/use-plan-filter";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/usuarios", label: "Usuários", icon: Users, exact: false },
   { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
+  { to: "/admin/relatorios", label: "Relatórios", icon: FileBarChart, exact: false },
   { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign, exact: false },
   { to: "/admin/registros", label: "Registros", icon: Clock, exact: false },
   { to: "/admin/premium", label: "Premium", icon: Crown, exact: false },
   { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
   { to: "/admin/config", label: "Config", icon: Settings, exact: false },
 ] as const;
+
+function PlanoFiltroBadge() {
+  const { plano } = usePlanFilter();
+  if (plano === "todos") return null;
+  const label = PLANO_FILTRO_OPCOES.find((o) => o.value === plano)?.label ?? plano;
+  return (
+    <span className="inline-flex items-center whitespace-nowrap rounded-full bg-amber-400/90 px-2.5 py-1 text-[11px] font-bold text-amber-950">
+      Filtrando: {label}
+    </span>
+  );
+}
+
 
 
 function useActive() {
@@ -83,7 +98,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <AdminGlobalSearch className="relative ml-auto hidden w-64 md:block lg:ml-4 lg:w-56" />
+        <div className="ml-auto mr-1 hidden lg:block">
+          <PlanoFiltroBadge />
+        </div>
+
+        <AdminGlobalSearch className="relative ml-auto hidden w-64 md:block lg:ml-2 lg:w-56" />
 
         <button
           onClick={() => navigate({ to: "/ponto" })}

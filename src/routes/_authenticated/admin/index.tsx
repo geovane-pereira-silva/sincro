@@ -1,6 +1,17 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Users, Activity, Clock, Share2, Building2, UsersRound } from "lucide-react";
+import {
+  Users,
+  Activity,
+  Clock,
+  Share2,
+  Building2,
+  UsersRound,
+  Flame,
+  TimerReset,
+  TrendingDown,
+  RefreshCw,
+} from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   useAdminProfiles,
@@ -8,9 +19,12 @@ import {
   useAdminRegistros,
 } from "@/hooks/use-admin";
 import { useEmpresas, useColaboradoresCount } from "@/hooks/use-empresas";
-import { premiumMap, formatDataCurta } from "@/lib/admin";
+import { useUserPlans } from "@/hooks/use-financeiro";
+import { useConcederPremiumLote } from "@/hooks/use-admin-actions";
+import { premiumMap, formatDataCurta, diasRestantes } from "@/lib/admin";
 import { planoEmpresaLabel } from "@/lib/empresas";
 import { dayKeyInTz } from "@/lib/ponto";
+import { Button } from "@/components/ui/button";
 import {
   EmptyState,
   MetricsGridSkeleton,
@@ -50,10 +64,65 @@ function AdminDashboard() {
   const { data: profiles = [], isLoading: lp } = useAdminProfiles();
   const { data: premium = [], isLoading: lpr } = useActivePremium();
   const { data: regs7 = [], isLoading: lr } = useAdminRegistros(7);
+  
   const { data: empresas = [] } = useEmpresas();
   const { data: colabCount = {} } = useColaboradoresCount();
+  const { data: planos = [] } = useUserPlans();
+  const concederPremium = useConcederPremiumLote();
 
   const pmap = useMemo(() => premiumMap(premium), [premium]);
+
+  const nomePorId = useMemo(
+    () => new Map(profiles.map((p) => [p.id, p.nome_completo || p.email])),
+    [profiles],
+  );
+
+  // Top 5 usuários mais ativos esta semana (batidas nos últimos 7 dias)
+  const topAtivos = useMemo(() => {
+    const cont = new Map<string, number>();
+    for (const r of regs7) cont.set(r.user_id, (cont.get(r.user_id) ?? 0) + 1);
+    return Array.from(cont.entries())
+      .map(([id, batidas]) => ({ id, batidas, nome: nomePorId.get(id) ?? "—" }))
+      .sort((a, b) => b.batidas - a.batidas)
+      .slice(0, 5);
+  }, [regs7, nomePorId]);
+
+  // Próximos 5 premium a expirar
+  const proximosExpirar = useMemo(() => {
+    return Array.from(pmap.values())
+      .map((p) => ({
+        user_id: p.user_id,
+        valido_ate: p.valido_ate,
+        dias: diasRestantes(p.valido_ate),
+        nome: nomePorId.get(p.user_id) ?? "—",
+      }))
+      .filter((p) => p.dias >= 0)
+      .sort((a, b) => a.dias - b.dias)
+      .slice(0, 5);
+  }, [pmap, nomePorId]);
+
+  // Churn esta semana vs semana anterior
+  const churnSemana = useMemo(() => {
+    const agora = Date.now();
+    const DIA = 24 * 3600 * 1000;
+    let atual = 0;
+    let anterior = 0;
+    for (const p of planos) {
+      if (!p.cancelado_em) continue;
+      const t = new Date(p.cancelado_em).getTime();
+      const diff = agora - t;
+      if (diff <= 7 * DIA) atual++;
+      else if (diff <= 14 * DIA) anterior++;
+    }
+    const pct =
+      anterior > 0
+        ? Math.round(((atual - anterior) / anterior) * 100)
+        : atual > 0
+          ? 100
+          : 0;
+    return { atual, anterior, pct };
+  }, [planos]);
+
 
   const metrics = useMemo(() => {
     const total = profiles.length;
@@ -198,9 +267,116 @@ function AdminDashboard() {
         </div>
       </div>
 
+      {/* Widgets de relatório rápido */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Top 5 ativos */}
+        <div className="rounded-2xl bg-card p-5 shadow-card">
+          <h2 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <Flame className="h-4 w-4 text-ponto-entrada" /> Top 5 ativos (semana)
+          </h2>
+          {loading ? (
+            <ListRowsSkeleton rows={5} />
+          ) : topAtivos.length === 0 ? (
+            <EmptyState title="Sem atividade esta semana" />
+          ) : (
+            <ul className="divide-y divide-border">
+              {topAtivos.map((u, i) => (
+                <li key={u.id} className="flex items-center gap-3 py-2.5">
+                  <span className="w-4 shrink-0 text-center text-xs font-bold text-muted-foreground">
+                    {i + 1}
+                  </span>
+                  <Link
+                    to="/admin/usuarios/$id"
+                    params={{ id: u.id }}
+                    className="min-w-0 flex-1 truncate text-sm font-semibold text-primary hover:underline"
+                  >
+                    {u.nome}
+                  </Link>
+                  <span className="shrink-0 text-sm font-bold tabular-nums text-ponto-entrada">
+                    {u.batidas}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
+        {/* Próximos a expirar */}
+        <div className="rounded-2xl bg-card p-5 shadow-card">
+          <h2 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <TimerReset className="h-4 w-4 text-ponto-entrada" /> Premium a expirar
+          </h2>
+          {loading ? (
+            <ListRowsSkeleton rows={5} />
+          ) : proximosExpirar.length === 0 ? (
+            <EmptyState title="Nenhum premium ativo" />
+          ) : (
+            <ul className="divide-y divide-border">
+              {proximosExpirar.map((u) => (
+                <li key={u.user_id} className="flex items-center gap-2 py-2.5">
+                  <Link
+                    to="/admin/usuarios/$id"
+                    params={{ id: u.user_id }}
+                    className="min-w-0 flex-1 truncate text-sm font-semibold text-primary hover:underline"
+                  >
+                    {u.nome}
+                  </Link>
+                  <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
+                    {u.dias}d
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1 px-2 text-xs"
+                    disabled={concederPremium.isPending}
+                    onClick={() =>
+                      concederPremium.mutate({
+                        userIds: [u.user_id],
+                        dias: 30,
+                        motivo: "admin_manual",
+                      })
+                    }
+                  >
+                    <RefreshCw className="h-3 w-3" /> Renovar
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Churn esta semana */}
+        <div className="rounded-2xl bg-card p-5 shadow-card">
+          <h2 className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+            <TrendingDown className="h-4 w-4 text-ponto-saida" /> Churn esta semana
+          </h2>
+          <p className="text-4xl font-bold tabular-nums text-primary">
+            {churnSemana.atual}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            cancelamentos nos últimos 7 dias
+          </p>
+          <div className="mt-3 flex items-center gap-1.5 text-sm">
+            <span
+              className={
+                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold " +
+                (churnSemana.pct > 0
+                  ? "bg-ponto-saida/15 text-ponto-saida"
+                  : "bg-ponto-entrada/15 text-ponto-entrada")
+              }
+            >
+              {churnSemana.pct > 0 ? "▲" : churnSemana.pct < 0 ? "▼" : "="}{" "}
+              {Math.abs(churnSemana.pct)}%
+            </span>
+            <span className="text-xs text-muted-foreground">
+              vs. semana anterior ({churnSemana.anterior})
+            </span>
+          </div>
+        </div>
+      </div>
 
       <div className="rounded-2xl bg-card p-5 shadow-card md:p-6">
+
         <h2 className="mb-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
           Usuários recentes
         </h2>

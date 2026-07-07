@@ -21,6 +21,7 @@ import {
   CardSkeleton,
 } from "@/components/admin-ui";
 import { useUserPlans } from "@/hooks/use-financeiro";
+import { PlanFilter, usePlanFilter } from "@/components/plan-filter";
 import { useAdminProfiles, useAdminRegistros } from "@/hooks/use-admin";
 import {
   calcularMrr,
@@ -93,11 +94,18 @@ function FunilEtapa({
 }
 
 function FinanceiroPage() {
-  const { data: planos = [], isLoading: lp } = useUserPlans();
+  const { data: planosAll = [], isLoading: lp } = useUserPlans();
   const { data: profiles = [], isLoading: lpr } = useAdminProfiles();
   const { data: regs = [], isLoading: lr } = useAdminRegistros(3650);
+  const { plano: planoFiltro, setPlano } = usePlanFilter();
+
+  const planos = useMemo(
+    () => (planoFiltro === "todos" ? planosAll : planosAll.filter((p) => p.plano === planoFiltro)),
+    [planosAll, planoFiltro],
+  );
 
   const loading = lp || lpr || lr;
+
 
   const nomePorId = useMemo(
     () => new Map(profiles.map((p) => [p.id, p.nome_completo || p.email])),
@@ -144,12 +152,16 @@ function FinanceiroPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">Financeiro / CRM</h1>
-        <p className="text-sm text-muted-foreground">
-          Receita, churn e conversão do SINCRO
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Financeiro / CRM</h1>
+          <p className="text-sm text-muted-foreground">
+            Receita, churn e conversão do SINCRO
+          </p>
+        </div>
+        <PlanFilter value={planoFiltro} onChange={setPlano} />
       </div>
+
 
       {loading ? (
         <MetricsGridSkeleton />
