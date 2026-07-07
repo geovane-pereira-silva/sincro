@@ -72,6 +72,34 @@ function AdminDashboard() {
   const recentes = useMemo(() => profiles.slice(0, 5), [profiles]);
   const loading = lp || lpr || lr;
 
+  const empresasStats = useMemo(() => {
+    const ativas = empresas.filter((e) => e.ativo).length;
+    const totalColab = Object.values(colabCount).reduce((a, b) => a + b, 0);
+    let topNome = "—";
+    let topQtd = 0;
+    for (const e of empresas) {
+      const q = colabCount[e.id] ?? 0;
+      if (q > topQtd) {
+        topQtd = q;
+        topNome = e.nome;
+      }
+    }
+    const porPlano = new Map<string, number>();
+    for (const e of empresas)
+      porPlano.set(e.plano, (porPlano.get(e.plano) ?? 0) + 1);
+    const pie = Array.from(porPlano.entries()).map(([plano, value]) => ({
+      name: planoEmpresaLabel(plano),
+      value,
+    }));
+    return { ativas, totalColab, topNome, topQtd, pie };
+  }, [empresas, colabCount]);
+
+  const PIE_CORES = [
+    "hsl(var(--ponto-entrada))",
+    "hsl(var(--ponto-saida-intervalo))",
+    "hsl(var(--ponto-entrada-intervalo))",
+  ];
+
   return (
     <div className="space-y-6">
       <div>
