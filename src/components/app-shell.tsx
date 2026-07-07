@@ -6,6 +6,7 @@ import {
   ListChecks,
   BarChart3,
   Settings,
+  Sparkles,
   LogOut,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,6 +35,7 @@ const NAV = [
   { to: "/ponto", label: "Meu Ponto", icon: Clock },
   { to: "/historico", label: "Histórico", icon: ListChecks },
   { to: "/relatorio", label: "Relatório", icon: BarChart3 },
+  { to: "/planos", label: "Planos Premium", icon: Sparkles },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
 
