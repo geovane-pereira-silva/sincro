@@ -7,7 +7,7 @@ export type PlanoFiltro =
   | "premium_anual"
   | "empresa";
 
-const STORAGE_KEY = "sincro_admin_plano_filtro";
+const STORAGE_KEY = "sincro_admin_filtro_plano";
 
 export const PLANO_FILTRO_OPCOES: { value: PlanoFiltro; label: string }[] = [
   { value: "todos", label: "Todos" },

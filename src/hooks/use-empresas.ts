@@ -117,3 +117,51 @@ export function useEmpresaBatidas(empresaId: string | undefined, days = 30) {
     },
   });
 }
+
+/** Contagem de setores por empresa. */
+export function useSetoresCount() {
+  return useQuery({
+    queryKey: ["admin-setores-count"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase.from("setores").select("empresa_id");
+      if (error) throw error;
+      const out: Record<string, number> = {};
+      for (const r of data ?? []) out[r.empresa_id] = (out[r.empresa_id] ?? 0) + 1;
+      return out;
+    },
+  });
+}
+
+/** Contagem de jornadas por empresa. */
+export function useJornadasCount() {
+  return useQuery({
+    queryKey: ["admin-jornadas-count"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("jornadas_empresa")
+        .select("empresa_id");
+      if (error) throw error;
+      const out: Record<string, number> = {};
+      for (const r of data ?? []) out[r.empresa_id] = (out[r.empresa_id] ?? 0) + 1;
+      return out;
+    },
+  });
+}
+
+/** Contagem de colaboradores ATIVOS por empresa. */
+export function useColaboradoresAtivosCount() {
+  return useQuery({
+    queryKey: ["admin-colaboradores-ativos-count"],
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("colaboradores")
+        .select("empresa_id, ativo");
+      if (error) throw error;
+      const out: Record<string, number> = {};
+      for (const r of data ?? []) {
+        if (r.ativo) out[r.empresa_id] = (out[r.empresa_id] ?? 0) + 1;
+      }
+      return out;
+    },
+  });
+}

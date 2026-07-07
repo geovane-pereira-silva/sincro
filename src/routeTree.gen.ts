@@ -24,6 +24,7 @@ import { Route as AuthenticatedEditarIdRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminGamificacaoRouteImport } from './routes/_authenticated/admin/gamificacao'
 import { Route as AuthenticatedAdminUsuariosIndexRouteImport } from './routes/_authenticated/admin/usuarios.index'
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin/suporte.index'
+import { Route as AuthenticatedAdminRelatoriosIndexRouteImport } from './routes/_authenticated/admin/relatorios.index'
 import { Route as AuthenticatedAdminRegistrosIndexRouteImport } from './routes/_authenticated/admin/registros.index'
 import { Route as AuthenticatedAdminPremiumIndexRouteImport } from './routes/_authenticated/admin/premium.index'
 import { Route as AuthenticatedAdminFinanceiroIndexRouteImport } from './routes/_authenticated/admin/financeiro.index'
@@ -111,6 +112,12 @@ const AuthenticatedAdminSuporteIndexRoute =
     path: '/suporte/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminRelatoriosIndexRoute =
+  AuthenticatedAdminRelatoriosIndexRouteImport.update({
+    id: '/relatorios/',
+    path: '/relatorios/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminRegistrosIndexRoute =
   AuthenticatedAdminRegistrosIndexRouteImport.update({
     id: '/registros/',
@@ -181,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/admin/relatorios/': typeof AuthenticatedAdminRelatoriosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/admin/usuarios/': typeof AuthenticatedAdminUsuariosIndexRoute
 }
@@ -204,6 +212,7 @@ export interface FileRoutesByTo {
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/admin/premium': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/admin/relatorios': typeof AuthenticatedAdminRelatoriosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosIndexRoute
 }
@@ -230,6 +239,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/_authenticated/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/_authenticated/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
+  '/_authenticated/admin/relatorios/': typeof AuthenticatedAdminRelatoriosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
   '/_authenticated/admin/usuarios/': typeof AuthenticatedAdminUsuariosIndexRoute
 }
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro/'
     | '/admin/premium/'
     | '/admin/registros/'
+    | '/admin/relatorios/'
     | '/admin/suporte/'
     | '/admin/usuarios/'
   fileRoutesByTo: FileRoutesByTo
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/admin/financeiro'
     | '/admin/premium'
     | '/admin/registros'
+    | '/admin/relatorios'
     | '/admin/suporte'
     | '/admin/usuarios'
   id:
@@ -304,6 +316,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/financeiro/'
     | '/_authenticated/admin/premium/'
     | '/_authenticated/admin/registros/'
+    | '/_authenticated/admin/relatorios/'
     | '/_authenticated/admin/suporte/'
     | '/_authenticated/admin/usuarios/'
   fileRoutesById: FileRoutesById
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSuporteIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/relatorios/': {
+      id: '/_authenticated/admin/relatorios/'
+      path: '/relatorios'
+      fullPath: '/admin/relatorios/'
+      preLoaderRoute: typeof AuthenticatedAdminRelatoriosIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/registros/': {
       id: '/_authenticated/admin/registros/'
       path: '/registros'
@@ -493,6 +513,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminFinanceiroIndexRoute: typeof AuthenticatedAdminFinanceiroIndexRoute
   AuthenticatedAdminPremiumIndexRoute: typeof AuthenticatedAdminPremiumIndexRoute
   AuthenticatedAdminRegistrosIndexRoute: typeof AuthenticatedAdminRegistrosIndexRoute
+  AuthenticatedAdminRelatoriosIndexRoute: typeof AuthenticatedAdminRelatoriosIndexRoute
   AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
   AuthenticatedAdminUsuariosIndexRoute: typeof AuthenticatedAdminUsuariosIndexRoute
 }
@@ -511,6 +532,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPremiumIndexRoute: AuthenticatedAdminPremiumIndexRoute,
     AuthenticatedAdminRegistrosIndexRoute:
       AuthenticatedAdminRegistrosIndexRoute,
+    AuthenticatedAdminRelatoriosIndexRoute:
+      AuthenticatedAdminRelatoriosIndexRoute,
     AuthenticatedAdminSuporteIndexRoute: AuthenticatedAdminSuporteIndexRoute,
     AuthenticatedAdminUsuariosIndexRoute: AuthenticatedAdminUsuariosIndexRoute,
   }
