@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RefCodeRouteImport } from './routes/ref.$code'
+import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPontoRouteImport } from './routes/_authenticated/ponto'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
@@ -58,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
 const RefCodeRoute = RefCodeRouteImport.update({
   id: '/ref/$code',
   path: '/ref/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConviteTokenRoute = ConviteTokenRouteImport.update({
+  id: '/convite/$token',
+  path: '/convite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRelatorioRoute = AuthenticatedRelatorioRouteImport.update({
@@ -189,6 +195,7 @@ export interface FileRoutesByFullPath {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/ponto': typeof AuthenticatedPontoRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
+  '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/_authenticated/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/_authenticated/editar/$id': typeof AuthenticatedEditarIdRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
     | '/editar/$id'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
     | '/editar/$id'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/_authenticated/planos'
     | '/_authenticated/ponto'
     | '/_authenticated/relatorio'
+    | '/convite/$token'
     | '/ref/$code'
     | '/_authenticated/admin/gamificacao'
     | '/_authenticated/editar/$id'
@@ -350,6 +362,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ConviteTokenRoute: typeof ConviteTokenRoute
   RefCodeRoute: typeof RefCodeRoute
   ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
@@ -389,6 +402,13 @@ declare module '@tanstack/react-router' {
       path: '/ref/$code'
       fullPath: '/ref/$code'
       preLoaderRoute: typeof RefCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/convite/$token': {
+      id: '/convite/$token'
+      path: '/convite/$token'
+      fullPath: '/convite/$token'
+      preLoaderRoute: typeof ConviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/relatorio': {
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ConviteTokenRoute: ConviteTokenRoute,
   RefCodeRoute: RefCodeRoute,
   ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }

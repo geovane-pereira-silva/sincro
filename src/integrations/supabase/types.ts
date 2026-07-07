@@ -165,6 +165,10 @@ export type Database = {
         Row: {
           ativo: boolean
           cargo: string | null
+          convite_aceito_em: string | null
+          convite_enviado_em: string | null
+          convite_pendente: boolean
+          convite_token: string | null
           cpf: string | null
           created_at: string
           data_admissao: string | null
@@ -181,6 +185,10 @@ export type Database = {
         Insert: {
           ativo?: boolean
           cargo?: string | null
+          convite_aceito_em?: string | null
+          convite_enviado_em?: string | null
+          convite_pendente?: boolean
+          convite_token?: string | null
           cpf?: string | null
           created_at?: string
           data_admissao?: string | null
@@ -197,6 +205,10 @@ export type Database = {
         Update: {
           ativo?: boolean
           cargo?: string | null
+          convite_aceito_em?: string | null
+          convite_enviado_em?: string | null
+          convite_pendente?: boolean
+          convite_token?: string | null
           cpf?: string | null
           created_at?: string
           data_admissao?: string | null
@@ -540,6 +552,7 @@ export type Database = {
           carga_horaria_diaria: number
           created_at: string
           email: string
+          empresa_id: string | null
           id: string
           nome_completo: string | null
           onboarding_concluido: boolean
@@ -548,7 +561,9 @@ export type Database = {
           referral_count: number
           referred_by: string | null
           timezone: string
+          tipo_conta: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           admin_notes?: string | null
@@ -557,6 +572,7 @@ export type Database = {
           carga_horaria_diaria?: number
           created_at?: string
           email: string
+          empresa_id?: string | null
           id: string
           nome_completo?: string | null
           onboarding_concluido?: boolean
@@ -565,7 +581,9 @@ export type Database = {
           referral_count?: number
           referred_by?: string | null
           timezone?: string
+          tipo_conta?: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           admin_notes?: string | null
@@ -574,6 +592,7 @@ export type Database = {
           carga_horaria_diaria?: number
           created_at?: string
           email?: string
+          empresa_id?: string | null
           id?: string
           nome_completo?: string | null
           onboarding_concluido?: boolean
@@ -582,9 +601,19 @@ export type Database = {
           referral_count?: number
           referred_by?: string | null
           timezone?: string
+          tipo_conta?: string
           updated_at?: string
+          username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       setores: {
         Row: {
@@ -685,6 +714,7 @@ export type Database = {
     Functions: {
       aplicar_indicacao: { Args: { _codigo: string }; Returns: undefined }
       generate_referral_code: { Args: { nome: string }; Returns: string }
+      generate_username: { Args: { _base: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

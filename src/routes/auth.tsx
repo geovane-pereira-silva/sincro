@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check, X, MailCheck, Building2, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -8,7 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SincroMark } from "@/components/sincro-logo";
+import { UsernameField } from "@/components/username-field";
+import {
+  useUsernameCheck,
+  useEmpresaCheck,
+} from "@/hooks/use-cadastro-checks";
+import { usernameFromEmail } from "@/lib/username";
 import { mensagemErro } from "@/lib/erros";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -31,11 +38,28 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [nome, setNome] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameEditado, setUsernameEditado] = useState(false);
+  const [tipoConta, setTipoConta] = useState<"autonomo" | "colaborador">(
+    "autonomo",
+  );
+  const [empresaNome, setEmpresaNome] = useState("");
   const [codigoIndicacao, setCodigoIndicacao] = useState("");
   const [indicacaoTravada, setIndicacaoTravada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [checando, setChecando] = useState(true);
+  const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState<
+    string | null
+  >(null);
+  const [reenviando, setReenviando] = useState(false);
+  const [precisaConfirmar, setPrecisaConfirmar] = useState(false);
+
+  const usernameStatus = useUsernameCheck(username, modo === "cadastro");
+  const empresaCheck = useEmpresaCheck(
+    empresaNome,
+    modo === "cadastro" && tipoConta === "colaborador",
+  );
 
   useEffect(() => {
     let codigoSalvo = "";
@@ -59,9 +83,32 @@ function AuthPage() {
     });
   }, [navigate]);
 
+  // Preenche o username automaticamente a partir do e-mail (se não editado).
+  useEffect(() => {
+    if (modo !== "cadastro" || usernameEditado) return;
+    setUsername(usernameFromEmail(email));
+  }, [email, modo, usernameEditado]);
+
+  async function handleResend(targetEmail: string) {
+    setReenviando(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: targetEmail,
+        options: { emailRedirectTo: window.location.origin },
+      });
+      if (error) throw error;
+      toast.success("Enviamos um novo e-mail de confirmação.");
+    } catch (err) {
+      toast.error(mensagemErro(err));
+    } finally {
+      setReenviando(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setPrecisaConfirmar(false);
     setLoading(true);
     try {
       if (modo === "recuperar") {
@@ -82,20 +129,44 @@ function AuthPage() {
           setLoading(false);
           return;
         }
+        if (usernameStatus !== "available") {
+          toast.error(
+            usernameStatus === "taken"
+              ? "Este usuário já está em uso. Escolha outro."
+              : "Escolha um usuário válido e disponível.",
+          );
+          setLoading(false);
+          return;
+        }
+        let empresaId: string | null = null;
+        if (tipoConta === "colaborador") {
+          if (empresaCheck.status !== "found") {
+            toast.error(
+              "Confirme o nome da empresa antes de continuar o cadastro.",
+            );
+            setLoading(false);
+            return;
+          }
+          empresaId = empresaCheck.id;
+        }
 
         const { error } = await supabase.auth.signUp({
           email,
           password: senha,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: nome },
+            data: {
+              full_name: nome,
+              username,
+              tipo_conta: tipoConta,
+              empresa_id: empresaId,
+            },
           },
         });
         if (error) throw error;
 
         const codigo = codigoIndicacao.trim();
         if (codigo) {
-          // Aplica a indicação silenciosamente; código inválido nunca bloqueia.
           await supabase.rpc("aplicar_indicacao", { _codigo: codigo });
         }
         try {
@@ -104,20 +175,24 @@ function AuthPage() {
           // ignora
         }
 
-        toast.success("Conta criada! Bem-vindo ao SINCRO.");
-        navigate({ to: "/ponto", replace: true });
+        setAguardandoConfirmacao(email);
         return;
       }
-
 
       const { data: loginData, error } =
         await supabase.auth.signInWithPassword({
           email,
           password: senha,
         });
-      if (error) throw error;
+      if (error) {
+        if (/confirm/i.test(error.message)) {
+          setPrecisaConfirmar(true);
+          toast.error("Confirme seu e-mail antes de entrar.");
+          return;
+        }
+        throw error;
+      }
 
-      // Bloqueio de conta: impede o acesso.
       if (loginData.user) {
         const { data: perfil } = await supabase
           .from("profiles")
@@ -162,6 +237,47 @@ function AuthPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Tela de confirmação de e-mail (pós-cadastro por e-mail/senha).
+  if (aguardandoConfirmacao) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-5 py-10">
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ponto-entrada/15">
+            <MailCheck className="h-8 w-8 text-ponto-entrada" />
+          </div>
+          <h1 className="mt-5 text-xl font-bold text-primary">
+            Verifique seu e-mail
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Enviamos um link de confirmação para{" "}
+            <span className="font-semibold text-foreground">
+              {aguardandoConfirmacao}
+            </span>
+            . Clique no link para ativar sua conta.
+          </p>
+          <Button
+            variant="outline"
+            className="mt-6 h-12 w-full rounded-xl"
+            disabled={reenviando}
+            onClick={() => handleResend(aguardandoConfirmacao)}
+          >
+            {reenviando && <Loader2 className="h-4 w-4 animate-spin" />}
+            Reenviar e-mail de confirmação
+          </Button>
+          <button
+            onClick={() => {
+              setAguardandoConfirmacao(null);
+              setModo("login");
+            }}
+            className="mt-4 text-sm font-semibold text-primary hover:underline"
+          >
+            Voltar para o login
+          </button>
+        </div>
       </div>
     );
   }
@@ -216,6 +332,78 @@ function AuthPage() {
             />
           </div>
 
+          {modo === "cadastro" && (
+            <>
+              {/* Tipo de conta */}
+              <div className="space-y-1.5">
+                <Label>Você é:</Label>
+                <div className="grid gap-2">
+                  <TipoContaOption
+                    active={tipoConta === "autonomo"}
+                    icon={<UserRound className="h-5 w-5" />}
+                    titulo="Autônomo / Freelancer"
+                    descricao="Uso pessoal, sem vínculo com empresa"
+                    onClick={() => setTipoConta("autonomo")}
+                  />
+                  <TipoContaOption
+                    active={tipoConta === "colaborador"}
+                    icon={<Building2 className="h-5 w-5" />}
+                    titulo="Colaborador de empresa"
+                    descricao="Minha empresa usa o SINCRO"
+                    onClick={() => setTipoConta("colaborador")}
+                  />
+                </div>
+              </div>
+
+              {tipoConta === "colaborador" && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="empresa">Nome da empresa</Label>
+                  <div className="relative">
+                    <Input
+                      id="empresa"
+                      value={empresaNome}
+                      onChange={(e) => setEmpresaNome(e.target.value)}
+                      placeholder="Ex: Acme Ltda"
+                      autoComplete="off"
+                      className="h-13 pr-9"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {empresaCheck.status === "checking" && (
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                      {empresaCheck.status === "found" && (
+                        <Check className="h-4 w-4 text-ponto-entrada" />
+                      )}
+                      {empresaCheck.status === "notfound" && (
+                        <X className="h-4 w-4 text-destructive" />
+                      )}
+                    </span>
+                  </div>
+                  {empresaCheck.status === "found" && (
+                    <p className="text-xs font-medium text-ponto-entrada">
+                      Empresa encontrada: {empresaCheck.nome} ✓
+                    </p>
+                  )}
+                  {empresaCheck.status === "notfound" && (
+                    <p className="text-xs text-destructive">
+                      Empresa não encontrada. Verifique o nome ou entre em
+                      contato com seu RH.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <UsernameField
+                value={username}
+                onChange={(v) => {
+                  setUsernameEditado(true);
+                  setUsername(v);
+                }}
+                status={usernameStatus}
+              />
+            </>
+          )}
+
           {modo !== "recuperar" && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
@@ -251,6 +439,20 @@ function AuthPage() {
             </div>
           )}
 
+          {precisaConfirmar && modo === "login" && (
+            <div className="rounded-lg bg-ponto-saida-intervalo/10 p-3 text-xs text-foreground">
+              Confirme seu e-mail antes de entrar.{" "}
+              <button
+                type="button"
+                disabled={reenviando}
+                onClick={() => handleResend(email)}
+                className="font-semibold text-primary hover:underline"
+              >
+                Reenviar e-mail →
+              </button>
+            </div>
+          )}
+
           {modo === "cadastro" && (
             <div className="space-y-1.5">
               <Label htmlFor="indicacao">Código de indicação (opcional)</Label>
@@ -273,7 +475,6 @@ function AuthPage() {
               )}
             </div>
           )}
-
 
           <Button
             type="submit"
@@ -351,6 +552,50 @@ function AuthPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function TipoContaOption({
+  active,
+  icon,
+  titulo,
+  descricao,
+  onClick,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  titulo: string;
+  descricao: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-3 rounded-xl border p-3 text-left transition-all",
+        active
+          ? "border-primary bg-primary/5 ring-1 ring-primary"
+          : "border-border hover:border-primary/40",
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+          active
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted text-muted-foreground",
+        )}
+      >
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold text-foreground">
+          {titulo}
+        </span>
+        <span className="block text-xs text-muted-foreground">{descricao}</span>
+      </span>
+    </button>
   );
 }
 

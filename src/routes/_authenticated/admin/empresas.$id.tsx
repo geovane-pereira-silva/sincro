@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Users,
@@ -13,6 +14,8 @@ import {
   Ban,
   RotateCcw,
   Search,
+  UserPlus,
+  Send,
 } from "lucide-react";
 import {
   LineChart,
@@ -48,6 +51,7 @@ import { AdminConfirmDialog } from "@/components/admin-confirm-dialog";
 import { EmpresaFormDialog } from "@/components/empresa-form-dialog";
 import { SetorDialog } from "@/components/setor-dialog";
 import { ColaboradorDialog } from "@/components/colaborador-dialog";
+import { ConviteColaboradorDialog } from "@/components/convite-colaborador-dialog";
 import { JornadaDialog } from "@/components/jornada-dialog";
 import {
   useEmpresa,
@@ -64,11 +68,13 @@ import {
   useExcluirJornada,
   useDuplicarJornada,
 } from "@/hooks/use-empresa-actions";
+import { useReenviarConvite } from "@/hooks/use-convite-actions";
 import {
   TIPO_JORNADA_CLASSE,
   tipoJornadaLabel,
   planoEmpresaLabel,
   diasConfigurados,
+  statusConvite,
   type Setor,
   type Colaborador,
   type JornadaEmpresa,
@@ -234,6 +240,7 @@ function EmpresaDetalhe() {
         <TabsContent value="colaboradores">
           <ColaboradoresTab
             empresaId={id}
+            empresaNome={empresa.nome}
             setores={setores}
             jornadas={jornadas}
             colaboradores={colaboradores}
@@ -317,12 +324,14 @@ function EmpresaDetalhe() {
 /* ================================================================== */
 function ColaboradoresTab({
   empresaId,
+  empresaNome,
   setores,
   jornadas,
   colaboradores,
   loading,
 }: {
   empresaId: string;
+  empresaNome: string;
   setores: Setor[];
   jornadas: JornadaEmpresa[];
   colaboradores: Colaborador[];
@@ -332,10 +341,12 @@ function ColaboradoresTab({
   const [setorFiltro, setSetorFiltro] = useState("todos");
   const [statusFiltro, setStatusFiltro] = useState("todos");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [conviteOpen, setConviteOpen] = useState(false);
   const [editando, setEditando] = useState<Colaborador | null>(null);
   const [excluir, setExcluir] = useState<Colaborador | null>(null);
   const [toggle, setToggle] = useState<Colaborador | null>(null);
 
+  const reenviarMut = useReenviarConvite();
   const excluirMut = useExcluirColaborador();
   const toggleMut = useToggleColaborador();
 
@@ -390,6 +401,9 @@ function ColaboradoresTab({
             <SelectItem value="demitido">Demitidos</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={() => setConviteOpen(true)}>
+          <UserPlus className="h-4 w-4" /> Convidar
+        </Button>
         <Button
           onClick={() => {
             setEditando(null);
@@ -422,12 +436,59 @@ function ColaboradoresTab({
                     {c.setor_id ? setorNome.get(c.setor_id) : "Sem setor"}
                   </p>
                 </div>
-                {!c.ativo && (
-                  <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                    Demitido
-                  </span>
-                )}
+                {(() => {
+                  const st = statusConvite(c);
+                  if (st === "pendente")
+                    return (
+                      <span className="shrink-0 rounded-full bg-ponto-saida-intervalo/15 px-2 py-0.5 text-[11px] font-bold text-ponto-saida-intervalo">
+                        🟡 Convite pendente
+                      </span>
+                    );
+                  if (st === "expirado")
+                    return (
+                      <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
+                        Expirado
+                      </span>
+                    );
+                  if (!c.ativo)
+                    return (
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                        Demitido
+                      </span>
+                    );
+                  if (st === "sem_convite")
+                    return (
+                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                        ⚫ Sem convite
+                      </span>
+                    );
+                  return (
+                    <span className="shrink-0 rounded-full bg-ponto-entrada/15 px-2 py-0.5 text-[11px] font-bold text-ponto-entrada">
+                      🟢 Ativo
+                    </span>
+                  );
+                })()}
                 <div className="flex shrink-0 items-center gap-1">
+                  {(statusConvite(c) === "pendente" ||
+                    statusConvite(c) === "expirado") && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Reenviar convite"
+                      disabled={reenviarMut.isPending}
+                      onClick={async () => {
+                        const r = await reenviarMut.mutateAsync({ id: c.id });
+                        await navigator.clipboard
+                          .writeText(
+                            `${window.location.origin}/convite/${r.token}`,
+                          )
+                          .catch(() => {});
+                        toast.success("Convite reenviado — link copiado!");
+                      }}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
@@ -473,6 +534,14 @@ function ColaboradoresTab({
         setores={setores}
         jornadas={jornadas}
         colaborador={editando}
+      />
+      <ConviteColaboradorDialog
+        open={conviteOpen}
+        onOpenChange={setConviteOpen}
+        empresaId={empresaId}
+        empresaNome={empresaNome}
+        setores={setores}
+        jornadas={jornadas}
       />
       <AdminConfirmDialog
         open={!!excluir}
