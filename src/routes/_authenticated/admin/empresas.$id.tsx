@@ -16,6 +16,9 @@ import {
   Search,
   UserPlus,
   Send,
+  Download,
+  History,
+  ExternalLink,
 } from "lucide-react";
 import {
   LineChart,
