@@ -61,7 +61,7 @@ export const salvarEmpresa = createServerFn({ method: "POST" })
     if (data.id) {
       const { error } = await supabaseAdmin
         .from("empresas")
-        .update(data.valores)
+        .update(data.valores as never)
         .eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
@@ -121,7 +121,7 @@ export const salvarSetor = createServerFn({ method: "POST" })
     if (data.id) {
       const { error } = await supabaseAdmin
         .from("setores")
-        .update(data.valores)
+        .update(data.valores as never)
         .eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
@@ -186,7 +186,7 @@ export const salvarColaborador = createServerFn({ method: "POST" })
     if (colaboradorId) {
       const { error } = await supabaseAdmin
         .from("colaboradores")
-        .update(data.valores)
+        .update(data.valores as never)
         .eq("id", colaboradorId);
       if (error) throw new Error(error.message);
     } else {
@@ -235,7 +235,7 @@ export const toggleColaboradorAtivo = createServerFn({ method: "POST" })
     if (!data.ativo) patch.data_demissao = new Date().toISOString().slice(0, 10);
     const { error } = await supabaseAdmin
       .from("colaboradores")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.id);
     if (error) throw new Error(error.message);
     await registrarAuditoria(
@@ -295,7 +295,7 @@ export const salvarJornada = createServerFn({ method: "POST" })
     if (data.id) {
       const { error } = await supabaseAdmin
         .from("jornadas_empresa")
-        .update(data.valores)
+        .update(data.valores as never)
         .eq("id", data.id);
       if (error) throw new Error(error.message);
       return { ok: true, id: data.id };
