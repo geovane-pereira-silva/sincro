@@ -3,6 +3,8 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Users,
+  Building2,
+  DollarSign,
   Clock,
   Crown,
   LifeBuoy,
@@ -16,11 +18,14 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/usuarios", label: "Usuários", icon: Users, exact: false },
+  { to: "/admin/empresas", label: "Empresas", icon: Building2, exact: false },
+  { to: "/admin/financeiro", label: "Financeiro", icon: DollarSign, exact: false },
   { to: "/admin/registros", label: "Registros", icon: Clock, exact: false },
   { to: "/admin/premium", label: "Premium", icon: Crown, exact: false },
   { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
   { to: "/admin/config", label: "Config", icon: Settings, exact: false },
 ] as const;
+
 
 function useActive() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
