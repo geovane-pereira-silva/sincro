@@ -38,6 +38,7 @@ export function ConviteColaboradorDialog({
   jornadas: JornadaEmpresa[];
 }) {
   const criar = useCriarConvite();
+  const enviarEmailConvite = useEnviarEmailConvite();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
@@ -45,6 +46,7 @@ export function ConviteColaboradorDialog({
   const [setorId, setSetorId] = useState("");
   const [jornadaId, setJornadaId] = useState("");
   const [link, setLink] = useState<string | null>(null);
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
 
   useEffect(() => {
     if (open) {
