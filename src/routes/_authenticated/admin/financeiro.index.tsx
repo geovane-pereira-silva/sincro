@@ -46,8 +46,9 @@ import {
   STATUS_ASSINATURA_LABEL,
   STATUS_ASSINATURA_CLASSE,
   fmtDataBR,
-  planoUsuarioLabel as planoPagoLabel,
+  PLANOS,
   type StatusAssinatura,
+  type PlanoPago,
 } from "@/lib/asaas";
 
 export const Route = createFileRoute("/_authenticated/admin/financeiro/")({
