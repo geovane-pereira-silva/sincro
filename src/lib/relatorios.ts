@@ -361,6 +361,19 @@ export function montarCsv(
     .join("\n");
 }
 
+/** Gera e baixa um único CSV com BOM UTF-8 (abre corretamente no Excel BR). */
+export function baixarCsv(nomeArquivo: string, conteudo: string): void {
+  const blob = new Blob(["\uFEFF" + conteudo], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = nomeArquivo;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 /** Gera e baixa um ZIP com múltiplos CSVs (cada um com BOM UTF-8). */
 export async function baixarZipCsvs(
   nomeArquivo: string,
