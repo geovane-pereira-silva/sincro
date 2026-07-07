@@ -57,6 +57,8 @@ function AdminUsuarios() {
   const { data: premium = [], isLoading: lpr } = useActivePremium();
   const { data: batidas = [], isLoading: lb } = useAllBatidas();
   const toggleBloqueio = useToggleBloqueio();
+  const { plano: planoGlobal, setPlano: setPlanoGlobal } = usePlanFilter();
+  const { data: planoPorUsuario = {} } = usePlanoPorUsuario();
 
   const [busca, setBusca] = useState("");
   const [fPlano, setFPlano] = useState("todos");
