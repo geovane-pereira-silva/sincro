@@ -30,6 +30,7 @@ import { Route as AuthenticatedAdminPremiumIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminFinanceiroIndexRouteImport } from './routes/_authenticated/admin/financeiro.index'
 import { Route as AuthenticatedAdminEmpresasIndexRouteImport } from './routes/_authenticated/admin/empresas.index'
 import { Route as AuthenticatedAdminConfigIndexRouteImport } from './routes/_authenticated/admin/config.index'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas/webhook'
 import { Route as AuthenticatedAdminUsuariosIdRouteImport } from './routes/_authenticated/admin/usuarios.$id'
 import { Route as AuthenticatedAdminEmpresasNovaRouteImport } from './routes/_authenticated/admin/empresas.nova'
 import { Route as AuthenticatedAdminEmpresasIdRouteImport } from './routes/_authenticated/admin/empresas.$id'
@@ -148,6 +149,11 @@ const AuthenticatedAdminConfigIndexRoute =
     path: '/config/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas/webhook',
+  path: '/api/public/asaas/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminUsuariosIdRoute =
   AuthenticatedAdminUsuariosIdRouteImport.update({
     id: '/usuarios/$id',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
   '/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
   '/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
   '/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
@@ -207,6 +214,7 @@ export interface FileRoutesByTo {
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
   '/admin/config': typeof AuthenticatedAdminConfigIndexRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasIndexRoute
   '/admin/financeiro': typeof AuthenticatedAdminFinanceiroIndexRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/_authenticated/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
+  '/api/public/asaas/webhook': typeof ApiPublicAsaasWebhookRoute
   '/_authenticated/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
   '/_authenticated/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
   '/_authenticated/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
+    | '/api/public/asaas/webhook'
     | '/admin/config/'
     | '/admin/empresas/'
     | '/admin/financeiro/'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
+    | '/api/public/asaas/webhook'
     | '/admin/config'
     | '/admin/empresas'
     | '/admin/financeiro'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/empresas/$id'
     | '/_authenticated/admin/empresas/nova'
     | '/_authenticated/admin/usuarios/$id'
+    | '/api/public/asaas/webhook'
     | '/_authenticated/admin/config/'
     | '/_authenticated/admin/empresas/'
     | '/_authenticated/admin/financeiro/'
@@ -327,6 +339,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RefCodeRoute: typeof RefCodeRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -478,6 +491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminConfigIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/asaas/webhook': {
+      id: '/api/public/asaas/webhook'
+      path: '/api/public/asaas/webhook'
+      fullPath: '/api/public/asaas/webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/usuarios/$id': {
       id: '/_authenticated/admin/usuarios/$id'
       path: '/usuarios/$id'
@@ -570,6 +590,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RefCodeRoute: RefCodeRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
