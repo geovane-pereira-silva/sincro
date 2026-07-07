@@ -137,7 +137,7 @@ function AdminUsuarios() {
       }
     });
     return lista;
-  }, [profiles, busca, fPlano, fStatus, fOrigem, ordem, pmap, stats]);
+  }, [profiles, busca, fPlano, fStatus, fOrigem, ordem, pmap, stats, planoGlobal, planoPorUsuario]);
 
   const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
   const pageSafe = Math.min(page, totalPages - 1);
