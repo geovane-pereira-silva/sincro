@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Mail, MessageCircle, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useCriarConvite } from "@/hooks/use-convite-actions";
+import { useCriarConvite, useEnviarEmailConvite } from "@/hooks/use-convite-actions";
 import type { Setor, JornadaEmpresa } from "@/lib/empresas";
 import { tipoJornadaLabel } from "@/lib/empresas";
 
