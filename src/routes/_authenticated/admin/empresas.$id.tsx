@@ -67,9 +67,8 @@ import {
 import {
   TIPO_JORNADA_CLASSE,
   tipoJornadaLabel,
+  planoEmpresaLabel,
   diasConfigurados,
-  fmtDataBr,
-  type PlanoEmpresa,
   type Setor,
   type Colaborador,
   type JornadaEmpresa,
