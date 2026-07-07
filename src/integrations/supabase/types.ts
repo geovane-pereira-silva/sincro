@@ -71,6 +71,54 @@ export type Database = {
         }
         Relationships: []
       }
+      assinaturas: {
+        Row: {
+          asaas_customer_id: string | null
+          asaas_payment_id: string | null
+          asaas_subscription_id: string | null
+          cancelado_em: string | null
+          created_at: string
+          id: string
+          motivo_cancelamento: string | null
+          plano: string
+          proximo_vencimento: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          asaas_subscription_id?: string | null
+          cancelado_em?: string | null
+          created_at?: string
+          id?: string
+          motivo_cancelamento?: string | null
+          plano: string
+          proximo_vencimento?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          asaas_subscription_id?: string | null
+          cancelado_em?: string | null
+          created_at?: string
+          id?: string
+          motivo_cancelamento?: string | null
+          plano?: string
+          proximo_vencimento?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       colaborador_jornadas: {
         Row: {
           colaborador_id: string
