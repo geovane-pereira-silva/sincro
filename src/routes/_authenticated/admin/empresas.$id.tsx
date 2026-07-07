@@ -520,6 +520,15 @@ function ColaboradoresTab({
         )}
       </div>
 
+      <HistoricoConvites
+        empresaNome={empresaNome}
+        colaboradores={colaboradores}
+        onReenviar={reenviar}
+        reenviando={reenviarMut.isPending}
+      />
+
+
+
       <ColaboradorDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
