@@ -175,7 +175,7 @@ function EmpresaDetalhe() {
             {empresa.nome}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {tipoJornadaLabel(empresa.plano)} ·{" "}
+            {planoEmpresaLabel(empresa.plano)} ·{" "}
             {empresa.ativo ? "Ativa" : "Inativa"}
           </p>
         </div>
