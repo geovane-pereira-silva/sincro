@@ -26,6 +26,7 @@ import { Route as AuthenticatedAdminUsuariosIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminSuporteIndexRouteImport } from './routes/_authenticated/admin/suporte.index'
 import { Route as AuthenticatedAdminRegistrosIndexRouteImport } from './routes/_authenticated/admin/registros.index'
 import { Route as AuthenticatedAdminPremiumIndexRouteImport } from './routes/_authenticated/admin/premium.index'
+import { Route as AuthenticatedAdminFinanceiroIndexRouteImport } from './routes/_authenticated/admin/financeiro.index'
 import { Route as AuthenticatedAdminEmpresasIndexRouteImport } from './routes/_authenticated/admin/empresas.index'
 import { Route as AuthenticatedAdminConfigIndexRouteImport } from './routes/_authenticated/admin/config.index'
 import { Route as AuthenticatedAdminUsuariosIdRouteImport } from './routes/_authenticated/admin/usuarios.$id'
@@ -122,6 +123,12 @@ const AuthenticatedAdminPremiumIndexRoute =
     path: '/premium/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminFinanceiroIndexRoute =
+  AuthenticatedAdminFinanceiroIndexRouteImport.update({
+    id: '/financeiro/',
+    path: '/financeiro/',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminEmpresasIndexRoute =
   AuthenticatedAdminEmpresasIndexRouteImport.update({
     id: '/empresas/',
@@ -171,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
   '/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
+  '/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
   '/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config': typeof AuthenticatedAdminConfigIndexRoute
   '/admin/empresas': typeof AuthenticatedAdminEmpresasIndexRoute
+  '/admin/financeiro': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/admin/premium': typeof AuthenticatedAdminPremiumIndexRoute
   '/admin/registros': typeof AuthenticatedAdminRegistrosIndexRoute
   '/admin/suporte': typeof AuthenticatedAdminSuporteIndexRoute
@@ -218,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/_authenticated/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
   '/_authenticated/admin/empresas/': typeof AuthenticatedAdminEmpresasIndexRoute
+  '/_authenticated/admin/financeiro/': typeof AuthenticatedAdminFinanceiroIndexRoute
   '/_authenticated/admin/premium/': typeof AuthenticatedAdminPremiumIndexRoute
   '/_authenticated/admin/registros/': typeof AuthenticatedAdminRegistrosIndexRoute
   '/_authenticated/admin/suporte/': typeof AuthenticatedAdminSuporteIndexRoute
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/admin/usuarios/$id'
     | '/admin/config/'
     | '/admin/empresas/'
+    | '/admin/financeiro/'
     | '/admin/premium/'
     | '/admin/registros/'
     | '/admin/suporte/'
@@ -265,6 +276,7 @@ export interface FileRouteTypes {
     | '/admin/usuarios/$id'
     | '/admin/config'
     | '/admin/empresas'
+    | '/admin/financeiro'
     | '/admin/premium'
     | '/admin/registros'
     | '/admin/suporte'
@@ -289,6 +301,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/usuarios/$id'
     | '/_authenticated/admin/config/'
     | '/_authenticated/admin/empresas/'
+    | '/_authenticated/admin/financeiro/'
     | '/_authenticated/admin/premium/'
     | '/_authenticated/admin/registros/'
     | '/_authenticated/admin/suporte/'
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPremiumIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/financeiro/': {
+      id: '/_authenticated/admin/financeiro/'
+      path: '/financeiro'
+      fullPath: '/admin/financeiro/'
+      preLoaderRoute: typeof AuthenticatedAdminFinanceiroIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/empresas/': {
       id: '/_authenticated/admin/empresas/'
       path: '/empresas'
@@ -470,6 +490,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminUsuariosIdRoute: typeof AuthenticatedAdminUsuariosIdRoute
   AuthenticatedAdminConfigIndexRoute: typeof AuthenticatedAdminConfigIndexRoute
   AuthenticatedAdminEmpresasIndexRoute: typeof AuthenticatedAdminEmpresasIndexRoute
+  AuthenticatedAdminFinanceiroIndexRoute: typeof AuthenticatedAdminFinanceiroIndexRoute
   AuthenticatedAdminPremiumIndexRoute: typeof AuthenticatedAdminPremiumIndexRoute
   AuthenticatedAdminRegistrosIndexRoute: typeof AuthenticatedAdminRegistrosIndexRoute
   AuthenticatedAdminSuporteIndexRoute: typeof AuthenticatedAdminSuporteIndexRoute
@@ -485,6 +506,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminUsuariosIdRoute: AuthenticatedAdminUsuariosIdRoute,
     AuthenticatedAdminConfigIndexRoute: AuthenticatedAdminConfigIndexRoute,
     AuthenticatedAdminEmpresasIndexRoute: AuthenticatedAdminEmpresasIndexRoute,
+    AuthenticatedAdminFinanceiroIndexRoute:
+      AuthenticatedAdminFinanceiroIndexRoute,
     AuthenticatedAdminPremiumIndexRoute: AuthenticatedAdminPremiumIndexRoute,
     AuthenticatedAdminRegistrosIndexRoute:
       AuthenticatedAdminRegistrosIndexRoute,
