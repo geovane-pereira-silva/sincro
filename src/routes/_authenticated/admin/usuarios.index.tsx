@@ -105,6 +105,12 @@ function AdminUsuarios() {
       if (fOrigem === "direto" && p.referred_by) return false;
       if (fOrigem === "indicado" && !p.referred_by) return false;
 
+      if (planoGlobal !== "todos") {
+        const planoU = planoPorUsuario[p.id] ?? "free";
+        if (planoU !== planoGlobal) return false;
+      }
+
+
       const st = stats.get(p.id);
       const ativo =
         st != null && agora - new Date(st.ultima).getTime() <= SETE_DIAS;
