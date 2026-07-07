@@ -181,6 +181,7 @@ export type Database = {
           nome_completo: string
           setor_id: string | null
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           ativo?: boolean
@@ -201,6 +202,7 @@ export type Database = {
           nome_completo: string
           setor_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           ativo?: boolean
@@ -221,6 +223,7 @@ export type Database = {
           nome_completo?: string
           setor_id?: string | null
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: [
           {
