@@ -1,5 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   DollarSign,
   TrendingUp,
@@ -35,6 +38,18 @@ import {
   PLANO_USUARIO_LABEL,
 } from "@/lib/financeiro";
 import { cn } from "@/lib/utils";
+import { useAssinaturasAdmin } from "@/hooks/use-assinatura";
+import { cancelarAssinaturaAdmin } from "@/lib/assinaturas.functions";
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog";
+import { mensagemErro } from "@/lib/erros";
+import {
+  STATUS_ASSINATURA_LABEL,
+  STATUS_ASSINATURA_CLASSE,
+  fmtDataBR,
+  PLANOS,
+  type StatusAssinatura,
+  type PlanoPago,
+} from "@/lib/asaas";
 
 export const Route = createFileRoute("/_authenticated/admin/financeiro/")({
   head: () => ({ meta: [{ title: "Financeiro / CRM — SINCRO Admin" }] }),
@@ -342,6 +357,120 @@ function FinanceiroPage() {
           </div>
         )}
       </div>
+
+      {/* Assinaturas Asaas */}
+      <AssinaturasAdminSection nomePorId={nomePorId} />
+    </div>
+  );
+}
+
+function AssinaturasAdminSection({
+  nomePorId,
+}: {
+  nomePorId: Map<string, string>;
+}) {
+  const { data: assinaturas = [], isLoading } = useAssinaturasAdmin();
+  const cancelarFn = useServerFn(cancelarAssinaturaAdmin);
+  const queryClient = useQueryClient();
+  const [alvo, setAlvo] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function confirmar(motivo: string) {
+    if (!alvo) return;
+    setLoading(true);
+    try {
+      await cancelarFn({ data: { assinaturaId: alvo, motivo } });
+      await queryClient.invalidateQueries();
+      toast.success("Assinatura cancelada.");
+      setAlvo(null);
+    } catch (e) {
+      toast.error(mensagemErro(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="rounded-2xl bg-card p-5 shadow-card">
+      <h2 className="mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+        Assinaturas (Asaas)
+      </h2>
+      {isLoading ? (
+        <CardSkeleton />
+      ) : assinaturas.length === 0 ? (
+        <EmptyState
+          title="Nenhuma assinatura"
+          description="Ainda não há assinaturas pagas via Asaas."
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-muted-foreground">
+                <th className="pb-2 pr-3 font-medium">Usuário</th>
+                <th className="pb-2 pr-3 font-medium">Plano</th>
+                <th className="pb-2 pr-3 font-medium">Valor</th>
+                <th className="pb-2 pr-3 font-medium">Status</th>
+                <th className="pb-2 pr-3 font-medium">Próx. vencimento</th>
+                <th className="pb-2 pr-3 font-medium">Criada em</th>
+                <th className="pb-2 font-medium">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {assinaturas.map((a) => (
+                <tr key={a.id}>
+                  <td className="py-2 pr-3">
+                    {nomePorId.get(a.user_id) ?? "—"}
+                  </td>
+                  <td className="py-2 pr-3">
+                    {PLANOS[a.plano as PlanoPago]?.nome ?? a.plano}
+                  </td>
+                  <td className="py-2 pr-3 tabular-nums">
+                    {fmtMoeda(Number(a.valor) || 0)}
+                  </td>
+                  <td className="py-2 pr-3">
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                        STATUS_ASSINATURA_CLASSE[a.status as StatusAssinatura],
+                      )}
+                    >
+                      {STATUS_ASSINATURA_LABEL[a.status as StatusAssinatura] ??
+                        a.status}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-3">
+                    {fmtDataBR(a.proximo_vencimento)}
+                  </td>
+                  <td className="py-2 pr-3">{fmtDataBR(a.created_at)}</td>
+                  <td className="py-2">
+                    {(a.status === "active" || a.status === "overdue") && (
+                      <button
+                        type="button"
+                        onClick={() => setAlvo(a.id)}
+                        className="text-xs font-semibold text-ponto-saida hover:underline"
+                      >
+                        Cancelar
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <AdminConfirmDialog
+        open={!!alvo}
+        onOpenChange={(o) => !o && setAlvo(null)}
+        title="Cancelar assinatura"
+        description="A assinatura será cancelada no Asaas. O premium é mantido até o vencimento."
+        confirmLabel="Cancelar assinatura"
+        destructive
+        loading={loading}
+        onConfirm={confirmar}
+      />
     </div>
   );
 }
