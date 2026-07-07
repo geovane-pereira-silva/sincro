@@ -50,6 +50,8 @@ function AdminDashboard() {
   const { data: profiles = [], isLoading: lp } = useAdminProfiles();
   const { data: premium = [], isLoading: lpr } = useActivePremium();
   const { data: regs7 = [], isLoading: lr } = useAdminRegistros(7);
+  const { data: empresas = [] } = useEmpresas();
+  const { data: colabCount = {} } = useColaboradoresCount();
 
   const pmap = useMemo(() => premiumMap(premium), [premium]);
 
