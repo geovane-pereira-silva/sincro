@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Mail, MessageCircle, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useCriarConvite } from "@/hooks/use-convite-actions";
+import { useCriarConvite, useEnviarEmailConvite } from "@/hooks/use-convite-actions";
 import type { Setor, JornadaEmpresa } from "@/lib/empresas";
 import { tipoJornadaLabel } from "@/lib/empresas";
 
@@ -38,6 +38,7 @@ export function ConviteColaboradorDialog({
   jornadas: JornadaEmpresa[];
 }) {
   const criar = useCriarConvite();
+  const enviarEmailConvite = useEnviarEmailConvite();
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
@@ -45,6 +46,7 @@ export function ConviteColaboradorDialog({
   const [setorId, setSetorId] = useState("");
   const [jornadaId, setJornadaId] = useState("");
   const [link, setLink] = useState<string | null>(null);
+  const [enviandoEmail, setEnviandoEmail] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -82,13 +84,23 @@ export function ConviteColaboradorDialog({
   }
 
   const msgWhats = `Olá ${nome.split(" ")[0] || nome}! 👋 A ${empresaNome} usa o SINCRO para controle de jornada. Crie sua conta com o link abaixo — seus dados já estão preenchidos: ${link}`;
-  const emailAssunto = `${empresaNome} te convidou para o SINCRO`;
-  const emailCorpo = `Olá ${nome},\n\nSua empresa ${empresaNome} usa o SINCRO para controle de ponto. Clique no link abaixo para criar sua conta — seus dados já estão preenchidos:\n\n${link}\n\nAté já!`;
 
-  function enviarEmail() {
-    window.open(
-      `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(emailAssunto)}&body=${encodeURIComponent(emailCorpo)}`,
-    );
+  async function enviarEmail() {
+    if (!link) return;
+    setEnviandoEmail(true);
+    const ok = await enviarEmailConvite({
+      email: email.trim(),
+      nome: nome.trim(),
+      empresaNome,
+      link,
+    });
+    setEnviandoEmail(false);
+    if (ok) {
+      toast.success(`✓ Convite enviado para ${email.trim()}`);
+    } else {
+      await navigator.clipboard.writeText(link).catch(() => {});
+      toast.error("Email não enviado. Link copiado para área de transferência.");
+    }
   }
   function enviarWhats() {
     window.open(`https://wa.me/?text=${encodeURIComponent(msgWhats)}`, "_blank");
@@ -195,8 +207,17 @@ export function ConviteColaboradorDialog({
               <span className="truncate text-foreground">{link}</span>
             </div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Button variant="outline" onClick={enviarEmail}>
-                <Mail className="h-4 w-4" /> Email
+              <Button
+                variant="outline"
+                onClick={enviarEmail}
+                disabled={enviandoEmail}
+              >
+                {enviandoEmail ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="h-4 w-4" />
+                )}{" "}
+                Email
               </Button>
               <Button variant="outline" onClick={enviarWhats}>
                 <MessageCircle className="h-4 w-4" /> WhatsApp

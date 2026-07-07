@@ -16,6 +16,9 @@ import {
   Search,
   UserPlus,
   Send,
+  Download,
+  History,
+  ExternalLink,
 } from "lucide-react";
 import {
   LineChart,
@@ -68,17 +71,23 @@ import {
   useExcluirJornada,
   useDuplicarJornada,
 } from "@/hooks/use-empresa-actions";
-import { useReenviarConvite } from "@/hooks/use-convite-actions";
+import {
+  useReenviarConvite,
+  useEnviarEmailConvite,
+} from "@/hooks/use-convite-actions";
 import {
   TIPO_JORNADA_CLASSE,
   tipoJornadaLabel,
   planoEmpresaLabel,
   diasConfigurados,
   statusConvite,
+  colaboradorStatus,
+  fmtDataBr,
   type Setor,
   type Colaborador,
   type JornadaEmpresa,
 } from "@/lib/empresas";
+import { montarCsv, baixarCsv } from "@/lib/relatorios";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/empresas/$id")({
@@ -347,6 +356,7 @@ function ColaboradoresTab({
   const [toggle, setToggle] = useState<Colaborador | null>(null);
 
   const reenviarMut = useReenviarConvite();
+  const enviarEmailConvite = useEnviarEmailConvite();
   const excluirMut = useExcluirColaborador();
   const toggleMut = useToggleColaborador();
 
@@ -359,12 +369,32 @@ function ColaboradoresTab({
     const q = busca.trim().toLowerCase();
     return colaboradores.filter((c) => {
       if (setorFiltro !== "todos" && c.setor_id !== setorFiltro) return false;
-      if (statusFiltro === "ativo" && !c.ativo) return false;
-      if (statusFiltro === "demitido" && c.ativo) return false;
+      if (statusFiltro !== "todos" && colaboradorStatus(c) !== statusFiltro)
+        return false;
       if (q && !c.nome_completo.toLowerCase().includes(q)) return false;
       return true;
     });
   }, [colaboradores, busca, setorFiltro, statusFiltro]);
+
+  /** Reenvia o convite (novo token) e dispara o e-mail; fallback: copiar link. */
+  async function reenviar(c: Colaborador) {
+    const r = await reenviarMut.mutateAsync({ id: c.id });
+    const link = `${window.location.origin}/convite/${r.token}`;
+    if (c.email) {
+      const ok = await enviarEmailConvite({
+        email: c.email,
+        nome: c.nome_completo,
+        empresaNome,
+        link,
+      });
+      if (ok) {
+        toast.success(`✓ Convite reenviado para ${c.email}`);
+        return;
+      }
+    }
+    await navigator.clipboard.writeText(link).catch(() => {});
+    toast.error("Email não enviado. Link copiado para área de transferência.");
+  }
 
   return (
     <div className="space-y-4">
@@ -392,12 +422,14 @@ function ColaboradoresTab({
           </SelectContent>
         </Select>
         <Select value={statusFiltro} onValueChange={setStatusFiltro}>
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="ativo">Ativos</SelectItem>
+            <SelectItem value="pendente">Convite pendente</SelectItem>
+            <SelectItem value="expirado">Expirado</SelectItem>
             <SelectItem value="demitido">Demitidos</SelectItem>
           </SelectContent>
         </Select>
@@ -436,38 +468,7 @@ function ColaboradoresTab({
                     {c.setor_id ? setorNome.get(c.setor_id) : "Sem setor"}
                   </p>
                 </div>
-                {(() => {
-                  const st = statusConvite(c);
-                  if (st === "pendente")
-                    return (
-                      <span className="shrink-0 rounded-full bg-ponto-saida-intervalo/15 px-2 py-0.5 text-[11px] font-bold text-ponto-saida-intervalo">
-                        🟡 Convite pendente
-                      </span>
-                    );
-                  if (st === "expirado")
-                    return (
-                      <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
-                        Expirado
-                      </span>
-                    );
-                  if (!c.ativo)
-                    return (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                        Demitido
-                      </span>
-                    );
-                  if (st === "sem_convite")
-                    return (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                        ⚫ Sem convite
-                      </span>
-                    );
-                  return (
-                    <span className="shrink-0 rounded-full bg-ponto-entrada/15 px-2 py-0.5 text-[11px] font-bold text-ponto-entrada">
-                      🟢 Ativo
-                    </span>
-                  );
-                })()}
+                <StatusBadge status={colaboradorStatus(c)} />
                 <div className="flex shrink-0 items-center gap-1">
                   {(statusConvite(c) === "pendente" ||
                     statusConvite(c) === "expirado") && (
@@ -476,15 +477,7 @@ function ColaboradoresTab({
                       size="icon"
                       aria-label="Reenviar convite"
                       disabled={reenviarMut.isPending}
-                      onClick={async () => {
-                        const r = await reenviarMut.mutateAsync({ id: c.id });
-                        await navigator.clipboard
-                          .writeText(
-                            `${window.location.origin}/convite/${r.token}`,
-                          )
-                          .catch(() => {});
-                        toast.success("Convite reenviado — link copiado!");
-                      }}
+                      onClick={() => reenviar(c)}
                     >
                       <Send className="h-4 w-4" />
                     </Button>
@@ -526,6 +519,15 @@ function ColaboradoresTab({
           </ul>
         )}
       </div>
+
+      <HistoricoConvites
+        empresaNome={empresaNome}
+        colaboradores={colaboradores}
+        onReenviar={reenviar}
+        reenviando={reenviarMut.isPending}
+      />
+
+
 
       <ColaboradorDialog
         open={dialogOpen}
@@ -574,6 +576,194 @@ function ColaboradoresTab({
     </div>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Badge de status do colaborador                                     */
+/* ------------------------------------------------------------------ */
+function StatusBadge({ status }: { status: ReturnType<typeof colaboradorStatus> }) {
+  const cfg: Record<
+    ReturnType<typeof colaboradorStatus>,
+    { label: string; classe: string }
+  > = {
+    ativo: {
+      label: "🟢 Ativo",
+      classe: "bg-ponto-entrada/15 text-ponto-entrada",
+    },
+    pendente: {
+      label: "🟡 Convite pendente",
+      classe: "bg-ponto-saida-intervalo/15 text-ponto-saida-intervalo",
+    },
+    expirado: {
+      label: "🔴 Expirado",
+      classe: "bg-destructive/10 text-destructive",
+    },
+    demitido: {
+      label: "Demitido",
+      classe: "bg-muted text-muted-foreground",
+    },
+    inativo: {
+      label: "⚫ Inativo",
+      classe: "bg-muted text-muted-foreground",
+    },
+  };
+  const { label, classe } = cfg[status];
+  return (
+    <span
+      className={cn(
+        "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-bold",
+        classe,
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Histórico de convites                                              */
+/* ------------------------------------------------------------------ */
+function HistoricoConvites({
+  empresaNome,
+  colaboradores,
+  onReenviar,
+  reenviando,
+}: {
+  empresaNome: string;
+  colaboradores: Colaborador[];
+  onReenviar: (c: Colaborador) => void;
+  reenviando: boolean;
+}) {
+  const navigate = useNavigate();
+
+  // Apenas colaboradores que passaram por fluxo de convite.
+  const convidados = useMemo(
+    () =>
+      colaboradores
+        .filter((c) => c.convite_enviado_em || c.convite_aceito_em)
+        .sort((a, b) =>
+          (b.convite_enviado_em ?? "").localeCompare(a.convite_enviado_em ?? ""),
+        ),
+    [colaboradores],
+  );
+
+  function statusLabel(c: Colaborador): { txt: string; icon: string } {
+    const st = statusConvite(c);
+    if (st === "ativo" || c.convite_aceito_em)
+      return { txt: "Aceito", icon: "🟢" };
+    if (st === "pendente") return { txt: "Pendente", icon: "🟡" };
+    if (st === "expirado") return { txt: "Expirado", icon: "🔴" };
+    return { txt: "Não enviado", icon: "⚫" };
+  }
+
+  function exportar() {
+    const linhas = convidados.map((c) => {
+      const s = statusLabel(c);
+      return [
+        c.nome_completo,
+        c.email ?? "—",
+        fmtDataBr(c.convite_enviado_em),
+        fmtDataBr(c.convite_aceito_em),
+        s.txt,
+      ];
+    });
+    const csv = montarCsv(
+      ["Colaborador", "Email", "Enviado em", "Aceito em", "Status"],
+      linhas,
+    );
+    const slug = empresaNome
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    baixarCsv(`convites-${slug || "empresa"}.csv`, csv);
+  }
+
+  return (
+    <div className="rounded-2xl bg-card p-5 shadow-card">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          <History className="h-4 w-4" /> Histórico de convites
+        </h2>
+        {convidados.length > 0 && (
+          <Button variant="outline" size="sm" onClick={exportar}>
+            <Download className="h-4 w-4" /> Exportar CSV
+          </Button>
+        )}
+      </div>
+
+      {convidados.length === 0 ? (
+        <EmptyState
+          title="Nenhum convite enviado"
+          description="Convites gerados para colaboradores aparecerão aqui."
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <th className="py-2 pr-3 font-medium">Colaborador</th>
+                <th className="py-2 pr-3 font-medium">Email</th>
+                <th className="py-2 pr-3 font-medium">Enviado</th>
+                <th className="py-2 pr-3 font-medium">Aceito</th>
+                <th className="py-2 pr-3 font-medium">Status</th>
+                <th className="py-2 pr-3 font-medium">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {convidados.map((c) => {
+                const s = statusLabel(c);
+                const st = statusConvite(c);
+                const aceito = st === "ativo" || !!c.convite_aceito_em;
+                return (
+                  <tr key={c.id} className="border-b border-border/60">
+                    <td className="py-2.5 pr-3 font-medium text-primary">
+                      {c.nome_completo}
+                    </td>
+                    <td className="py-2.5 pr-3 text-muted-foreground">
+                      {c.email ?? "—"}
+                    </td>
+                    <td className="py-2.5 pr-3 text-muted-foreground">
+                      {fmtDataBr(c.convite_enviado_em)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-muted-foreground">
+                      {fmtDataBr(c.convite_aceito_em)}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      {s.icon} {s.txt}
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      {aceito ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate({ to: "/admin/usuarios" })}
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" /> Ver perfil
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={reenviando}
+                          onClick={() => onReenviar(c)}
+                        >
+                          <Send className="h-3.5 w-3.5" /> Reenviar
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 
 /* ================================================================== */
 /* Aba Setores                                                        */

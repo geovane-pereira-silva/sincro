@@ -195,3 +195,76 @@ export const marcarConviteAceito = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------------------------------------------------------ */
+/* Admin: enviar e-mail de convite (via Resend)                        */
+/* ------------------------------------------------------------------ */
+
+export const enviarEmailConvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      email: string;
+      nome: string;
+      empresaNome: string;
+      link: string;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperadmin(context as unknown as AuthedContext);
+    const { enviarConviteEmail } = await import("@/lib/email.server");
+    await enviarConviteEmail(data);
+    return { ok: true };
+  });
+
+/* ------------------------------------------------------------------ */
+/* Público: solicitar novo convite (token expirado)                    */
+/* ------------------------------------------------------------------ */
+
+export const solicitarNovoConvite = createServerFn({ method: "POST" })
+  .inputValidator((input: { token: string; email?: string | null }) => input)
+  .handler(async ({ data }) => {
+    const token = (data.token ?? "").trim();
+    if (!token) throw new Error("Convite inválido.");
+    const { supabaseAdmin } = await import(
+      "@/integrations/supabase/client.server"
+    );
+    const { data: col, error } = await supabaseAdmin
+      .from("colaboradores")
+      .select("id, nome_completo, email, empresa_id, convite_aceito_em")
+      .eq("convite_token", token)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!col) throw new Error("Convite inválido.");
+    if (col.convite_aceito_em) throw new Error("Esta conta já foi criada.");
+
+    const { data: emp } = await supabaseAdmin
+      .from("empresas")
+      .select("nome, email_contato, admin_user_id")
+      .eq("id", col.empresa_id)
+      .maybeSingle();
+
+    // Resolve e-mail do admin da empresa (contato ou perfil do admin).
+    let adminEmail = emp?.email_contato ?? null;
+    if (!adminEmail && emp?.admin_user_id) {
+      const { data: perfil } = await supabaseAdmin
+        .from("profiles")
+        .select("email")
+        .eq("id", emp.admin_user_id)
+        .maybeSingle();
+      adminEmail = perfil?.email ?? null;
+    }
+    if (!adminEmail) {
+      // Nenhum admin configurado: registra intenção, mas não há para quem enviar.
+      return { ok: false as const, motivo: "sem_admin" as const };
+    }
+
+    const { notificarAdminNovoConvite } = await import("@/lib/email.server");
+    await notificarAdminNovoConvite({
+      adminEmail,
+      empresaNome: emp?.nome ?? "sua empresa",
+      colaboradorNome: col.nome_completo,
+      colaboradorEmail: (data.email ?? col.email ?? "").trim() || "—",
+    });
+    return { ok: true as const };
+  });

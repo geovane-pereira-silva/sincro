@@ -94,6 +94,27 @@ export function statusConvite(c: Colaborador): StatusConvite {
   return "sem_convite";
 }
 
+/**
+ * Status de exibição consolidado do colaborador, combinando situação de
+ * convite e vínculo. Regra: demitido = inativo + data_demissao + sem convite
+ * pendente. Convites pendentes/expirados nunca contam como demitido.
+ */
+export type ColabStatus =
+  | "ativo"
+  | "pendente"
+  | "expirado"
+  | "demitido"
+  | "inativo";
+
+export function colaboradorStatus(c: Colaborador): ColabStatus {
+  const st = statusConvite(c);
+  if (st === "pendente") return "pendente";
+  if (st === "expirado") return "expirado";
+  if (c.ativo) return "ativo";
+  if (c.data_demissao && !c.convite_pendente) return "demitido";
+  return "inativo";
+}
+
 /** Normaliza "HH:MM:SS" -> "HH:MM"; retorna "—" quando vazio. */
 export function fmtHora(v: string | null | undefined): string {
   if (!v) return "—";
