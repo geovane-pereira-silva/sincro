@@ -39,6 +39,8 @@ import {
   InitialsAvatar,
   ListRowsSkeleton,
 } from "@/components/admin-ui";
+import { PlanFilter, usePlanFilter } from "@/components/plan-filter";
+import { usePlanoPorUsuario } from "@/hooks/use-financeiro";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/usuarios/")({
@@ -55,6 +57,8 @@ function AdminUsuarios() {
   const { data: premium = [], isLoading: lpr } = useActivePremium();
   const { data: batidas = [], isLoading: lb } = useAllBatidas();
   const toggleBloqueio = useToggleBloqueio();
+  const { plano: planoGlobal, setPlano: setPlanoGlobal } = usePlanFilter();
+  const { data: planoPorUsuario = {} } = usePlanoPorUsuario();
 
   const [busca, setBusca] = useState("");
   const [fPlano, setFPlano] = useState("todos");
@@ -101,6 +105,12 @@ function AdminUsuarios() {
       if (fOrigem === "direto" && p.referred_by) return false;
       if (fOrigem === "indicado" && !p.referred_by) return false;
 
+      if (planoGlobal !== "todos") {
+        const planoU = planoPorUsuario[p.id] ?? "free";
+        if (planoU !== planoGlobal) return false;
+      }
+
+
       const st = stats.get(p.id);
       const ativo =
         st != null && agora - new Date(st.ultima).getTime() <= SETE_DIAS;
@@ -127,7 +137,7 @@ function AdminUsuarios() {
       }
     });
     return lista;
-  }, [profiles, busca, fPlano, fStatus, fOrigem, ordem, pmap, stats]);
+  }, [profiles, busca, fPlano, fStatus, fOrigem, ordem, pmap, stats, planoGlobal, planoPorUsuario]);
 
   const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
   const pageSafe = Math.min(page, totalPages - 1);
@@ -147,12 +157,16 @@ function AdminUsuarios() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">Usuários</h1>
-        <p className="text-sm text-muted-foreground">
-          {filtrados.length} {filtrados.length === 1 ? "usuário" : "usuários"}
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Usuários</h1>
+          <p className="text-sm text-muted-foreground">
+            {filtrados.length} {filtrados.length === 1 ? "usuário" : "usuários"}
+          </p>
+        </div>
+        <PlanFilter value={planoGlobal} onChange={resetPage(setPlanoGlobal)} />
       </div>
+
 
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

@@ -71,6 +71,189 @@ export type Database = {
         }
         Relationships: []
       }
+      colaborador_jornadas: {
+        Row: {
+          colaborador_id: string
+          created_at: string
+          data_fim: string | null
+          data_inicio: string
+          id: string
+          jornada_id: string
+        }
+        Insert: {
+          colaborador_id: string
+          created_at?: string
+          data_fim?: string | null
+          data_inicio: string
+          id?: string
+          jornada_id: string
+        }
+        Update: {
+          colaborador_id?: string
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string
+          id?: string
+          jornada_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "colaborador_jornadas_colaborador_id_fkey"
+            columns: ["colaborador_id"]
+            isOneToOne: false
+            referencedRelation: "colaboradores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaborador_jornadas_jornada_id_fkey"
+            columns: ["jornada_id"]
+            isOneToOne: false
+            referencedRelation: "jornadas_empresa"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      colaboradores: {
+        Row: {
+          ativo: boolean
+          cargo: string | null
+          cpf: string | null
+          created_at: string
+          data_admissao: string | null
+          data_demissao: string | null
+          email: string | null
+          empresa_id: string
+          foto_url: string | null
+          id: string
+          matricula: string | null
+          nome_completo: string
+          setor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cargo?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_admissao?: string | null
+          data_demissao?: string | null
+          email?: string | null
+          empresa_id: string
+          foto_url?: string | null
+          id?: string
+          matricula?: string | null
+          nome_completo: string
+          setor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cargo?: string | null
+          cpf?: string | null
+          created_at?: string
+          data_admissao?: string | null
+          data_demissao?: string | null
+          email?: string | null
+          empresa_id?: string
+          foto_url?: string | null
+          id?: string
+          matricula?: string | null
+          nome_completo?: string
+          setor_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "colaboradores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colaboradores_setor_id_fkey"
+            columns: ["setor_id"]
+            isOneToOne: false
+            referencedRelation: "setores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_eventos: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          descricao: string | null
+          id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      empresas: {
+        Row: {
+          admin_user_id: string | null
+          ativo: boolean
+          cnpj: string | null
+          created_at: string
+          email_contato: string | null
+          id: string
+          logo_url: string | null
+          max_colaboradores: number
+          nome: string
+          plano: string
+          telefone: string | null
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          admin_user_id?: string | null
+          ativo?: boolean
+          cnpj?: string | null
+          created_at?: string
+          email_contato?: string | null
+          id?: string
+          logo_url?: string | null
+          max_colaboradores?: number
+          nome: string
+          plano?: string
+          telefone?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_user_id?: string | null
+          ativo?: boolean
+          cnpj?: string | null
+          created_at?: string
+          email_contato?: string | null
+          id?: string
+          logo_url?: string | null
+          max_colaboradores?: number
+          nome?: string
+          plano?: string
+          telefone?: string | null
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jornada_config: {
         Row: {
           adicional_noturno: boolean
@@ -115,6 +298,131 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      jornadas_empresa: {
+        Row: {
+          adicional_noturno: boolean
+          banco_horas_ativo: boolean
+          carga_semanal_horas: number | null
+          created_at: string
+          domingo_entrada: string | null
+          domingo_intervalo: number | null
+          domingo_saida: string | null
+          empresa_id: string
+          escala_descricao: string | null
+          escala_horas_folga: number | null
+          escala_horas_trabalho: number | null
+          folgas_flexiveis_semana: number | null
+          he_percentual_dia_util: number
+          he_percentual_feriado: number
+          id: string
+          nome: string
+          quarta_entrada: string | null
+          quarta_intervalo: number | null
+          quarta_saida: string | null
+          quinta_entrada: string | null
+          quinta_intervalo: number | null
+          quinta_saida: string | null
+          sabado_entrada: string | null
+          sabado_intervalo: number | null
+          sabado_saida: string | null
+          segunda_entrada: string | null
+          segunda_intervalo: number | null
+          segunda_saida: string | null
+          sexta_entrada: string | null
+          sexta_intervalo: number | null
+          sexta_saida: string | null
+          terca_entrada: string | null
+          terca_intervalo: number | null
+          terca_saida: string | null
+          tipo: string
+          tolerancia_minutos: number
+        }
+        Insert: {
+          adicional_noturno?: boolean
+          banco_horas_ativo?: boolean
+          carga_semanal_horas?: number | null
+          created_at?: string
+          domingo_entrada?: string | null
+          domingo_intervalo?: number | null
+          domingo_saida?: string | null
+          empresa_id: string
+          escala_descricao?: string | null
+          escala_horas_folga?: number | null
+          escala_horas_trabalho?: number | null
+          folgas_flexiveis_semana?: number | null
+          he_percentual_dia_util?: number
+          he_percentual_feriado?: number
+          id?: string
+          nome: string
+          quarta_entrada?: string | null
+          quarta_intervalo?: number | null
+          quarta_saida?: string | null
+          quinta_entrada?: string | null
+          quinta_intervalo?: number | null
+          quinta_saida?: string | null
+          sabado_entrada?: string | null
+          sabado_intervalo?: number | null
+          sabado_saida?: string | null
+          segunda_entrada?: string | null
+          segunda_intervalo?: number | null
+          segunda_saida?: string | null
+          sexta_entrada?: string | null
+          sexta_intervalo?: number | null
+          sexta_saida?: string | null
+          terca_entrada?: string | null
+          terca_intervalo?: number | null
+          terca_saida?: string | null
+          tipo: string
+          tolerancia_minutos?: number
+        }
+        Update: {
+          adicional_noturno?: boolean
+          banco_horas_ativo?: boolean
+          carga_semanal_horas?: number | null
+          created_at?: string
+          domingo_entrada?: string | null
+          domingo_intervalo?: number | null
+          domingo_saida?: string | null
+          empresa_id?: string
+          escala_descricao?: string | null
+          escala_horas_folga?: number | null
+          escala_horas_trabalho?: number | null
+          folgas_flexiveis_semana?: number | null
+          he_percentual_dia_util?: number
+          he_percentual_feriado?: number
+          id?: string
+          nome?: string
+          quarta_entrada?: string | null
+          quarta_intervalo?: number | null
+          quarta_saida?: string | null
+          quinta_entrada?: string | null
+          quinta_intervalo?: number | null
+          quinta_saida?: string | null
+          sabado_entrada?: string | null
+          sabado_intervalo?: number | null
+          sabado_saida?: string | null
+          segunda_entrada?: string | null
+          segunda_intervalo?: number | null
+          segunda_saida?: string | null
+          sexta_entrada?: string | null
+          sexta_intervalo?: number | null
+          sexta_saida?: string | null
+          terca_entrada?: string | null
+          terca_intervalo?: number | null
+          terca_saida?: string | null
+          tipo?: string
+          tolerancia_minutos?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jornadas_empresa_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ponto_registros: {
         Row: {
@@ -227,6 +535,77 @@ export type Database = {
           referred_by?: string | null
           timezone?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      setores: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          empresa_id: string
+          id: string
+          nome: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          empresa_id: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          empresa_id?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "setores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_plans: {
+        Row: {
+          cancelado_em: string | null
+          created_at: string
+          data_fim: string | null
+          data_inicio: string | null
+          id: string
+          motivo_cancelamento: string | null
+          plano: string
+          updated_at: string
+          user_id: string
+          valor_cobrado: number | null
+        }
+        Insert: {
+          cancelado_em?: string | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          plano?: string
+          updated_at?: string
+          user_id: string
+          valor_cobrado?: number | null
+        }
+        Update: {
+          cancelado_em?: string | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          id?: string
+          motivo_cancelamento?: string | null
+          plano?: string
+          updated_at?: string
+          user_id?: string
+          valor_cobrado?: number | null
         }
         Relationships: []
       }
