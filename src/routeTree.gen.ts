@@ -30,6 +30,7 @@ import { Route as AuthenticatedAdminEmpresasIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedAdminConfigIndexRouteImport } from './routes/_authenticated/admin/config.index'
 import { Route as AuthenticatedAdminUsuariosIdRouteImport } from './routes/_authenticated/admin/usuarios.$id'
 import { Route as AuthenticatedAdminEmpresasNovaRouteImport } from './routes/_authenticated/admin/empresas.nova'
+import { Route as AuthenticatedAdminEmpresasIdRouteImport } from './routes/_authenticated/admin/empresas.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -145,6 +146,12 @@ const AuthenticatedAdminEmpresasNovaRoute =
     path: '/empresas/nova',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminEmpresasIdRoute =
+  AuthenticatedAdminEmpresasIdRouteImport.update({
+    id: '/empresas/$id',
+    path: '/empresas/$id',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
@@ -180,6 +188,7 @@ export interface FileRoutesByTo {
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/admin/config': typeof AuthenticatedAdminConfigIndexRoute
@@ -204,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/_authenticated/editar/$id': typeof AuthenticatedEditarIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/_authenticated/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
   '/_authenticated/admin/config/': typeof AuthenticatedAdminConfigIndexRoute
@@ -228,6 +238,7 @@ export interface FileRouteTypes {
     | '/admin/gamificacao'
     | '/editar/$id'
     | '/admin/'
+    | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
     | '/admin/config/'
@@ -249,6 +260,7 @@ export interface FileRouteTypes {
     | '/admin/gamificacao'
     | '/editar/$id'
     | '/admin'
+    | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
     | '/admin/config'
@@ -272,6 +284,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/gamificacao'
     | '/_authenticated/editar/$id'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/empresas/$id'
     | '/_authenticated/admin/empresas/nova'
     | '/_authenticated/admin/usuarios/$id'
     | '/_authenticated/admin/config/'
@@ -439,12 +452,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEmpresasNovaRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/empresas/$id': {
+      id: '/_authenticated/admin/empresas/$id'
+      path: '/empresas/$id'
+      fullPath: '/admin/empresas/$id'
+      preLoaderRoute: typeof AuthenticatedAdminEmpresasIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminGamificacaoRoute: typeof AuthenticatedAdminGamificacaoRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminEmpresasIdRoute: typeof AuthenticatedAdminEmpresasIdRoute
   AuthenticatedAdminEmpresasNovaRoute: typeof AuthenticatedAdminEmpresasNovaRoute
   AuthenticatedAdminUsuariosIdRoute: typeof AuthenticatedAdminUsuariosIdRoute
   AuthenticatedAdminConfigIndexRoute: typeof AuthenticatedAdminConfigIndexRoute
@@ -459,6 +480,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
   {
     AuthenticatedAdminGamificacaoRoute: AuthenticatedAdminGamificacaoRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+    AuthenticatedAdminEmpresasIdRoute: AuthenticatedAdminEmpresasIdRoute,
     AuthenticatedAdminEmpresasNovaRoute: AuthenticatedAdminEmpresasNovaRoute,
     AuthenticatedAdminUsuariosIdRoute: AuthenticatedAdminUsuariosIdRoute,
     AuthenticatedAdminConfigIndexRoute: AuthenticatedAdminConfigIndexRoute,
