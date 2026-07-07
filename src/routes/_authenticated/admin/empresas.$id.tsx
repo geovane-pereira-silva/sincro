@@ -422,12 +422,14 @@ function ColaboradoresTab({
           </SelectContent>
         </Select>
         <Select value={statusFiltro} onValueChange={setStatusFiltro}>
-          <SelectTrigger className="w-[130px]">
+          <SelectTrigger className="w-[160px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="todos">Todos</SelectItem>
             <SelectItem value="ativo">Ativos</SelectItem>
+            <SelectItem value="pendente">Convite pendente</SelectItem>
+            <SelectItem value="expirado">Expirado</SelectItem>
             <SelectItem value="demitido">Demitidos</SelectItem>
           </SelectContent>
         </Select>
