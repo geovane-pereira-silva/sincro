@@ -119,11 +119,29 @@ function PlanoCard({
 function PlanosPage() {
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
+
+  return (
+    <AppShell profile={profile ?? null}>
+      <PlanosConteudo
+        nomePadrao={profile?.nome_completo ?? ""}
+        emailPadrao={profile?.email ?? user?.email ?? ""}
+      />
+    </AppShell>
+  );
+}
+
+function PlanosConteudo({
+  nomePadrao,
+  emailPadrao,
+}: {
+  nomePadrao: string;
+  emailPadrao: string;
+}) {
   const { openUpsell } = usePremium();
   const [checkout, setCheckout] = useState<PlanoPago | null>(null);
 
   return (
-    <AppShell>
+    <>
       <div className="mx-auto max-w-3xl px-4 py-6">
         <header className="text-center">
           <h1 className="text-2xl font-bold text-foreground">
@@ -169,10 +187,10 @@ function PlanosPage() {
           open={!!checkout}
           onOpenChange={(o) => !o && setCheckout(null)}
           plano={checkout}
-          nomePadrao={profile?.nome_completo ?? ""}
-          emailPadrao={profile?.email ?? user?.email ?? ""}
+          nomePadrao={nomePadrao}
+          emailPadrao={emailPadrao}
         />
       )}
-    </AppShell>
+    </>
   );
 }
