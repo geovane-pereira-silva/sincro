@@ -38,6 +38,17 @@ import {
   PLANO_USUARIO_LABEL,
 } from "@/lib/financeiro";
 import { cn } from "@/lib/utils";
+import { useAssinaturasAdmin } from "@/hooks/use-assinatura";
+import { cancelarAssinaturaAdmin } from "@/lib/assinaturas.functions";
+import { AdminConfirmDialog } from "@/components/admin-confirm-dialog";
+import { mensagemErro } from "@/lib/erros";
+import {
+  STATUS_ASSINATURA_LABEL,
+  STATUS_ASSINATURA_CLASSE,
+  fmtDataBR,
+  planoUsuarioLabel as planoPagoLabel,
+  type StatusAssinatura,
+} from "@/lib/asaas";
 
 export const Route = createFileRoute("/_authenticated/admin/financeiro/")({
   head: () => ({ meta: [{ title: "Financeiro / CRM — SINCRO Admin" }] }),
