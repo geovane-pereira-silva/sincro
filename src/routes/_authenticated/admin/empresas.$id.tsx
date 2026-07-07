@@ -468,38 +468,7 @@ function ColaboradoresTab({
                     {c.setor_id ? setorNome.get(c.setor_id) : "Sem setor"}
                   </p>
                 </div>
-                {(() => {
-                  const st = statusConvite(c);
-                  if (st === "pendente")
-                    return (
-                      <span className="shrink-0 rounded-full bg-ponto-saida-intervalo/15 px-2 py-0.5 text-[11px] font-bold text-ponto-saida-intervalo">
-                        🟡 Convite pendente
-                      </span>
-                    );
-                  if (st === "expirado")
-                    return (
-                      <span className="shrink-0 rounded-full bg-destructive/10 px-2 py-0.5 text-[11px] font-bold text-destructive">
-                        Expirado
-                      </span>
-                    );
-                  if (!c.ativo)
-                    return (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                        Demitido
-                      </span>
-                    );
-                  if (st === "sem_convite")
-                    return (
-                      <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
-                        ⚫ Sem convite
-                      </span>
-                    );
-                  return (
-                    <span className="shrink-0 rounded-full bg-ponto-entrada/15 px-2 py-0.5 text-[11px] font-bold text-ponto-entrada">
-                      🟢 Ativo
-                    </span>
-                  );
-                })()}
+                <StatusBadge status={colaboradorStatus(c)} />
                 <div className="flex shrink-0 items-center gap-1">
                   {(statusConvite(c) === "pendente" ||
                     statusConvite(c) === "expirado") && (
@@ -508,15 +477,7 @@ function ColaboradoresTab({
                       size="icon"
                       aria-label="Reenviar convite"
                       disabled={reenviarMut.isPending}
-                      onClick={async () => {
-                        const r = await reenviarMut.mutateAsync({ id: c.id });
-                        await navigator.clipboard
-                          .writeText(
-                            `${window.location.origin}/convite/${r.token}`,
-                          )
-                          .catch(() => {});
-                        toast.success("Convite reenviado — link copiado!");
-                      }}
+                      onClick={() => reenviar(c)}
                     >
                       <Send className="h-4 w-4" />
                     </Button>
