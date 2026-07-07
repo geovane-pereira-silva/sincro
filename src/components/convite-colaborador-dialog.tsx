@@ -84,13 +84,23 @@ export function ConviteColaboradorDialog({
   }
 
   const msgWhats = `Olá ${nome.split(" ")[0] || nome}! 👋 A ${empresaNome} usa o SINCRO para controle de jornada. Crie sua conta com o link abaixo — seus dados já estão preenchidos: ${link}`;
-  const emailAssunto = `${empresaNome} te convidou para o SINCRO`;
-  const emailCorpo = `Olá ${nome},\n\nSua empresa ${empresaNome} usa o SINCRO para controle de ponto. Clique no link abaixo para criar sua conta — seus dados já estão preenchidos:\n\n${link}\n\nAté já!`;
 
-  function enviarEmail() {
-    window.open(
-      `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(emailAssunto)}&body=${encodeURIComponent(emailCorpo)}`,
-    );
+  async function enviarEmail() {
+    if (!link) return;
+    setEnviandoEmail(true);
+    const ok = await enviarEmailConvite({
+      email: email.trim(),
+      nome: nome.trim(),
+      empresaNome,
+      link,
+    });
+    setEnviandoEmail(false);
+    if (ok) {
+      toast.success(`✓ Convite enviado para ${email.trim()}`);
+    } else {
+      await navigator.clipboard.writeText(link).catch(() => {});
+      toast.error("Email não enviado. Link copiado para área de transferência.");
+    }
   }
   function enviarWhats() {
     window.open(`https://wa.me/?text=${encodeURIComponent(msgWhats)}`, "_blank");
