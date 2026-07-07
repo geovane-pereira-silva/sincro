@@ -1,12 +1,15 @@
 import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Users, Activity, Clock, Share2 } from "lucide-react";
+import { Users, Activity, Clock, Share2, Building2, UsersRound } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import {
   useAdminProfiles,
   useActivePremium,
   useAdminRegistros,
 } from "@/hooks/use-admin";
+import { useEmpresas, useColaboradoresCount } from "@/hooks/use-empresas";
 import { premiumMap, formatDataCurta } from "@/lib/admin";
+import { planoEmpresaLabel } from "@/lib/empresas";
 import { dayKeyInTz } from "@/lib/ponto";
 import {
   EmptyState,
@@ -15,6 +18,7 @@ import {
   InitialsAvatar,
   PremiumBadge,
 } from "@/components/admin-ui";
+
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
