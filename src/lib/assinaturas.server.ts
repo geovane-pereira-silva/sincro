@@ -77,7 +77,7 @@ export async function atualizarStatusAssinatura(
   const { data: row } = await query.maybeSingle();
   if (!row) return null;
 
-  await db.from("assinaturas").update(patch).eq("id", row.id);
+  await db.from("assinaturas").update(patch as never).eq("id", row.id);
   return {
     user_id: row.user_id,
     plano: row.plano as PlanoPago,
