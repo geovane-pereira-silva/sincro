@@ -52,6 +52,7 @@ import {
 } from "@/components/admin-ui";
 import { AdminConfirmDialog } from "@/components/admin-confirm-dialog";
 import { EmpresaFormDialog } from "@/components/empresa-form-dialog";
+import { GestorEmpresaCard } from "@/components/gestor-empresa-card";
 import { SetorDialog } from "@/components/setor-dialog";
 import { ColaboradorDialog } from "@/components/colaborador-dialog";
 import { ConviteColaboradorDialog } from "@/components/convite-colaborador-dialog";
@@ -213,6 +214,15 @@ function EmpresaDetalhe() {
             <StatCard icon={Layers} value={setores.length} label="Setores" />
             <StatCard icon={CalendarClock} value={jornadas.length} label="Jornadas" />
           </div>
+
+          {empresa && (
+            <GestorEmpresaCard
+              empresaId={empresa.id}
+              empresaNome={empresa.nome}
+              emailContato={empresa.email_contato}
+            />
+          )}
+
 
           <div className="rounded-2xl bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">

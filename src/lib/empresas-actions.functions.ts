@@ -1,19 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  assertGestaoEmpresa,
+  empresaDoRegistro,
+  type AuthedCtx,
+} from "@/lib/gestao-auth";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                            */
 /* ------------------------------------------------------------------ */
 
-type AuthedContext = {
-  supabase: {
-    rpc: (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: unknown }>;
-  };
-  userId: string;
-};
+type AuthedContext = AuthedCtx;
 
 async function assertSuperadmin(context: AuthedContext): Promise<void> {
   const { data, error } = await context.supabase.rpc("has_role", {
@@ -45,7 +42,7 @@ async function registrarAuditoria(
 }
 
 /* ------------------------------------------------------------------ */
-/* Empresas                                                          */
+/* Empresas (somente superadmin)                                      */
 /* ------------------------------------------------------------------ */
 
 export const salvarEmpresa = createServerFn({ method: "POST" })
@@ -105,7 +102,7 @@ export const excluirEmpresa = createServerFn({ method: "POST" })
   });
 
 /* ------------------------------------------------------------------ */
-/* Setores                                                           */
+/* Setores (superadmin ou gestor da empresa)                          */
 /* ------------------------------------------------------------------ */
 
 export const salvarSetor = createServerFn({ method: "POST" })
@@ -114,10 +111,14 @@ export const salvarSetor = createServerFn({ method: "POST" })
     (input: { id?: string; valores: Record<string, unknown> }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = data.id
+      ? await empresaDoRegistro(supabaseAdmin, "setores", data.id)
+      : ((data.valores.empresa_id as string) ?? null);
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     if (data.id) {
       const { error } = await supabaseAdmin
         .from("setores")
@@ -139,10 +140,12 @@ export const excluirSetor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string; motivo: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = await empresaDoRegistro(supabaseAdmin, "setores", data.id);
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     const { data: anterior } = await supabaseAdmin
       .from("setores")
       .select("*")
@@ -165,7 +168,7 @@ export const excluirSetor = createServerFn({ method: "POST" })
   });
 
 /* ------------------------------------------------------------------ */
-/* Colaboradores                                                     */
+/* Colaboradores (superadmin ou gestor da empresa)                    */
 /* ------------------------------------------------------------------ */
 
 export const salvarColaborador = createServerFn({ method: "POST" })
@@ -178,10 +181,14 @@ export const salvarColaborador = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = data.id
+      ? await empresaDoRegistro(supabaseAdmin, "colaboradores", data.id)
+      : ((data.valores.empresa_id as string) ?? null);
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     let colaboradorId = data.id;
     if (colaboradorId) {
       const { error } = await supabaseAdmin
@@ -222,10 +229,16 @@ export const toggleColaboradorAtivo = createServerFn({ method: "POST" })
     (input: { id: string; ativo: boolean; motivo: string }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "colaboradores",
+      data.id,
+    );
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     const { data: anterior } = await supabaseAdmin
       .from("colaboradores")
       .select("ativo, data_demissao")
@@ -253,10 +266,16 @@ export const excluirColaborador = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string; motivo: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "colaboradores",
+      data.id,
+    );
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     const { data: anterior } = await supabaseAdmin
       .from("colaboradores")
       .select("*")
@@ -279,7 +298,7 @@ export const excluirColaborador = createServerFn({ method: "POST" })
   });
 
 /* ------------------------------------------------------------------ */
-/* Jornadas                                                          */
+/* Jornadas (superadmin ou gestor da empresa)                         */
 /* ------------------------------------------------------------------ */
 
 export const salvarJornada = createServerFn({ method: "POST" })
@@ -288,10 +307,14 @@ export const salvarJornada = createServerFn({ method: "POST" })
     (input: { id?: string; valores: Record<string, unknown> }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = data.id
+      ? await empresaDoRegistro(supabaseAdmin, "jornadas_empresa", data.id)
+      : ((data.valores.empresa_id as string) ?? null);
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     if (data.id) {
       const { error } = await supabaseAdmin
         .from("jornadas_empresa")
@@ -313,10 +336,16 @@ export const duplicarJornada = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "jornadas_empresa",
+      data.id,
+    );
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     const { data: orig, error: e1 } = await supabaseAdmin
       .from("jornadas_empresa")
       .select("*")
@@ -342,10 +371,16 @@ export const excluirJornada = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string; motivo: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    const ctx = context as unknown as AuthedContext;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "jornadas_empresa",
+      data.id,
+    );
+    await assertGestaoEmpresa(ctx, supabaseAdmin, empresaId);
     const { data: anterior } = await supabaseAdmin
       .from("jornadas_empresa")
       .select("*")

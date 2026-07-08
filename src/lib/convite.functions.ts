@@ -1,27 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  assertGestaoEmpresa,
+  assertSuperadminOuGestor,
+  empresaDoRegistro,
+  type AuthedCtx,
+} from "@/lib/gestao-auth";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-type AuthedContext = {
-  supabase: {
-    rpc: (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: unknown }>;
-  };
-  userId: string;
-};
-
-async function assertSuperadmin(context: AuthedContext): Promise<void> {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "superadmin",
-  });
-  if (error || data !== true) throw new Error("Forbidden");
-}
+type AuthedContext = AuthedCtx;
 
 const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -44,9 +34,13 @@ export const criarConviteColaborador = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
+    );
+    await assertGestaoEmpresa(
+      context as unknown as AuthedContext,
+      supabaseAdmin,
+      data.empresaId,
     );
 
     const token = crypto.randomUUID();
@@ -83,9 +77,18 @@ export const reenviarConvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
+    );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "colaboradores",
+      data.id,
+    );
+    await assertGestaoEmpresa(
+      context as unknown as AuthedContext,
+      supabaseAdmin,
+      empresaId,
     );
     const token = crypto.randomUUID();
     const { error } = await supabaseAdmin
@@ -211,7 +214,7 @@ export const enviarEmailConvite = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    await assertSuperadminOuGestor(context as unknown as AuthedContext);
     const { enviarConviteEmail } = await import("@/lib/email.server");
     await enviarConviteEmail(data);
     return { ok: true };

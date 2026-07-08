@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Check, Pencil, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -47,9 +47,17 @@ export const Route = createFileRoute("/_authenticated/ponto")({
 
 function PontoPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: profile, isLoading: loadingProfile } = useProfile(user?.id);
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
+
+  // Gestores de empresa têm painel próprio.
+  useEffect(() => {
+    if (profile?.tipo_conta === "gestor") {
+      navigate({ to: "/gestor", replace: true });
+    }
+  }, [profile?.tipo_conta, navigate]);
 
   const queryClient = useQueryClient();
 
