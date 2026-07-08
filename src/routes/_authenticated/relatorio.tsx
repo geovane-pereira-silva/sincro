@@ -69,9 +69,15 @@ function RelatorioConteudo({
 }) {
   const { isPremium, openUpsell } = usePremium();
   const { data: jornadaConfig } = useJornadaConfig(user?.id);
+  const isMobile = useIsMobile();
   const tz = profile?.timezone ?? "America/Sao_Paulo";
   const carga = profile?.carga_horaria_diaria ?? 8;
   const config = jornadaConfig ?? JORNADA_CONFIG_DEFAULT;
+
+  // Autônomos podem inserir/editar batidas manualmente pelo relatório.
+  const isAutonomo =
+    !profile?.tipo_conta || profile.tipo_conta === "autonomo";
+  const [editorDay, setEditorDay] = useState<string | null>(null);
 
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
