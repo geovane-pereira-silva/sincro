@@ -10,6 +10,7 @@ import {
   Crown,
   LifeBuoy,
   Settings,
+  BookOpen,
   ArrowLeft,
 } from "lucide-react";
 import { SincroMark } from "@/components/sincro-logo";
@@ -27,6 +28,7 @@ const NAV = [
   { to: "/admin/premium", label: "Premium", icon: Crown, exact: false },
   { to: "/admin/suporte", label: "Suporte", icon: LifeBuoy, exact: false },
   { to: "/admin/config", label: "Config", icon: Settings, exact: false },
+  { to: "/admin/recursos", label: "Recursos", icon: BookOpen, exact: false },
 ] as const;
 
 function PlanoFiltroBadge() {
