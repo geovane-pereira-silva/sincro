@@ -12,6 +12,9 @@ import {
   Settings,
   BookOpen,
   ArrowLeft,
+  Download,
+  Webhook,
+  History,
 } from "lucide-react";
 import { SincroMark } from "@/components/sincro-logo";
 import { AdminGlobalSearch } from "@/components/admin-global-search";
