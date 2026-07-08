@@ -7,7 +7,9 @@ import type { User } from "@supabase/supabase-js";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useRegistros } from "@/hooks/use-registros";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { AppShell } from "@/components/app-shell";
+import { PontoDiaEditor } from "@/components/ponto-dia-editor";
 import { MonthNav } from "@/routes/_authenticated/historico";
 import { usePremium } from "@/components/premium-context";
 import {
