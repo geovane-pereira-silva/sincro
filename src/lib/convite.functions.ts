@@ -214,7 +214,7 @@ export const enviarEmailConvite = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
+    await assertSuperadminOuGestor(context as unknown as AuthedContext);
     const { enviarConviteEmail } = await import("@/lib/email.server");
     await enviarConviteEmail(data);
     return { ok: true };
