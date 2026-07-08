@@ -33,6 +33,7 @@ import {
 import {
   agruparPorDia,
   diasDoMes,
+  formatDayKey,
   formatDuracao,
   formatSaldo,
   formatTime,
