@@ -1,27 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  assertGestaoEmpresa,
+  assertSuperadminOuGestor,
+  empresaDoRegistro,
+  type AuthedCtx,
+} from "@/lib/gestao-auth";
 
 /* ------------------------------------------------------------------ */
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-type AuthedContext = {
-  supabase: {
-    rpc: (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: unknown }>;
-  };
-  userId: string;
-};
-
-async function assertSuperadmin(context: AuthedContext): Promise<void> {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "superadmin",
-  });
-  if (error || data !== true) throw new Error("Forbidden");
-}
+type AuthedContext = AuthedCtx;
 
 const SETE_DIAS_MS = 7 * 24 * 60 * 60 * 1000;
 
