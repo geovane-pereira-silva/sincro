@@ -77,9 +77,18 @@ export const reenviarConvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
+    );
+    const empresaId = await empresaDoRegistro(
+      supabaseAdmin,
+      "colaboradores",
+      data.id,
+    );
+    await assertGestaoEmpresa(
+      context as unknown as AuthedContext,
+      supabaseAdmin,
+      empresaId,
     );
     const token = crypto.randomUUID();
     const { error } = await supabaseAdmin
