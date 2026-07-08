@@ -149,6 +149,7 @@ function RelatorioConteudo({
       bhAcum += calc.bancoDia;
       return {
         dayKey,
+        regs,
         resumo,
         completo,
         temRegistros: regs.length > 0,
