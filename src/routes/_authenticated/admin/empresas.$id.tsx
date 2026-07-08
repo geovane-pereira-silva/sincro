@@ -215,6 +215,15 @@ function EmpresaDetalhe() {
             <StatCard icon={CalendarClock} value={jornadas.length} label="Jornadas" />
           </div>
 
+          {empresa && (
+            <GestorEmpresaCard
+              empresaId={empresa.id}
+              empresaNome={empresa.nome}
+              emailContato={empresa.email_contato}
+            />
+          )}
+
+
           <div className="rounded-2xl bg-card p-5 shadow-card">
             <h2 className="mb-4 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               Batidas — últimos 30 dias
