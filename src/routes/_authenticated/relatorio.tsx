@@ -805,6 +805,36 @@ function ResumoCard({
   );
 }
 
+function PunchCell({ label, hora }: { label: string; hora?: string | false }) {
+  return (
+    <div className="rounded-lg bg-secondary/50 py-1.5">
+      <p className="text-[10px] leading-tight text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-sm font-semibold text-foreground">
+        {hora || "·"}
+      </p>
+    </div>
+  );
+}
+
+function MiniMetric({
+  label,
+  valor,
+  classe,
+}: {
+  label: string;
+  valor: string;
+  classe?: string;
+}) {
+  return (
+    <div>
+      <p className="text-[10px] leading-tight text-muted-foreground">{label}</p>
+      <p className={cn("mt-0.5 text-sm font-bold text-foreground", classe)}>
+        {valor}
+      </p>
+    </div>
+  );
+}
+
 
 
 function ProdutividadeChart({
