@@ -71,6 +71,48 @@ export type Database = {
         }
         Relationships: []
       }
+      asaas_webhook_eventos: {
+        Row: {
+          created_at: string
+          erro: string | null
+          evento: string
+          id: string
+          origem: string
+          payload: Json | null
+          payment_id: string | null
+          status_processamento: string
+          subscription_id: string | null
+          token_valido: boolean
+          valor: number | null
+        }
+        Insert: {
+          created_at?: string
+          erro?: string | null
+          evento: string
+          id?: string
+          origem?: string
+          payload?: Json | null
+          payment_id?: string | null
+          status_processamento?: string
+          subscription_id?: string | null
+          token_valido?: boolean
+          valor?: number | null
+        }
+        Update: {
+          created_at?: string
+          erro?: string | null
+          evento?: string
+          id?: string
+          origem?: string
+          payload?: Json | null
+          payment_id?: string | null
+          status_processamento?: string
+          subscription_id?: string | null
+          token_valido?: boolean
+          valor?: number | null
+        }
+        Relationships: []
+      }
       assinaturas: {
         Row: {
           asaas_customer_id: string | null
@@ -716,6 +758,7 @@ export type Database = {
     }
     Functions: {
       aplicar_indicacao: { Args: { _codigo: string }; Returns: undefined }
+      empresa_do_usuario: { Args: { _user_id: string }; Returns: string }
       generate_referral_code: { Args: { nome: string }; Returns: string }
       generate_username: { Args: { _base: string }; Returns: string }
       has_role: {
@@ -728,7 +771,7 @@ export type Database = {
       verificar_recompensas_premium: { Args: never; Returns: Json }
     }
     Enums: {
-      app_role: "superadmin" | "user"
+      app_role: "superadmin" | "user" | "gestor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -856,7 +899,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["superadmin", "user"],
+      app_role: ["superadmin", "user", "gestor"],
     },
   },
 } as const
