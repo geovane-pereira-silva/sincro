@@ -21,6 +21,7 @@ import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedHistoricoRouteImport } from './routes/_authenticated/historico'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedGestorIndexRouteImport } from './routes/_authenticated/gestor.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedEditarIdRouteImport } from './routes/_authenticated/editar.$id'
 import { Route as AuthenticatedAdminGamificacaoRouteImport } from './routes/_authenticated/admin/gamificacao'
@@ -101,6 +102,12 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedGestorIndexRoute =
+  AuthenticatedGestorIndexRouteImport.update({
+    id: '/gestor/',
+    path: '/gestor/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -228,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/gestor/': typeof AuthenticatedGestorIndexRoute
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
@@ -259,6 +267,7 @@ export interface FileRoutesByTo {
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/gestor': typeof AuthenticatedGestorIndexRoute
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
@@ -293,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/_authenticated/editar/$id': typeof AuthenticatedEditarIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/gestor/': typeof AuthenticatedGestorIndexRoute
   '/_authenticated/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
   '/_authenticated/admin/empresas/nova': typeof AuthenticatedAdminEmpresasNovaRoute
   '/_authenticated/admin/usuarios/$id': typeof AuthenticatedAdminUsuariosIdRoute
@@ -327,6 +337,7 @@ export interface FileRouteTypes {
     | '/admin/gamificacao'
     | '/editar/$id'
     | '/admin/'
+    | '/gestor/'
     | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
@@ -358,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/gamificacao'
     | '/editar/$id'
     | '/admin'
+    | '/gestor'
     | '/admin/empresas/$id'
     | '/admin/empresas/nova'
     | '/admin/usuarios/$id'
@@ -391,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/gamificacao'
     | '/_authenticated/editar/$id'
     | '/_authenticated/admin/'
+    | '/_authenticated/gestor/'
     | '/_authenticated/admin/empresas/$id'
     | '/_authenticated/admin/empresas/nova'
     | '/_authenticated/admin/usuarios/$id'
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gestor/': {
+      id: '/_authenticated/gestor/'
+      path: '/gestor'
+      fullPath: '/gestor/'
+      preLoaderRoute: typeof AuthenticatedGestorIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/': {
@@ -699,6 +719,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPontoRoute: typeof AuthenticatedPontoRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
   AuthenticatedEditarIdRoute: typeof AuthenticatedEditarIdRoute
+  AuthenticatedGestorIndexRoute: typeof AuthenticatedGestorIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -709,6 +730,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPontoRoute: AuthenticatedPontoRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
   AuthenticatedEditarIdRoute: AuthenticatedEditarIdRoute,
+  AuthenticatedGestorIndexRoute: AuthenticatedGestorIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
