@@ -52,6 +52,7 @@ import {
 } from "@/components/admin-ui";
 import { AdminConfirmDialog } from "@/components/admin-confirm-dialog";
 import { EmpresaFormDialog } from "@/components/empresa-form-dialog";
+import { GestorEmpresaCard } from "@/components/gestor-empresa-card";
 import { SetorDialog } from "@/components/setor-dialog";
 import { ColaboradorDialog } from "@/components/colaborador-dialog";
 import { ConviteColaboradorDialog } from "@/components/convite-colaborador-dialog";
