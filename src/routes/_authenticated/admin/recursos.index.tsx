@@ -296,6 +296,7 @@ function AdminManager() {
         description={`Remover o acesso de administrador de ${remover?.nome}?`}
         confirmLabel="Remover"
         destructive
+        exigirMotivo={false}
         loading={revogar.isPending}
         onConfirm={() => {
           if (remover)
