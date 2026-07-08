@@ -10,6 +10,7 @@ import {
   Crown,
   LifeBuoy,
   Settings,
+  BookOpen,
   ArrowLeft,
 } from "lucide-react";
 import { SincroMark } from "@/components/sincro-logo";
