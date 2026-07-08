@@ -34,9 +34,13 @@ export const criarConviteColaborador = createServerFn({ method: "POST" })
     }) => input,
   )
   .handler(async ({ data, context }) => {
-    await assertSuperadmin(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
+    );
+    await assertGestaoEmpresa(
+      context as unknown as AuthedContext,
+      supabaseAdmin,
+      data.empresaId,
     );
 
     const token = crypto.randomUUID();
