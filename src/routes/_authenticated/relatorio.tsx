@@ -428,7 +428,113 @@ function RelatorioConteudo({
         <div className="flex justify-center py-10">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
+      ) : isMobile ? (
+        /* ---------- Layout mobile: cartões empilhados (sem rolagem lateral) ---------- */
+        <div className="space-y-2">
+          {isAutonomo && (
+            <p className="px-1 text-xs text-muted-foreground">
+              Toque em um dia para adicionar ou ajustar as batidas.
+            </p>
+          )}
+          {linhas.map((l) => {
+            const r = l.resumo;
+            const st = STATUS_INFO[l.calc.status];
+            const clickable = isAutonomo;
+            return (
+              <div
+                key={l.dayKey}
+                role={clickable ? "button" : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                onClick={clickable ? () => setEditorDay(l.dayKey) : undefined}
+                onKeyDown={
+                  clickable
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setEditorDay(l.dayKey);
+                        }
+                      }
+                    : undefined
+                }
+                className={cn(
+                  "rounded-2xl border border-border bg-card p-3 shadow-sm",
+                  clickable && "cursor-pointer active:scale-[0.99] transition",
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold capitalize text-foreground">
+                    {formatDayKey(l.dayKey)}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                        st.classes,
+                      )}
+                    >
+                      {st.label}
+                    </span>
+                    {clickable &&
+                      (l.temRegistros ? (
+                        <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                      ) : (
+                        <Plus className="h-4 w-4 text-primary" />
+                      ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
+                  <PunchCell label="Entrada" hora={r.entrada && formatTime(r.entrada.data_hora, tz)} />
+                  <PunchCell label="Saí int." hora={r.saidaIntervalo && formatTime(r.saidaIntervalo.data_hora, tz)} />
+                  <PunchCell label="Volta" hora={r.entradaIntervalo && formatTime(r.entradaIntervalo.data_hora, tz)} />
+                  <PunchCell label="Saída" hora={r.saida && formatTime(r.saida.data_hora, tz)} />
+                </div>
+
+                <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
+                  <MiniMetric label="Prev" valor={l.calc.horasPrevistas > 0 ? formatHoraMin(l.calc.horasPrevistas) : "·"} />
+                  <MiniMetric label="Trab" valor={l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : "·"} />
+                  <MiniMetric
+                    label="Extra"
+                    valor={l.calc.horasExtras > 0 ? formatHoraMin(l.calc.horasExtras) : "·"}
+                    classe="text-ponto-entrada"
+                  />
+                  <MiniMetric
+                    label="Falta"
+                    valor={l.calc.horasFalta > 0 ? formatHoraMin(l.calc.horasFalta) : "·"}
+                    classe="text-negativo"
+                  />
+                </div>
+
+                {config.banco_horas_ativo && (
+                  <div className="mt-2 grid grid-cols-2 gap-1.5 text-center tabular-nums">
+                    <MiniMetric
+                      label="BH dia"
+                      valor={l.temRegistros || l.calc.bancoDia !== 0 ? formatBanco(l.calc.bancoDia) : "·"}
+                      classe={l.calc.bancoDia >= 0 ? "text-positivo" : "text-negativo"}
+                    />
+                    <MiniMetric
+                      label="BH acum."
+                      valor={formatBanco(l.bhAcumulado)}
+                      classe={l.bhAcumulado >= 0 ? "text-positivo" : "text-negativo"}
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div className="rounded-2xl border-2 border-border bg-secondary/40 p-3">
+            <p className="text-sm font-bold text-foreground">Total do mês</p>
+            <div className="mt-2 grid grid-cols-4 gap-1.5 text-center tabular-nums">
+              <MiniMetric label="Prev" valor={formatHoraMin(totais.previsto)} />
+              <MiniMetric label="Trab" valor={formatHoraMin(totais.trabalhado)} />
+              <MiniMetric label="Extra" valor={formatHoraMin(totais.extras)} classe="text-ponto-entrada" />
+              <MiniMetric label="Falta" valor={formatHoraMin(totais.falta)} classe="text-negativo" />
+            </div>
+          </div>
+        </div>
       ) : (
+        /* ---------- Layout desktop: tabela ---------- */
         <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
@@ -449,6 +555,7 @@ function RelatorioConteudo({
                     </>
                   )}
                   <th className="px-2 py-2 text-right font-semibold">Status</th>
+                  {isAutonomo && <th className="px-2 py-2 text-right font-semibold" />}
                 </tr>
               </thead>
               <tbody>
@@ -459,9 +566,11 @@ function RelatorioConteudo({
                   return (
                     <tr
                       key={l.dayKey}
+                      onClick={isAutonomo ? () => setEditorDay(l.dayKey) : undefined}
                       className={cn(
                         "border-b border-border/60 last:border-0 tabular-nums",
                         !l.temRegistros && "text-muted-foreground/60",
+                        isAutonomo && "cursor-pointer hover:bg-secondary/40",
                       )}
                     >
                       <td className="px-2 py-2 text-left font-medium">
@@ -530,6 +639,15 @@ function RelatorioConteudo({
                           {st.label}
                         </span>
                       </td>
+                      {isAutonomo && (
+                        <td className="px-2 py-2 text-right">
+                          {l.temRegistros ? (
+                            <Pencil className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
+                          ) : (
+                            <Plus className="ml-auto h-4 w-4 text-primary" />
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -572,6 +690,7 @@ function RelatorioConteudo({
                     </>
                   )}
                   <td className="px-2 py-3" />
+                  {isAutonomo && <td className="px-2 py-3" />}
                 </tr>
               </tfoot>
             </table>
@@ -579,6 +698,18 @@ function RelatorioConteudo({
           </div>
         </div>
       )}
+
+      {isAutonomo && editorDay && user && (
+        <PontoDiaEditor
+          open={!!editorDay}
+          onOpenChange={(v) => !v && setEditorDay(null)}
+          dayKey={editorDay}
+          registros={linhas.find((l) => l.dayKey === editorDay)?.regs ?? []}
+          userId={user.id}
+          tz={tz}
+        />
+      )}
+
 
       {/* Gráfico mensal de produtividade */}
       {!isLoading && (
