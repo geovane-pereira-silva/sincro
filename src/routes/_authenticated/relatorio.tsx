@@ -583,7 +583,6 @@ function RelatorioConteudo({
               </thead>
               <tbody>
                 {linhas.map((l) => {
-                  const r = l.resumo;
                   const dia = Number(l.dayKey.split("-")[2]);
                   const st = STATUS_INFO[l.calc.status];
                   return (
