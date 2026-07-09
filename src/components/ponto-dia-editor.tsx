@@ -137,14 +137,13 @@ export function PontoDiaEditor({
     e.preventDefault();
     setSaving(true);
     try {
-      const inserts: {
-        user_id: string;
-        tipo: Tipo;
-        data_hora: string;
-        data_hora_original: string;
-        origem: string;
+      // 1. Coleta todas as batidas preenchidas com seu horário real (minutos).
+      const preenchidas: {
+        raw: string;
+        minutos: number;
+        iso: string;
+        existente?: PontoRegistro;
       }[] = [];
-      const updates: { id: string; data_hora: string }[] = [];
 
       for (let i = 0; i < count; i++) {
         const raw = values[i].trim();
@@ -161,19 +160,48 @@ export function PontoDiaEditor({
           return;
         }
         const iso = zonedWallToUtc(y, m, d, hh, mm, 0, tz).toISOString();
-        const existente = regDoSlot(i, count);
-        if (existente) {
-          const p = getZonedParts(new Date(existente.data_hora), tz);
+        preenchidas.push({
+          raw,
+          minutos: hh * 60 + mm,
+          iso,
+          existente: regDoSlot(i, count),
+        });
+      }
+
+      // 2. Ordena cronologicamente: o horário mais antigo vem primeiro,
+      //    independentemente de em qual campo o usuário digitou. Assim, mesmo
+      //    que ele inverta uma entrada com uma saída, o sistema corrige a ordem.
+      preenchidas.sort((a, b) => a.minutos - b.minutos);
+      const total = preenchidas.length;
+
+      const inserts: {
+        user_id: string;
+        tipo: Tipo;
+        data_hora: string;
+        data_hora_original: string;
+        origem: string;
+      }[] = [];
+      const updates: { id: string; data_hora: string; tipo: Tipo }[] = [];
+
+      // 3. Reatribui o papel (entrada / intervalos / saída) pela posição
+      //    cronológica correta.
+      for (let pos = 0; pos < total; pos++) {
+        const item = preenchidas[pos];
+        const tipo = tipoPorPosicao(pos, total);
+        if (item.existente) {
+          const p = getZonedParts(new Date(item.existente.data_hora), tz);
           const atual = `${String(p.hour).padStart(2, "0")}:${String(
             p.minute,
           ).padStart(2, "0")}`;
-          if (atual !== raw) updates.push({ id: existente.id, data_hora: iso });
+          if (atual !== item.raw || item.existente.tipo !== tipo) {
+            updates.push({ id: item.existente.id, data_hora: item.iso, tipo });
+          }
         } else {
           inserts.push({
             user_id: userId,
-            tipo: tipoPorPosicao(i, count),
-            data_hora: iso,
-            data_hora_original: iso,
+            tipo,
+            data_hora: item.iso,
+            data_hora_original: item.iso,
             origem: "web",
           });
         }
@@ -192,7 +220,7 @@ export function PontoDiaEditor({
       for (const u of updates) {
         const { error } = await supabase
           .from("ponto_registros")
-          .update({ data_hora: u.data_hora, foi_editado: true })
+          .update({ data_hora: u.data_hora, tipo: u.tipo, foi_editado: true })
           .eq("id", u.id);
         if (error) throw error;
       }
