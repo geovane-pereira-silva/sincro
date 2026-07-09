@@ -599,12 +599,11 @@ function RelatorioConteudo({
                       <td className="px-2 py-2 text-left font-medium">
                         {String(dia).padStart(2, "0")}
                       </td>
-                      <td className="px-1.5 py-2 text-center">
-                        {r.entrada ? formatTime(r.entrada.data_hora, tz) : "·"}
-                      </td>
-                      <td className="px-1.5 py-2 text-center">
-                        {r.saida ? formatTime(r.saida.data_hora, tz) : "·"}
-                      </td>
+                      {Array.from({ length: colsPontos }).map((_, i) => (
+                        <td key={i} className="px-1.5 py-2 text-center">
+                          {l.pontos[i] ?? "·"}
+                        </td>
+                      ))}
                       <td className="px-1.5 py-2 text-center">
                         {l.calc.horasPrevistas > 0
                           ? formatHoraMin(l.calc.horasPrevistas)
