@@ -207,6 +207,32 @@ export function saudacao(tz: string): string {
   return "Boa noite";
 }
 
+// --- Rótulos de batidas por posição (suporta jornadas com N intervalos) ----
+
+// Rótulo completo de uma batida pela posição na sequência do dia.
+// index par = entrada/volta (in); index ímpar = saída/saída-p/-intervalo (out).
+export function rotuloBatida(index: number, total: number): string {
+  if (index === 0) return "Entrada";
+  if (index === total - 1 && total % 2 === 0) return "Saída";
+  return index % 2 === 1 ? "Saída int." : "Volta int.";
+}
+
+// Rótulo curto (cabeçalho de tabela estreita).
+export function rotuloBatidaCurto(index: number, total: number): string {
+  if (index === 0) return "Ent";
+  if (index === total - 1 && total % 2 === 0) return "Saí";
+  return index % 2 === 1 ? "Int↗" : "Int↘";
+}
+
+// Nº de colunas de ponto a exibir: base 4, cresce de 2 em 2 até 10 conforme
+// o dia com mais batidas no período.
+export function colunasPonto(maxBatidas: number): number {
+  const par = maxBatidas % 2 === 0 ? maxBatidas : maxBatidas + 1;
+  return Math.min(10, Math.max(4, par));
+}
+
+
+
 // --- Sequência de dias consecutivos (streak) -------------------------------
 
 // Conta dias consecutivos com registro terminando hoje (precisa incluir hoje).
@@ -242,6 +268,14 @@ export interface DiaResumo {
   saldoMin: number; // trabalhado - carga
 }
 
+// Retorna as batidas do dia ordenadas cronologicamente (uso geral).
+export function batidasOrdenadas(registros: PontoRegistro[]): PontoRegistro[] {
+  return [...registros].sort(
+    (a, b) =>
+      new Date(a.data_hora).getTime() - new Date(b.data_hora).getTime(),
+  );
+}
+
 export function resumoDoDia(
   registros: PontoRegistro[],
   cargaHorariaDiaria: number,
@@ -251,24 +285,27 @@ export function resumoDoDia(
   const entradaIntervalo = registros.find((r) => r.tipo === "entrada_intervalo");
   const saida = [...registros].reverse().find((r) => r.tipo === "saida");
 
-  let intervaloMin = 0;
-  if (saidaIntervalo && entradaIntervalo) {
-    intervaloMin =
-      (new Date(entradaIntervalo.data_hora).getTime() -
-        new Date(saidaIntervalo.data_hora).getTime()) /
-      60000;
-  }
-
+  // Cálculo geral por pares cronológicos: suporta N intervalos (até 10 batidas).
+  // Pares (0,1),(2,3)... são segmentos de trabalho; os "buracos" entre pares
+  // são intervalos. Para o dia clássico de 4 batidas o resultado é idêntico.
+  const ordenados = batidasOrdenadas(registros);
+  const t = (r: PontoRegistro) => new Date(r.data_hora).getTime();
   let trabalhadoMin = 0;
-  if (entrada && saida) {
-    const bruto =
-      (new Date(saida.data_hora).getTime() -
-        new Date(entrada.data_hora).getTime()) /
-      60000;
-    trabalhadoMin = Math.max(0, bruto - Math.max(0, intervaloMin));
+  let intervaloMin = 0;
+  const nPares = Math.floor(ordenados.length / 2);
+  for (let i = 0; i < nPares; i++) {
+    const inR = ordenados[i * 2];
+    const outR = ordenados[i * 2 + 1];
+    trabalhadoMin += Math.max(0, (t(outR) - t(inR)) / 60000);
+    const nextIn = ordenados[i * 2 + 2];
+    if (nextIn) intervaloMin += Math.max(0, (t(nextIn) - t(outR)) / 60000);
   }
 
-  const saldoMin = entrada && saida ? trabalhadoMin - cargaHorariaDiaria * 60 : 0;
+  // O dia só é "completo" (com saldo) quando há entrada, saída e nº par de batidas.
+  const completo = !!entrada && !!saida && ordenados.length % 2 === 0;
+  if (!completo) trabalhadoMin = 0;
+
+  const saldoMin = completo ? trabalhadoMin - cargaHorariaDiaria * 60 : 0;
 
   return {
     entrada,

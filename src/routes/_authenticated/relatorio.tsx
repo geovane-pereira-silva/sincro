@@ -32,6 +32,8 @@ import {
 
 import {
   agruparPorDia,
+  batidasOrdenadas,
+  colunasPonto,
   diasDoMes,
   formatDayKey,
   formatDuracao,
@@ -39,6 +41,8 @@ import {
   formatTime,
   nomeMes,
   resumoDoDia,
+  rotuloBatida,
+  rotuloBatidaCurto,
   zonedWallToUtc,
   type PontoRegistro,
   type Profile,
@@ -137,7 +141,8 @@ function RelatorioConteudo({
     return diasDoMes(ano, mes).map((dayKey) => {
       const regs = porDia.get(dayKey) ?? [];
       const resumo = resumoDoDia(regs, carga);
-      const completo = !!(resumo.entrada && resumo.saida);
+      const completo =
+        !!(resumo.entrada && resumo.saida) && regs.length % 2 === 0;
       const [y, m, d] = dayKey.split("-").map(Number);
       const calc: CalculoDia = calcularDia({
         date: new Date(Date.UTC(y, m - 1, d, 12)),
@@ -147,6 +152,8 @@ function RelatorioConteudo({
         tz,
       });
       bhAcum += calc.bancoDia;
+      // Horários de todas as batidas do dia, em ordem cronológica.
+      const pontos = batidasOrdenadas(regs).map((r) => formatTime(r.data_hora, tz));
       return {
         dayKey,
         regs,
@@ -155,9 +162,16 @@ function RelatorioConteudo({
         temRegistros: regs.length > 0,
         calc,
         bhAcumulado: bhAcum,
+        pontos,
       };
     });
   }, [ano, mes, porDia, carga, config, tz]);
+
+  // Nº de colunas de ponto a exibir (base 4, cresce até 10).
+  const colsPontos = useMemo(
+    () => colunasPonto(Math.max(0, ...linhas.map((l) => l.regs.length))),
+    [linhas],
+  );
 
   const totais = useMemo(() => {
     let trabalhado = 0;
@@ -234,10 +248,9 @@ function RelatorioConteudo({
     const linhasCSV = [
       [
         "Data",
-        "Entrada",
-        "Saida Int.",
-        "Entrada Int.",
-        "Saida",
+        ...Array.from({ length: colsPontos }).map((_, i) =>
+          rotuloBatida(i, colsPontos),
+        ),
         "Previsto",
         "Trabalhado",
         "Extra",
@@ -248,15 +261,9 @@ function RelatorioConteudo({
         "Status",
       ],
       ...linhas.map((l) => {
-        const r = l.resumo;
         return [
           l.dayKey,
-          r.entrada ? formatTime(r.entrada.data_hora, tz) : hifen,
-          r.saidaIntervalo ? formatTime(r.saidaIntervalo.data_hora, tz) : hifen,
-          r.entradaIntervalo
-            ? formatTime(r.entradaIntervalo.data_hora, tz)
-            : hifen,
-          r.saida ? formatTime(r.saida.data_hora, tz) : hifen,
+          ...Array.from({ length: colsPontos }).map((_, i) => l.pontos[i] ?? hifen),
           formatHoraMin(l.calc.horasPrevistas),
           l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : hifen,
           l.calc.horasExtras > 0 ? formatHoraMin(l.calc.horasExtras) : hifen,
@@ -437,7 +444,6 @@ function RelatorioConteudo({
             </p>
           )}
           {linhas.map((l) => {
-            const r = l.resumo;
             const st = STATUS_INFO[l.calc.status];
             const clickable = isAutonomo;
             return (
@@ -484,10 +490,13 @@ function RelatorioConteudo({
                 </div>
 
                 <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
-                  <PunchCell label="Entrada" hora={r.entrada && formatTime(r.entrada.data_hora, tz)} />
-                  <PunchCell label="Saí int." hora={r.saidaIntervalo && formatTime(r.saidaIntervalo.data_hora, tz)} />
-                  <PunchCell label="Volta" hora={r.entradaIntervalo && formatTime(r.entradaIntervalo.data_hora, tz)} />
-                  <PunchCell label="Saída" hora={r.saida && formatTime(r.saida.data_hora, tz)} />
+                  {Array.from({ length: colsPontos }).map((_, i) => (
+                    <PunchCell
+                      key={i}
+                      label={rotuloBatida(i, colsPontos)}
+                      hora={l.pontos[i]}
+                    />
+                  ))}
                 </div>
 
                 <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
@@ -541,8 +550,14 @@ function RelatorioConteudo({
               <thead>
                 <tr className="border-b border-border bg-secondary/50 text-muted-foreground">
                   <th className="px-2 py-2 text-left font-semibold">Dia</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">Ent</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">Saí</th>
+                  {Array.from({ length: colsPontos }).map((_, i) => (
+                    <th
+                      key={i}
+                      className="px-1.5 py-2 text-center font-semibold"
+                    >
+                      {rotuloBatidaCurto(i, colsPontos)}
+                    </th>
+                  ))}
                   <th className="px-1.5 py-2 text-center font-semibold">Prev</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Trab</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Extra</th>
@@ -560,7 +575,6 @@ function RelatorioConteudo({
               </thead>
               <tbody>
                 {linhas.map((l) => {
-                  const r = l.resumo;
                   const dia = Number(l.dayKey.split("-")[2]);
                   const st = STATUS_INFO[l.calc.status];
                   return (
@@ -576,12 +590,11 @@ function RelatorioConteudo({
                       <td className="px-2 py-2 text-left font-medium">
                         {String(dia).padStart(2, "0")}
                       </td>
-                      <td className="px-1.5 py-2 text-center">
-                        {r.entrada ? formatTime(r.entrada.data_hora, tz) : "·"}
-                      </td>
-                      <td className="px-1.5 py-2 text-center">
-                        {r.saida ? formatTime(r.saida.data_hora, tz) : "·"}
-                      </td>
+                      {Array.from({ length: colsPontos }).map((_, i) => (
+                        <td key={i} className="px-1.5 py-2 text-center">
+                          {l.pontos[i] ?? "·"}
+                        </td>
+                      ))}
                       <td className="px-1.5 py-2 text-center">
                         {l.calc.horasPrevistas > 0
                           ? formatHoraMin(l.calc.horasPrevistas)
@@ -657,7 +670,7 @@ function RelatorioConteudo({
                   className="border-t-2 border-border font-bold"
                   style={{ backgroundColor: "#F8FAFC" }}
                 >
-                  <td colSpan={3} className="px-2 py-3 text-left">
+                  <td colSpan={1 + colsPontos} className="px-2 py-3 text-left">
                     Total do mês
                   </td>
 
@@ -806,11 +819,12 @@ function ResumoCard({
 }
 
 function PunchCell({ label, hora }: { label: string; hora?: string | false }) {
+  const t = hora || "·";
   return (
     <div className="rounded-lg bg-secondary/50 py-1.5">
       <p className="text-[10px] leading-tight text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-semibold text-foreground">
-        {hora || "·"}
+        {t}
       </p>
     </div>
   );
