@@ -363,6 +363,9 @@ export function calcularDia(params: {
     status = "feriado";
   } else if (!ehDiaTrabalho) {
     status = "folga";
+  } else if (ehFuturo && batidas.length === 0) {
+    // Dia de trabalho ainda não ocorrido: neutro (nem falta, nem negativo).
+    status = "futuro";
   } else if (batidas.length === 0) {
     status = "falta";
   } else if (!completo) {
