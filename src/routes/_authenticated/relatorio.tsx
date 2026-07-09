@@ -444,7 +444,6 @@ function RelatorioConteudo({
             </p>
           )}
           {linhas.map((l) => {
-            const r = l.resumo;
             const st = STATUS_INFO[l.calc.status];
             const clickable = isAutonomo;
             return (
