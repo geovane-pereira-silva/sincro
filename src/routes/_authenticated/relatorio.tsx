@@ -558,8 +558,14 @@ function RelatorioConteudo({
               <thead>
                 <tr className="border-b border-border bg-secondary/50 text-muted-foreground">
                   <th className="px-2 py-2 text-left font-semibold">Dia</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">Ent</th>
-                  <th className="px-1.5 py-2 text-center font-semibold">Saí</th>
+                  {Array.from({ length: colsPontos }).map((_, i) => (
+                    <th
+                      key={i}
+                      className="px-1.5 py-2 text-center font-semibold"
+                    >
+                      {rotuloBatidaCurto(i, colsPontos)}
+                    </th>
+                  ))}
                   <th className="px-1.5 py-2 text-center font-semibold">Prev</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Trab</th>
                   <th className="px-1.5 py-2 text-center font-semibold">Extra</th>
