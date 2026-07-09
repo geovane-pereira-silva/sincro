@@ -32,6 +32,8 @@ import {
 
 import {
   agruparPorDia,
+  batidasOrdenadas,
+  colunasPonto,
   diasDoMes,
   formatDayKey,
   formatDuracao,
@@ -39,6 +41,8 @@ import {
   formatTime,
   nomeMes,
   resumoDoDia,
+  rotuloBatida,
+  rotuloBatidaCurto,
   zonedWallToUtc,
   type PontoRegistro,
   type Profile,
