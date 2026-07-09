@@ -141,7 +141,8 @@ function RelatorioConteudo({
     return diasDoMes(ano, mes).map((dayKey) => {
       const regs = porDia.get(dayKey) ?? [];
       const resumo = resumoDoDia(regs, carga);
-      const completo = !!(resumo.entrada && resumo.saida);
+      const completo =
+        !!(resumo.entrada && resumo.saida) && regs.length % 2 === 0;
       const [y, m, d] = dayKey.split("-").map(Number);
       const calc: CalculoDia = calcularDia({
         date: new Date(Date.UTC(y, m - 1, d, 12)),
@@ -151,6 +152,8 @@ function RelatorioConteudo({
         tz,
       });
       bhAcum += calc.bancoDia;
+      // Horários de todas as batidas do dia, em ordem cronológica.
+      const pontos = batidasOrdenadas(regs).map((r) => formatTime(r.data_hora, tz));
       return {
         dayKey,
         regs,
@@ -159,9 +162,16 @@ function RelatorioConteudo({
         temRegistros: regs.length > 0,
         calc,
         bhAcumulado: bhAcum,
+        pontos,
       };
     });
   }, [ano, mes, porDia, carga, config, tz]);
+
+  // Nº de colunas de ponto a exibir (base 4, cresce até 10).
+  const colsPontos = useMemo(
+    () => colunasPonto(Math.max(0, ...linhas.map((l) => l.regs.length))),
+    [linhas],
+  );
 
   const totais = useMemo(() => {
     let trabalhado = 0;
