@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -18,18 +18,27 @@ import {
 import { cn } from "@/lib/utils";
 import { mensagemErro } from "@/lib/erros";
 import {
-  TIPO_INFO,
-  TIPO_ORDEM,
+  batidasOrdenadas,
   getZonedParts,
   zonedWallToUtc,
   formatDayKey,
+  rotuloBatida,
   type PontoRegistro,
   type Tipo,
 } from "@/lib/ponto";
 
+const MAX_PONTOS = 10;
+
+// Tipo (papel) de uma batida pela sua posição na sequência do dia.
+function tipoPorPosicao(index: number, total: number): Tipo {
+  if (index === 0) return "entrada";
+  if (index === total - 1) return "saida";
+  return index % 2 === 1 ? "saida_intervalo" : "entrada_intervalo";
+}
+
 /**
  * Editor de batidas de um dia inteiro para usuários autônomos.
- * Permite adicionar (inserir) ou ajustar (editar) os quatro pontos do dia.
+ * Mostra 4 pontos por padrão e permite adicionar intervalos até 10 pontos.
  * Registros nunca são apagados — deixar em branco apenas não cria a batida.
  */
 export function PontoDiaEditor({
@@ -49,41 +58,80 @@ export function PontoDiaEditor({
 }) {
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
-  const [values, setValues] = useState<Record<Tipo, string>>({
-    entrada: "",
-    saida_intervalo: "",
-    entrada_intervalo: "",
-    saida: "",
-  });
+  const [count, setCount] = useState(4);
+  const [values, setValues] = useState<string[]>(["", "", "", ""]);
 
-  // Mapa tipo -> registro existente (primeiro de cada tipo).
-  const existentes: Partial<Record<Tipo, PontoRegistro>> = {};
-  for (const r of registros) {
-    if (!existentes[r.tipo]) existentes[r.tipo] = r;
+  // Batidas existentes mapeadas por papel/posição, em ordem cronológica.
+  const existentesPorSlot = useMemo(() => {
+    const ordenados = batidasOrdenadas(registros);
+    const entrada = registros.find((r) => r.tipo === "entrada");
+    const saida = [...registros].reverse().find((r) => r.tipo === "saida");
+    const outs = ordenados.filter((r) => r.tipo === "saida_intervalo");
+    const ins = ordenados.filter((r) => r.tipo === "entrada_intervalo");
+    return { entrada, saida, outs, ins };
+  }, [registros]);
+
+  function regDoSlot(
+    i: number,
+    total: number,
+    e = existentesPorSlot,
+  ): PontoRegistro | undefined {
+    if (i === 0) return e.entrada;
+    if (i === total - 1) return e.saida;
+    return i % 2 === 1 ? e.outs[(i - 1) / 2] : e.ins[(i - 2) / 2];
   }
 
   useEffect(() => {
     if (!open) return;
-    const next: Record<Tipo, string> = {
-      entrada: "",
-      saida_intervalo: "",
-      entrada_intervalo: "",
-      saida: "",
-    };
-    for (const tipo of TIPO_ORDEM) {
-      const reg = registros.find((r) => r.tipo === tipo);
+    const paresPresentes = Math.max(
+      existentesPorSlot.outs.length,
+      existentesPorSlot.ins.length,
+    );
+    // Base 4 (1 par de intervalo), cresce conforme o que já foi registrado.
+    const total = Math.min(
+      MAX_PONTOS,
+      Math.max(4, 2 + 2 * Math.max(1, paresPresentes)),
+    );
+    const next: string[] = [];
+    for (let i = 0; i < total; i++) {
+      const reg = regDoSlot(i, total);
       if (reg) {
         const p = getZonedParts(new Date(reg.data_hora), tz);
-        next[tipo] = `${String(p.hour).padStart(2, "0")}:${String(
-          p.minute,
-        ).padStart(2, "0")}`;
+        next.push(
+          `${String(p.hour).padStart(2, "0")}:${String(p.minute).padStart(2, "0")}`,
+        );
+      } else {
+        next.push("");
       }
     }
+    setCount(total);
     setValues(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dayKey]);
 
   const [y, m, d] = dayKey.split("-").map(Number);
+
+  function addIntervalo() {
+    if (count >= MAX_PONTOS) return;
+    // Insere um par de intervalo antes da saída (mantém a saída por último).
+    setValues((v) => {
+      const arr = [...v];
+      const saida = arr[arr.length - 1];
+      arr.splice(arr.length - 1, 1, "", "", saida);
+      return arr;
+    });
+    setCount((c) => Math.min(MAX_PONTOS, c + 2));
+  }
+
+  function removeIntervalo(idx: number) {
+    // Remove o par de intervalo (idx = saída int.; idx+1 = volta int.).
+    setValues((v) => {
+      const arr = [...v];
+      arr.splice(idx, 2);
+      return arr;
+    });
+    setCount((c) => Math.max(4, c - 2));
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -98,22 +146,22 @@ export function PontoDiaEditor({
       }[] = [];
       const updates: { id: string; data_hora: string }[] = [];
 
-      for (const tipo of TIPO_ORDEM) {
-        const raw = values[tipo].trim();
-        const existente = registros.find((r) => r.tipo === tipo);
+      for (let i = 0; i < count; i++) {
+        const raw = values[i].trim();
         if (!raw) continue; // vazio: nada a fazer (não apaga registros)
         if (!/^\d{2}:\d{2}$/.test(raw)) {
-          toast.error(`Horário inválido em ${TIPO_INFO[tipo].label}.`);
+          toast.error(`Horário inválido em ${rotuloBatida(i, count)}.`);
           setSaving(false);
           return;
         }
         const [hh, mm] = raw.split(":").map(Number);
         if (hh > 23 || mm > 59) {
-          toast.error(`Horário inválido em ${TIPO_INFO[tipo].label}.`);
+          toast.error(`Horário inválido em ${rotuloBatida(i, count)}.`);
           setSaving(false);
           return;
         }
         const iso = zonedWallToUtc(y, m, d, hh, mm, 0, tz).toISOString();
+        const existente = regDoSlot(i, count);
         if (existente) {
           const p = getZonedParts(new Date(existente.data_hora), tz);
           const atual = `${String(p.hour).padStart(2, "0")}:${String(
@@ -123,7 +171,7 @@ export function PontoDiaEditor({
         } else {
           inserts.push({
             user_id: userId,
-            tipo,
+            tipo: tipoPorPosicao(i, count),
             data_hora: iso,
             data_hora_original: iso,
             origem: "web",
@@ -175,32 +223,63 @@ export function PontoDiaEditor({
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4">
-          {TIPO_ORDEM.map((tipo) => {
-            const info = TIPO_INFO[tipo];
-            const jaExiste = !!existentes[tipo];
+          {values.slice(0, count).map((val, i) => {
+            const label = rotuloBatida(i, count);
+            const jaExiste = !!regDoSlot(i, count);
+            // Início de um par de intervalo removível (não é entrada nem saída).
+            const podeRemover =
+              count > 4 && i % 2 === 1 && i !== count - 1;
             return (
-              <div key={tipo} className="space-y-1.5">
-                <Label htmlFor={`dia-${tipo}`} className="flex items-center gap-2">
-                  <span className={cn("h-2.5 w-2.5 rounded-full", info.dot)} />
-                  {info.label}
+              <div key={i} className="space-y-1.5">
+                <Label
+                  htmlFor={`dia-${i}`}
+                  className="flex items-center gap-2"
+                >
+                  {label}
                   {jaExiste && (
                     <span className="text-[10px] font-normal text-muted-foreground">
                       (registrado)
                     </span>
                   )}
+                  {podeRemover && (
+                    <button
+                      type="button"
+                      onClick={() => removeIntervalo(i)}
+                      className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-negativo"
+                    >
+                      <X className="h-3 w-3" />
+                      remover intervalo
+                    </button>
+                  )}
                 </Label>
                 <Input
-                  id={`dia-${tipo}`}
+                  id={`dia-${i}`}
                   type="time"
-                  value={values[tipo]}
+                  value={val}
                   onChange={(e) =>
-                    setValues((v) => ({ ...v, [tipo]: e.target.value }))
+                    setValues((v) => {
+                      const arr = [...v];
+                      arr[i] = e.target.value;
+                      return arr;
+                    })
                   }
                   className="h-11 text-center text-base font-semibold tabular-nums"
                 />
               </div>
             );
           })}
+
+          {count < MAX_PONTOS && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addIntervalo}
+              className="h-10 w-full rounded-full text-sm"
+            >
+              <Plus className="h-4 w-4" />
+              Adicionar intervalo
+            </Button>
+          )}
 
           <p className="text-xs leading-relaxed text-muted-foreground">
             Registros não podem ser apagados. Você é responsável pelos horários
