@@ -207,6 +207,32 @@ export function saudacao(tz: string): string {
   return "Boa noite";
 }
 
+// --- Rótulos de batidas por posição (suporta jornadas com N intervalos) ----
+
+// Rótulo completo de uma batida pela posição na sequência do dia.
+// index par = entrada/volta (in); index ímpar = saída/saída-p/-intervalo (out).
+export function rotuloBatida(index: number, total: number): string {
+  if (index === 0) return "Entrada";
+  if (index === total - 1 && total % 2 === 0) return "Saída";
+  return index % 2 === 1 ? "Saída int." : "Volta int.";
+}
+
+// Rótulo curto (cabeçalho de tabela estreita).
+export function rotuloBatidaCurto(index: number, total: number): string {
+  if (index === 0) return "Ent";
+  if (index === total - 1 && total % 2 === 0) return "Saí";
+  return index % 2 === 1 ? "Int↗" : "Int↘";
+}
+
+// Nº de colunas de ponto a exibir: base 4, cresce de 2 em 2 até 10 conforme
+// o dia com mais batidas no período.
+export function colunasPonto(maxBatidas: number): number {
+  const par = maxBatidas % 2 === 0 ? maxBatidas : maxBatidas + 1;
+  return Math.min(10, Math.max(4, par));
+}
+
+
+
 // --- Sequência de dias consecutivos (streak) -------------------------------
 
 // Conta dias consecutivos com registro terminando hoje (precisa incluir hoje).
