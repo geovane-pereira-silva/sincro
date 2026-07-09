@@ -823,6 +823,7 @@ function ResumoCard({
 }
 
 function PunchCell({ label, hora }: { label: string; hora?: string | false }) {
+  const t = hora || "·";
   return (
     <div className="rounded-lg bg-secondary/50 py-1.5">
       <p className="text-[10px] leading-tight text-muted-foreground">{label}</p>
