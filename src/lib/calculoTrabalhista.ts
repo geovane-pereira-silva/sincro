@@ -39,7 +39,8 @@ export type StatusDia =
   | "falta"
   | "folga"
   | "feriado"
-  | "incompleto";
+  | "incompleto"
+  | "futuro";
 
 export interface CalculoDia {
   // Entradas
@@ -212,8 +213,9 @@ export function calcularDia(params: {
   config: JornadaConfig;
   cargaHorariaDiaria: number; // horas
   tz: string;
+  agora?: Date; // instante "agora" para detectar dias futuros
 }): CalculoDia {
-  const { date, batidas, config, cargaHorariaDiaria, tz } = params;
+  const { date, batidas, config, cargaHorariaDiaria, tz, agora } = params;
 
   const resumo = resumoDoDia(batidas, cargaHorariaDiaria);
   const tol = Math.max(0, config.tolerancia_minutos);
@@ -222,6 +224,11 @@ export function calcularDia(params: {
   const dayStr = dayKeyFromDate(date, tz);
   const ehDiaTrabalho = config.dias_trabalho.includes(diaKey);
   const ehFeriado = FERIADOS_NACIONAIS.has(dayStr);
+
+  // Dia ainda não ocorrido (posterior a hoje no fuso do usuário): não conta
+  // como falta nem gera saldo negativo. Comparação de chaves YYYY-MM-DD.
+  const hojeStr = dayKeyFromDate(agora ?? new Date(), tz);
+  const ehFuturo = dayStr > hojeStr;
 
   const horasPrevistas = ehDiaTrabalho ? cargaHorariaDiaria * 60 : 0;
 
@@ -309,8 +316,9 @@ export function calcularDia(params: {
     }
   } else if (ehDiaTrabalho && !ehFeriado && !completo) {
     // Dia de trabalho sem par completo: não computa extra nem atraso;
-    // a falta só é contabilizada quando não há nenhuma batida (status falta).
-    if (batidas.length === 0) {
+    // a falta só é contabilizada quando não há nenhuma batida (status falta)
+    // E o dia já passou — dias futuros nunca contam como falta.
+    if (batidas.length === 0 && !ehFuturo) {
       horasFalta = horasPrevistas;
     }
   }
@@ -336,7 +344,7 @@ export function calcularDia(params: {
     } else if ((!ehDiaTrabalho || ehFeriado) && completo) {
       // Trabalho em folga/feriado entra 100% como crédito.
       bancoDia = horasTrabalhadas;
-    } else if (ehDiaTrabalho && !ehFeriado && batidas.length === 0) {
+    } else if (ehDiaTrabalho && !ehFeriado && batidas.length === 0 && !ehFuturo) {
       bancoDia = -horasPrevistas;
     }
   }
@@ -355,6 +363,9 @@ export function calcularDia(params: {
     status = "feriado";
   } else if (!ehDiaTrabalho) {
     status = "folga";
+  } else if (ehFuturo && batidas.length === 0) {
+    // Dia de trabalho ainda não ocorrido: neutro (nem falta, nem negativo).
+    status = "futuro";
   } else if (batidas.length === 0) {
     status = "falta";
   } else if (!completo) {
@@ -421,6 +432,10 @@ export const STATUS_INFO: Record<
   incompleto: {
     label: "Incompleto",
     classes: "bg-ponto-saida-intervalo/10 text-ponto-saida-intervalo",
+  },
+  futuro: {
+    label: "—",
+    classes: "bg-secondary/50 text-muted-foreground",
   },
 };
 
