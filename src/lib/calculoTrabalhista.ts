@@ -433,6 +433,10 @@ export const STATUS_INFO: Record<
     label: "Incompleto",
     classes: "bg-ponto-saida-intervalo/10 text-ponto-saida-intervalo",
   },
+  futuro: {
+    label: "—",
+    classes: "bg-secondary/50 text-muted-foreground",
+  },
 };
 
 // Formata minutos com sinal fixo (ex.: "+02:30" / "-01:15").
