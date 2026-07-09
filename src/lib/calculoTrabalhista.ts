@@ -213,8 +213,9 @@ export function calcularDia(params: {
   config: JornadaConfig;
   cargaHorariaDiaria: number; // horas
   tz: string;
+  agora?: Date; // instante "agora" para detectar dias futuros
 }): CalculoDia {
-  const { date, batidas, config, cargaHorariaDiaria, tz } = params;
+  const { date, batidas, config, cargaHorariaDiaria, tz, agora } = params;
 
   const resumo = resumoDoDia(batidas, cargaHorariaDiaria);
   const tol = Math.max(0, config.tolerancia_minutos);
@@ -223,6 +224,11 @@ export function calcularDia(params: {
   const dayStr = dayKeyFromDate(date, tz);
   const ehDiaTrabalho = config.dias_trabalho.includes(diaKey);
   const ehFeriado = FERIADOS_NACIONAIS.has(dayStr);
+
+  // Dia ainda não ocorrido (posterior a hoje no fuso do usuário): não conta
+  // como falta nem gera saldo negativo. Comparação de chaves YYYY-MM-DD.
+  const hojeStr = dayKeyFromDate(agora ?? new Date(), tz);
+  const ehFuturo = dayStr > hojeStr;
 
   const horasPrevistas = ehDiaTrabalho ? cargaHorariaDiaria * 60 : 0;
 
