@@ -39,7 +39,8 @@ export type StatusDia =
   | "falta"
   | "folga"
   | "feriado"
-  | "incompleto";
+  | "incompleto"
+  | "futuro";
 
 export interface CalculoDia {
   // Entradas
