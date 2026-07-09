@@ -316,8 +316,9 @@ export function calcularDia(params: {
     }
   } else if (ehDiaTrabalho && !ehFeriado && !completo) {
     // Dia de trabalho sem par completo: não computa extra nem atraso;
-    // a falta só é contabilizada quando não há nenhuma batida (status falta).
-    if (batidas.length === 0) {
+    // a falta só é contabilizada quando não há nenhuma batida (status falta)
+    // E o dia já passou — dias futuros nunca contam como falta.
+    if (batidas.length === 0 && !ehFuturo) {
       horasFalta = horasPrevistas;
     }
   }
