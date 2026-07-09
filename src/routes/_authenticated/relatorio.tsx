@@ -248,10 +248,9 @@ function RelatorioConteudo({
     const linhasCSV = [
       [
         "Data",
-        "Entrada",
-        "Saida Int.",
-        "Entrada Int.",
-        "Saida",
+        ...Array.from({ length: colsPontos }).map((_, i) =>
+          rotuloBatida(i, colsPontos),
+        ),
         "Previsto",
         "Trabalhado",
         "Extra",
@@ -262,15 +261,9 @@ function RelatorioConteudo({
         "Status",
       ],
       ...linhas.map((l) => {
-        const r = l.resumo;
         return [
           l.dayKey,
-          r.entrada ? formatTime(r.entrada.data_hora, tz) : hifen,
-          r.saidaIntervalo ? formatTime(r.saidaIntervalo.data_hora, tz) : hifen,
-          r.entradaIntervalo
-            ? formatTime(r.entradaIntervalo.data_hora, tz)
-            : hifen,
-          r.saida ? formatTime(r.saida.data_hora, tz) : hifen,
+          ...Array.from({ length: colsPontos }).map((_, i) => l.pontos[i] ?? hifen),
           formatHoraMin(l.calc.horasPrevistas),
           l.completo ? formatHoraMin(l.calc.horasTrabalhadas) : hifen,
           l.calc.horasExtras > 0 ? formatHoraMin(l.calc.horasExtras) : hifen,
