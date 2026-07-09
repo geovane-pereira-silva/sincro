@@ -498,10 +498,13 @@ function RelatorioConteudo({
                 </div>
 
                 <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
-                  <PunchCell label="Entrada" hora={r.entrada && formatTime(r.entrada.data_hora, tz)} />
-                  <PunchCell label="Saí int." hora={r.saidaIntervalo && formatTime(r.saidaIntervalo.data_hora, tz)} />
-                  <PunchCell label="Volta" hora={r.entradaIntervalo && formatTime(r.entradaIntervalo.data_hora, tz)} />
-                  <PunchCell label="Saída" hora={r.saida && formatTime(r.saida.data_hora, tz)} />
+                  {Array.from({ length: colsPontos }).map((_, i) => (
+                    <PunchCell
+                      key={i}
+                      label={rotuloBatida(i, colsPontos)}
+                      hora={l.pontos[i]}
+                    />
+                  ))}
                 </div>
 
                 <div className="mt-3 grid grid-cols-4 gap-1.5 text-center tabular-nums">
