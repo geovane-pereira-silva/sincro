@@ -344,7 +344,7 @@ export function calcularDia(params: {
     } else if ((!ehDiaTrabalho || ehFeriado) && completo) {
       // Trabalho em folga/feriado entra 100% como crédito.
       bancoDia = horasTrabalhadas;
-    } else if (ehDiaTrabalho && !ehFeriado && batidas.length === 0) {
+    } else if (ehDiaTrabalho && !ehFeriado && batidas.length === 0 && !ehFuturo) {
       bancoDia = -horasPrevistas;
     }
   }
