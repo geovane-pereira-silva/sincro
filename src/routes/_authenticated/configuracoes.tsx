@@ -222,6 +222,17 @@ function ConfiguracoesPage() {
         </p>
         <JornadaConfigForm userId={user?.id} />
 
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Notificações
+        </p>
+        {user?.id && (
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <ConfigNotificacoesForm userId={user.id} />
+          </div>
+        )}
+
+
+
 
 
 
