@@ -113,9 +113,9 @@ function SolicitacoesPage() {
                 </p>
               )}
 
-              {s.observacao_gestor && (
+              {s.resposta_gestor && (
                 <p className="mt-2 rounded-lg bg-muted/50 px-3 py-2 text-xs text-muted-foreground">
-                  <strong>Gestor:</strong> {s.observacao_gestor}
+                  <strong>Gestor:</strong> {s.resposta_gestor}
                 </p>
               )}
 
