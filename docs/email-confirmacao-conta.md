@@ -14,7 +14,7 @@ migração de banco** — o template vive nas configurações de Auth.
 
 Há dois caminhos:
 
-### Opção A — Templates de e-mail gerenciados pela Lovable (recomendado)
+### Opção A — Templates de e-mail gerenciados pelo provedor (recomendado)
 
 Requer um **domínio de e-mail verificado** no projeto (Cloud → Emails). Depois
 de configurado, os 6 templates de autenticação (incluindo confirmação de conta)

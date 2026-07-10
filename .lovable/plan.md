@@ -29,7 +29,7 @@ Sistema web completo para registro eletrônico de ponto de funcionários, com co
 - Exportação para PDF e Excel
 - Filtros por período, departamento e funcionário
 
-### 5. Banco de Dados (Lovable Cloud)
+### 5. Banco de Dados
 Tabelas principais:
 - `users` (autenticação)
 - `profiles` (dados dos funcionários)
@@ -49,7 +49,7 @@ Tabelas principais:
 
 ### Backend
 - Server Functions (TanStack Start) para lógica de negócio
-- Lovable Cloud (PostgreSQL + Auth)
+- Backend (PostgreSQL + Auth)
 - RLS (Row Level Security) para proteção de dados
 
 ### Estrutura de Rotas
@@ -74,7 +74,7 @@ Tabelas principais:
 ## Requisitos de Aprovação
 Preciso da sua confirmação para:
 1. Proseguir com a implementação completa conforme descrito acima
-2. Habilitar o Lovable Cloud (banco de dados e autenticação)
+2. Habilitar o backend (banco de dados e autenticação)
 3. Ajustar ou remover funcionalidades que não sejam necessárias
 
 **Aguardo sua aprovação para começar.**
