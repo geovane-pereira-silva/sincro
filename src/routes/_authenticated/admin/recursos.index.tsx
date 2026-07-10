@@ -70,7 +70,6 @@ const SEGREDOS = [
   { nome: "ASAAS_API_KEY", desc: "Chave da API do Asaas (cobranças)." },
   { nome: "ASAAS_WEBHOOK_TOKEN", desc: "Token que valida o webhook do Asaas." },
   { nome: "RESEND_API_KEY", desc: "Envio de e-mails transacionais (convites)." },
-  { nome: "LOVABLE_API_KEY", desc: "Gateway de IA da Lovable (gerenciada)." },
 ];
 
 const DOCS: { icon: typeof FileText; label: string; path: string; desc: string }[] =
