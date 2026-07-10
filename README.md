@@ -12,7 +12,7 @@ mensais (CSV) e mantenha o controle do seu tempo — no seu ritmo.
 - **TanStack Start** (SSR) + **TanStack Router** (roteamento por arquivos) + **TanStack Query**
 - **Tailwind CSS v4** (design tokens em `src/styles.css`)
 - **shadcn/ui** + **lucide-react**
-- **Supabase** (Lovable Cloud) — Postgres, Auth e RLS
+- **Supabase** — Postgres, Auth e RLS
 - **Vite** como bundler
 
 ---
@@ -79,9 +79,9 @@ npm run build
 npm run preview
 ```
 
-O build gera a saída em `dist/`. O deploy no Lovable é feito pelo botão
-**Publish**. Para deploy próprio, sirva o build de SSR gerado e configure as
-mesmas variáveis de ambiente do `.env.example` no ambiente de produção.
+O build gera a saída em `dist/`. Para deploy próprio, sirva o build de SSR
+gerado e configure as mesmas variáveis de ambiente do `.env.example` no
+ambiente de produção.
 
 > Alterações de **frontend** exigem clicar em "Update" no diálogo de publicação.
 > Alterações de **backend** (migrations, funções) são aplicadas automaticamente.
