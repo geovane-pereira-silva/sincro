@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   Sparkles,
+  Inbox,
   LogOut,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
