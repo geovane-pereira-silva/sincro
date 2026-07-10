@@ -136,7 +136,9 @@ export function AppShell({
             </div>
           </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
+        <div className="flex items-center gap-1">
+          <NotificacoesBell variant="light" />
+          <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
             aria-label="Abrir menu"
             className="flex h-10 w-10 items-center justify-center rounded-full text-primary-foreground transition-all hover:bg-white/10"
