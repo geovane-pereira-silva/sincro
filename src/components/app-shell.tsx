@@ -86,6 +86,7 @@ export function AppShell({
   const { isPremium } = usePremiumStatus(profile?.id);
   const { data: config } = useAdminConfig();
   const { data: isAdmin } = useIsSuperadmin(profile?.id);
+  useLembretesPonto();
 
   async function handleLogout() {
     setOpen(false);
