@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RefCodeRouteImport } from './routes/ref.$code'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
+import { Route as AuthenticatedSolicitacoesRouteImport } from './routes/_authenticated/solicitacoes'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPontoRouteImport } from './routes/_authenticated/ponto'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
@@ -71,6 +72,12 @@ const ConviteTokenRoute = ConviteTokenRouteImport.update({
   path: '/convite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSolicitacoesRoute =
+  AuthenticatedSolicitacoesRouteImport.update({
+    id: '/solicitacoes',
+    path: '/solicitacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRelatorioRoute = AuthenticatedRelatorioRouteImport.update({
   id: '/relatorio',
   path: '/relatorio',
@@ -230,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
@@ -262,6 +270,7 @@ export interface FileRoutesByTo {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
@@ -297,6 +306,7 @@ export interface FileRoutesById {
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/ponto': typeof AuthenticatedPontoRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
+  '/_authenticated/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/_authenticated/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
@@ -398,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/planos'
     | '/_authenticated/ponto'
     | '/_authenticated/relatorio'
+    | '/_authenticated/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/_authenticated/admin/gamificacao'
@@ -475,6 +488,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/convite/$token'
       preLoaderRoute: typeof ConviteTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/solicitacoes': {
+      id: '/_authenticated/solicitacoes'
+      path: '/solicitacoes'
+      fullPath: '/solicitacoes'
+      preLoaderRoute: typeof AuthenticatedSolicitacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/relatorio': {
       id: '/_authenticated/relatorio'
@@ -718,6 +738,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlanosRoute: typeof AuthenticatedPlanosRoute
   AuthenticatedPontoRoute: typeof AuthenticatedPontoRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
+  AuthenticatedSolicitacoesRoute: typeof AuthenticatedSolicitacoesRoute
   AuthenticatedEditarIdRoute: typeof AuthenticatedEditarIdRoute
   AuthenticatedGestorIndexRoute: typeof AuthenticatedGestorIndexRoute
 }
@@ -729,6 +750,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlanosRoute: AuthenticatedPlanosRoute,
   AuthenticatedPontoRoute: AuthenticatedPontoRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
+  AuthenticatedSolicitacoesRoute: AuthenticatedSolicitacoesRoute,
   AuthenticatedEditarIdRoute: AuthenticatedEditarIdRoute,
   AuthenticatedGestorIndexRoute: AuthenticatedGestorIndexRoute,
 }
