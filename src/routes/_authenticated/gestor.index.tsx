@@ -14,6 +14,8 @@ import {
   Download,
   LogOut,
   Loader2,
+  Inbox,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
