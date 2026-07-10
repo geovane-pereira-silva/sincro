@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
 import { MinhaAssinaturaCard } from "@/components/minha-assinatura-card";
 import { JornadaConfigForm } from "@/components/jornada-config-form";
+import { ConfigNotificacoesForm } from "@/components/config-notificacoes-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
