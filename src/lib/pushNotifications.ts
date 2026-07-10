@@ -1,6 +1,13 @@
-// Lembretes de ponto via Web Push / Notification API. Sem service worker
-// dedicado: usa notificações locais enquanto o app está aberto, com fallback
-// para toast (tratado no componente que consome).
+// Lembretes de ponto via Notification API + Service Worker.
+//
+// Estratégia de confiabilidade:
+// - Notificações são exibidas via `ServiceWorkerRegistration.showNotification`
+//   (funciona no Android/Chrome, onde `new Notification()` é bloqueado) com
+//   fallback para o construtor no desktop.
+// - O agendamento NÃO usa um único `setTimeout` longo (que o navegador mata em
+//   segundo plano no celular). Em vez disso, um verificador roda em intervalo
+//   curto e também ao voltar o foco para o app, disparando o lembrete dentro de
+//   uma janela ao redor do horário — muito mais confiável em dispositivos móveis.
 
 import type { JornadaConfig } from "@/lib/calculoTrabalhista";
 
@@ -22,60 +29,180 @@ export function permissaoPushAtual(): NotificationPermission | "indisponivel" {
   return Notification.permission;
 }
 
+let swRegistration: ServiceWorkerRegistration | null = null;
+
+/** Registra o service worker (necessário para notificações no celular). */
+export async function registrarServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return null;
+  }
+  try {
+    if (!swRegistration) {
+      swRegistration =
+        (await navigator.serviceWorker.getRegistration("/sw.js")) ??
+        (await navigator.serviceWorker.register("/sw.js"));
+    }
+    await navigator.serviceWorker.ready;
+    return swRegistration;
+  } catch (_e) {
+    return null;
+  }
+}
+
 /** Solicita permissão de notificação. Retorna true se concedida. */
 export async function solicitarPermissaoPush(): Promise<boolean> {
   if (!pushSuportado()) return false;
-  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "granted") {
+    await registrarServiceWorker();
+    return true;
+  }
   if (Notification.permission === "denied") return false;
   const p = await Notification.requestPermission();
+  if (p === "granted") await registrarServiceWorker();
   return p === "granted";
 }
 
-/** Dispara uma notificação push local imediatamente. */
-export function dispararNotificacaoPush(
+/** Dispara uma notificação local imediatamente (via SW, com fallback). */
+export async function dispararNotificacaoPush(
   titulo: string,
   mensagem: string,
   link?: string,
-): void {
-  if (!pushSuportado() || Notification.permission !== "granted") return;
-  const n = new Notification(titulo, {
+): Promise<boolean> {
+  if (!pushSuportado() || Notification.permission !== "granted") return false;
+
+  const options: NotificationOptions & { renotify?: boolean } = {
     body: mensagem,
     icon: "/icon-192.svg",
     badge: "/icon-192.svg",
-  });
-  n.onclick = () => {
-    window.focus();
-    if (link) window.location.href = link;
-    n.close();
+    tag: "lembrete-ponto",
+    renotify: true,
+    data: { link: link ?? "/ponto" },
   };
+
+  // Preferir o service worker: obrigatório no Android/Chrome.
+  try {
+    const reg = await registrarServiceWorker();
+    if (reg) {
+      await reg.showNotification(titulo, options);
+      return true;
+    }
+  } catch (_e) {
+    // cai no fallback abaixo
+  }
+
+  // Fallback para desktop sem SW ativo.
+  try {
+    const n = new Notification(titulo, options);
+    n.onclick = () => {
+      window.focus();
+      if (link) window.location.href = link;
+      n.close();
+    };
+    return true;
+  } catch (_e) {
+    return false;
+  }
 }
 
-interface LembreteAgendado {
-  timer: ReturnType<typeof setTimeout>;
+interface ReminderAgendado {
+  key: string;
+  hhmm: string; // horário-alvo (já com antecedência aplicada)
+  titulo: string;
+  msg: string;
 }
 
-// Guarda os timers ativos para poder cancelar ao reagendar.
-let timersAtivos: LembreteAgendado[] = [];
+let checkTimer: ReturnType<typeof setInterval> | null = null;
+let visibilityHandler: (() => void) | null = null;
+let remindersAtivos: ReminderAgendado[] = [];
+let onDisparoAtual: ((titulo: string, mensagem: string) => void) | null = null;
 
-export function cancelarLembretes(): void {
-  timersAtivos.forEach((t) => clearTimeout(t.timer));
-  timersAtivos = [];
+const FIRED_KEY = "sincro:lembretes-disparados";
+// Janela após o horário-alvo em que o lembrete ainda pode disparar (min).
+const JANELA_MIN = 30;
+const CHECK_INTERVAL_MS = 30_000;
+
+function hojeStr(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
-// Converte "HH:MM" de hoje para timestamp; se já passou, retorna null.
-function horarioHojeMs(hhmm: string, antecedenciaMin: number): number | null {
+function lerDisparados(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(FIRED_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as { data: string; keys: string[] };
+    if (parsed.data !== hojeStr()) return {};
+    return Object.fromEntries(parsed.keys.map((k) => [k, true]));
+  } catch (_e) {
+    return {};
+  }
+}
+
+function marcarDisparado(key: string): void {
+  try {
+    const atual = lerDisparados();
+    atual[key] = true;
+    localStorage.setItem(
+      FIRED_KEY,
+      JSON.stringify({ data: hojeStr(), keys: Object.keys(atual) }),
+    );
+  } catch (_e) {
+    /* ignora */
+  }
+}
+
+function minutosDoDia(hhmm: string): number | null {
   const [hh, mm] = hhmm.split(":").map(Number);
   if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
-  const alvo = new Date();
-  alvo.setHours(hh, mm, 0, 0);
-  const ms = alvo.getTime() - antecedenciaMin * 60000 - Date.now();
-  return ms > 0 ? ms : null;
+  return hh * 60 + mm;
+}
+
+function verificarLembretes(): void {
+  if (!onDisparoAtual || remindersAtivos.length === 0) return;
+  const disparados = lerDisparados();
+  const agora = new Date();
+  const agoraMin = agora.getHours() * 60 + agora.getMinutes();
+
+  for (const r of remindersAtivos) {
+    const dedupeKey = `${hojeStr()}:${r.key}`;
+    if (disparados[dedupeKey]) continue;
+    const alvo = minutosDoDia(r.hhmm);
+    if (alvo === null) continue;
+    // Dispara quando estamos entre o horário-alvo e o fim da janela.
+    if (agoraMin >= alvo && agoraMin <= alvo + JANELA_MIN) {
+      marcarDisparado(dedupeKey);
+      onDisparoAtual(r.titulo, r.msg);
+    }
+  }
+}
+
+export function cancelarLembretes(): void {
+  if (checkTimer) {
+    clearInterval(checkTimer);
+    checkTimer = null;
+  }
+  if (visibilityHandler && typeof document !== "undefined") {
+    document.removeEventListener("visibilitychange", visibilityHandler);
+    visibilityHandler = null;
+  }
+  remindersAtivos = [];
+  onDisparoAtual = null;
+}
+
+// Subtrai `antecedenciaMin` de um horário "HH:MM", devolvendo "HH:MM".
+function aplicarAntecedencia(hhmm: string, antecedenciaMin: number): string | null {
+  const total = minutosDoDia(hhmm);
+  if (total === null) return null;
+  const ajustado = Math.max(0, total - antecedenciaMin);
+  const hh = Math.floor(ajustado / 60);
+  const mm = ajustado % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 
 /**
- * Agenda lembretes locais para hoje com base na config e na jornada.
- * `onDisparo` é chamado sempre (para permitir fallback via toast quando push
- * estiver indisponível).
+ * Agenda os lembretes locais do dia com base na config e na jornada.
+ * `onDisparo` é chamado sempre que um lembrete vence (permite fallback via toast
+ * quando a notificação push está indisponível).
  */
 export function agendarLembretePonto(
   config: ConfigNotificacoes,
@@ -83,33 +210,47 @@ export function agendarLembretePonto(
   onDisparo: (titulo: string, mensagem: string) => void,
 ): void {
   cancelarLembretes();
-  const antecedencia = config.lembrete_antecedencia_minutos ?? 10;
+  if (typeof window === "undefined") return;
 
-  const agenda: { horario: string | null; titulo: string; msg: string }[] = [];
+  const antecedencia = config.lembrete_antecedencia_minutos ?? 10;
+  const reminders: ReminderAgendado[] = [];
 
   if (config.lembrete_entrada) {
-    const h = config.lembrete_entrada_horario ?? jornada?.horario_entrada ?? "08:00";
-    agenda.push({
-      horario: h,
-      titulo: "Hora de bater o ponto",
-      msg: `Sua entrada está prevista para ${h}.`,
-    });
-  }
-  if (config.lembrete_saida && jornada?.horario_saida) {
-    agenda.push({
-      horario: jornada.horario_saida,
-      titulo: "Fim do expediente",
-      msg: `Sua saída está prevista para ${jornada.horario_saida}.`,
-    });
+    const base =
+      config.lembrete_entrada_horario ?? jornada?.horario_entrada ?? "08:00";
+    const hhmm = aplicarAntecedencia(base, antecedencia);
+    if (hhmm) {
+      reminders.push({
+        key: "entrada",
+        hhmm,
+        titulo: "Hora de bater o ponto",
+        msg: `Sua entrada está prevista para ${base}.`,
+      });
+    }
   }
 
-  for (const item of agenda) {
-    if (!item.horario) continue;
-    const ms = horarioHojeMs(item.horario, antecedencia);
-    if (ms === null) continue;
-    const timer = setTimeout(() => {
-      onDisparo(item.titulo, item.msg);
-    }, ms);
-    timersAtivos.push({ timer });
+  if (config.lembrete_saida && jornada?.horario_saida) {
+    const hhmm = aplicarAntecedencia(jornada.horario_saida, antecedencia);
+    if (hhmm) {
+      reminders.push({
+        key: "saida",
+        hhmm,
+        titulo: "Fim do expediente",
+        msg: `Sua saída está prevista para ${jornada.horario_saida}.`,
+      });
+    }
   }
+
+  remindersAtivos = reminders;
+  onDisparoAtual = onDisparo;
+  if (reminders.length === 0) return;
+
+  // Verifica imediatamente (caso o app abra já dentro da janela) e depois
+  // periodicamente + ao voltar o foco para a aba/app.
+  verificarLembretes();
+  checkTimer = setInterval(verificarLembretes, CHECK_INTERVAL_MS);
+  visibilityHandler = () => {
+    if (document.visibilityState === "visible") verificarLembretes();
+  };
+  document.addEventListener("visibilitychange", visibilityHandler);
 }
