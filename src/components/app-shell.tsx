@@ -31,6 +31,7 @@ import { MaintenanceScreen } from "@/components/maintenance-screen";
 import { usePremiumStatus } from "@/hooks/use-premium";
 import { useAdminConfig } from "@/hooks/use-admin-config";
 import { useIsSuperadmin } from "@/hooks/use-is-superadmin";
+import { useLembretesPonto } from "@/hooks/use-lembretes-ponto";
 import { cn } from "@/lib/utils";
 
 const NAV_BASE = [
