@@ -8,6 +8,7 @@ import {
   cancelarLembretes,
   dispararNotificacaoPush,
   permissaoPushAtual,
+  registrarServiceWorker,
   type ConfigNotificacoes,
 } from "@/lib/pushNotifications";
 
@@ -19,6 +20,10 @@ export function useLembretesPonto() {
 
   useEffect(() => {
     if (!config) return;
+    // Garante o service worker registrado (necessário no celular).
+    if (config.push_habilitado && permissaoPushAtual() === "granted") {
+      void registrarServiceWorker();
+    }
     const cfg: ConfigNotificacoes = {
       lembrete_entrada: config.lembrete_entrada,
       lembrete_entrada_horario: config.lembrete_entrada_horario,
