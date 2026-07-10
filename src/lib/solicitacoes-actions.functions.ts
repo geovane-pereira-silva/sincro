@@ -5,7 +5,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { type AuthedCtx } from "@/lib/gestao-auth";
-import { zonedWallToUtc, getZonedParts } from "@/lib/ponto";
+import { zonedWallToUtc } from "@/lib/ponto";
 
 async function papel(ctx: AuthedCtx, role: string): Promise<boolean> {
   const { data, error } = await ctx.supabase.rpc("has_role", {
