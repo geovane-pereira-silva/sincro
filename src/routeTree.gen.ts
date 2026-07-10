@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RefCodeRouteImport } from './routes/ref.$code'
 import { Route as ConviteTokenRouteImport } from './routes/convite.$token'
+import { Route as AuthenticatedSolicitacoesRouteImport } from './routes/_authenticated/solicitacoes'
 import { Route as AuthenticatedRelatorioRouteImport } from './routes/_authenticated/relatorio'
 import { Route as AuthenticatedPontoRouteImport } from './routes/_authenticated/ponto'
 import { Route as AuthenticatedPlanosRouteImport } from './routes/_authenticated/planos'
@@ -23,6 +24,8 @@ import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedGestorIndexRouteImport } from './routes/_authenticated/gestor.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedGestorSolicitacoesRouteImport } from './routes/_authenticated/gestor.solicitacoes'
+import { Route as AuthenticatedGestorConfiguracoesRouteImport } from './routes/_authenticated/gestor.configuracoes'
 import { Route as AuthenticatedEditarIdRouteImport } from './routes/_authenticated/editar.$id'
 import { Route as AuthenticatedAdminGamificacaoRouteImport } from './routes/_authenticated/admin/gamificacao'
 import { Route as AuthenticatedAdminWebhookIndexRouteImport } from './routes/_authenticated/admin/webhook.index'
@@ -71,6 +74,12 @@ const ConviteTokenRoute = ConviteTokenRouteImport.update({
   path: '/convite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSolicitacoesRoute =
+  AuthenticatedSolicitacoesRouteImport.update({
+    id: '/solicitacoes',
+    path: '/solicitacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedRelatorioRoute = AuthenticatedRelatorioRouteImport.update({
   id: '/relatorio',
   path: '/relatorio',
@@ -113,6 +122,18 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedGestorSolicitacoesRoute =
+  AuthenticatedGestorSolicitacoesRouteImport.update({
+    id: '/gestor/solicitacoes',
+    path: '/gestor/solicitacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGestorConfiguracoesRoute =
+  AuthenticatedGestorConfiguracoesRouteImport.update({
+    id: '/gestor/configuracoes',
+    path: '/gestor/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEditarIdRoute = AuthenticatedEditarIdRouteImport.update({
   id: '/editar/$id',
   path: '/editar/$id',
@@ -230,10 +251,13 @@ export interface FileRoutesByFullPath {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
+  '/gestor/configuracoes': typeof AuthenticatedGestorConfiguracoesRoute
+  '/gestor/solicitacoes': typeof AuthenticatedGestorSolicitacoesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/gestor/': typeof AuthenticatedGestorIndexRoute
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
@@ -262,10 +286,13 @@ export interface FileRoutesByTo {
   '/planos': typeof AuthenticatedPlanosRoute
   '/ponto': typeof AuthenticatedPontoRoute
   '/relatorio': typeof AuthenticatedRelatorioRoute
+  '/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/editar/$id': typeof AuthenticatedEditarIdRoute
+  '/gestor/configuracoes': typeof AuthenticatedGestorConfiguracoesRoute
+  '/gestor/solicitacoes': typeof AuthenticatedGestorSolicitacoesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/gestor': typeof AuthenticatedGestorIndexRoute
   '/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
@@ -297,10 +324,13 @@ export interface FileRoutesById {
   '/_authenticated/planos': typeof AuthenticatedPlanosRoute
   '/_authenticated/ponto': typeof AuthenticatedPontoRoute
   '/_authenticated/relatorio': typeof AuthenticatedRelatorioRoute
+  '/_authenticated/solicitacoes': typeof AuthenticatedSolicitacoesRoute
   '/convite/$token': typeof ConviteTokenRoute
   '/ref/$code': typeof RefCodeRoute
   '/_authenticated/admin/gamificacao': typeof AuthenticatedAdminGamificacaoRoute
   '/_authenticated/editar/$id': typeof AuthenticatedEditarIdRoute
+  '/_authenticated/gestor/configuracoes': typeof AuthenticatedGestorConfiguracoesRoute
+  '/_authenticated/gestor/solicitacoes': typeof AuthenticatedGestorSolicitacoesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/gestor/': typeof AuthenticatedGestorIndexRoute
   '/_authenticated/admin/empresas/$id': typeof AuthenticatedAdminEmpresasIdRoute
@@ -332,10 +362,13 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
     | '/editar/$id'
+    | '/gestor/configuracoes'
+    | '/gestor/solicitacoes'
     | '/admin/'
     | '/gestor/'
     | '/admin/empresas/$id'
@@ -364,10 +397,13 @@ export interface FileRouteTypes {
     | '/planos'
     | '/ponto'
     | '/relatorio'
+    | '/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/admin/gamificacao'
     | '/editar/$id'
+    | '/gestor/configuracoes'
+    | '/gestor/solicitacoes'
     | '/admin'
     | '/gestor'
     | '/admin/empresas/$id'
@@ -398,10 +434,13 @@ export interface FileRouteTypes {
     | '/_authenticated/planos'
     | '/_authenticated/ponto'
     | '/_authenticated/relatorio'
+    | '/_authenticated/solicitacoes'
     | '/convite/$token'
     | '/ref/$code'
     | '/_authenticated/admin/gamificacao'
     | '/_authenticated/editar/$id'
+    | '/_authenticated/gestor/configuracoes'
+    | '/_authenticated/gestor/solicitacoes'
     | '/_authenticated/admin/'
     | '/_authenticated/gestor/'
     | '/_authenticated/admin/empresas/$id'
@@ -476,6 +515,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/solicitacoes': {
+      id: '/_authenticated/solicitacoes'
+      path: '/solicitacoes'
+      fullPath: '/solicitacoes'
+      preLoaderRoute: typeof AuthenticatedSolicitacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/relatorio': {
       id: '/_authenticated/relatorio'
       path: '/relatorio'
@@ -531,6 +577,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/gestor/solicitacoes': {
+      id: '/_authenticated/gestor/solicitacoes'
+      path: '/gestor/solicitacoes'
+      fullPath: '/gestor/solicitacoes'
+      preLoaderRoute: typeof AuthenticatedGestorSolicitacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gestor/configuracoes': {
+      id: '/_authenticated/gestor/configuracoes'
+      path: '/gestor/configuracoes'
+      fullPath: '/gestor/configuracoes'
+      preLoaderRoute: typeof AuthenticatedGestorConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/editar/$id': {
       id: '/_authenticated/editar/$id'
@@ -718,7 +778,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlanosRoute: typeof AuthenticatedPlanosRoute
   AuthenticatedPontoRoute: typeof AuthenticatedPontoRoute
   AuthenticatedRelatorioRoute: typeof AuthenticatedRelatorioRoute
+  AuthenticatedSolicitacoesRoute: typeof AuthenticatedSolicitacoesRoute
   AuthenticatedEditarIdRoute: typeof AuthenticatedEditarIdRoute
+  AuthenticatedGestorConfiguracoesRoute: typeof AuthenticatedGestorConfiguracoesRoute
+  AuthenticatedGestorSolicitacoesRoute: typeof AuthenticatedGestorSolicitacoesRoute
   AuthenticatedGestorIndexRoute: typeof AuthenticatedGestorIndexRoute
 }
 
@@ -729,7 +792,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlanosRoute: AuthenticatedPlanosRoute,
   AuthenticatedPontoRoute: AuthenticatedPontoRoute,
   AuthenticatedRelatorioRoute: AuthenticatedRelatorioRoute,
+  AuthenticatedSolicitacoesRoute: AuthenticatedSolicitacoesRoute,
   AuthenticatedEditarIdRoute: AuthenticatedEditarIdRoute,
+  AuthenticatedGestorConfiguracoesRoute: AuthenticatedGestorConfiguracoesRoute,
+  AuthenticatedGestorSolicitacoesRoute: AuthenticatedGestorSolicitacoesRoute,
   AuthenticatedGestorIndexRoute: AuthenticatedGestorIndexRoute,
 }
 

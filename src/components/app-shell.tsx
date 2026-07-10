@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   Sparkles,
+  Inbox,
   LogOut,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -25,16 +26,27 @@ import { OnboardingScreen } from "@/components/onboarding-screen";
 import { PremiumProvider } from "@/components/premium-context";
 import { PremiumPill } from "@/components/premium-gate";
 import { SystemBanner } from "@/components/system-banner";
+import { NotificacoesBell } from "@/components/notificacoes-bell";
 import { MaintenanceScreen } from "@/components/maintenance-screen";
 import { usePremiumStatus } from "@/hooks/use-premium";
 import { useAdminConfig } from "@/hooks/use-admin-config";
 import { useIsSuperadmin } from "@/hooks/use-is-superadmin";
+import { useLembretesPonto } from "@/hooks/use-lembretes-ponto";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+const NAV_BASE = [
   { to: "/ponto", label: "Meu Ponto", icon: Clock },
   { to: "/historico", label: "Histórico", icon: ListChecks },
   { to: "/relatorio", label: "Relatório", icon: BarChart3 },
+] as const;
+
+const NAV_SOLICITACOES = {
+  to: "/solicitacoes",
+  label: "Solicitações",
+  icon: Inbox,
+} as const;
+
+const NAV_FIM = [
   { to: "/planos", label: "Planos Premium", icon: Sparkles },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
@@ -67,9 +79,14 @@ export function AppShell({
     profile?.email?.split("@")[0] ||
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
+  const NAV =
+    profile?.tipo_conta === "colaborador"
+      ? [...NAV_BASE, NAV_SOLICITACOES, ...NAV_FIM]
+      : [...NAV_BASE, ...NAV_FIM];
   const { isPremium } = usePremiumStatus(profile?.id);
   const { data: config } = useAdminConfig();
   const { data: isAdmin } = useIsSuperadmin(profile?.id);
+  useLembretesPonto();
 
   async function handleLogout() {
     setOpen(false);
@@ -136,7 +153,9 @@ export function AppShell({
             </div>
           </div>
 
-        <Sheet open={open} onOpenChange={setOpen}>
+        <div className="flex items-center gap-1">
+          <NotificacoesBell variant="light" />
+          <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger
             aria-label="Abrir menu"
             className="flex h-10 w-10 items-center justify-center rounded-full text-primary-foreground transition-all hover:bg-white/10"
@@ -208,6 +227,7 @@ export function AppShell({
             </nav>
           </SheetContent>
         </Sheet>
+        </div>
       </header>
 
         {config?.mensagem_sistema && (

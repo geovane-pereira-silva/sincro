@@ -217,11 +217,13 @@ export type Database = {
           data_demissao: string | null
           email: string | null
           empresa_id: string
+          exigir_justificativa_he: boolean
           foto_url: string | null
           id: string
           matricula: string | null
           nome_completo: string
           setor_id: string | null
+          tipo_trabalho: string
           updated_at: string
           user_id: string | null
         }
@@ -238,11 +240,13 @@ export type Database = {
           data_demissao?: string | null
           email?: string | null
           empresa_id: string
+          exigir_justificativa_he?: boolean
           foto_url?: string | null
           id?: string
           matricula?: string | null
           nome_completo: string
           setor_id?: string | null
+          tipo_trabalho?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -259,11 +263,13 @@ export type Database = {
           data_demissao?: string | null
           email?: string | null
           empresa_id?: string
+          exigir_justificativa_he?: boolean
           foto_url?: string | null
           id?: string
           matricula?: string | null
           nome_completo?: string
           setor_id?: string | null
+          tipo_trabalho?: string
           updated_at?: string
           user_id?: string | null
         }
@@ -283,6 +289,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      config_notificacoes: {
+        Row: {
+          created_at: string
+          id: string
+          lembrete_antecedencia_minutos: number
+          lembrete_entrada: boolean
+          lembrete_entrada_horario: string | null
+          lembrete_intervalo: boolean
+          lembrete_saida: boolean
+          push_habilitado: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lembrete_antecedencia_minutos?: number
+          lembrete_entrada?: boolean
+          lembrete_entrada_horario?: string | null
+          lembrete_intervalo?: boolean
+          lembrete_saida?: boolean
+          push_habilitado?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lembrete_antecedencia_minutos?: number
+          lembrete_entrada?: boolean
+          lembrete_entrada_horario?: string | null
+          lembrete_intervalo?: boolean
+          lembrete_saida?: boolean
+          push_habilitado?: boolean
+          user_id?: string
+        }
+        Relationships: []
       }
       crm_eventos: {
         Row: {
@@ -311,6 +353,98 @@ export type Database = {
         }
         Relationships: []
       }
+      dias_especiais: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string | null
+          empresa_id: string
+          id: string
+          solicitacao_id: string | null
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          descricao?: string | null
+          empresa_id: string
+          id?: string
+          solicitacao_id?: string | null
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          empresa_id?: string
+          id?: string
+          solicitacao_id?: string | null
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dias_especiais_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dias_especiais_solicitacao_id_fkey"
+            columns: ["solicitacao_id"]
+            isOneToOne: false
+            referencedRelation: "solicitacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empresa_localizacao: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          endereco: string
+          exigir_localizacao: boolean
+          id: string
+          latitude: number
+          longitude: number
+          raio_metros: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id: string
+          endereco: string
+          exigir_localizacao?: boolean
+          id?: string
+          latitude: number
+          longitude: number
+          raio_metros?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          endereco?: string
+          exigir_localizacao?: boolean
+          id?: string
+          latitude?: number
+          longitude?: number
+          raio_metros?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empresa_localizacao_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: true
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           admin_user_id: string | null
@@ -318,11 +452,14 @@ export type Database = {
           cnpj: string | null
           created_at: string
           email_contato: string | null
+          exigir_justificativa_he: boolean
           id: string
           logo_url: string | null
           max_colaboradores: number
           nome: string
+          permitir_edicao_ponto_colaborador: boolean
           plano: string
+          prazo_justificativa_he_horas: number
           telefone: string | null
           timezone: string
           updated_at: string
@@ -333,11 +470,14 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           email_contato?: string | null
+          exigir_justificativa_he?: boolean
           id?: string
           logo_url?: string | null
           max_colaboradores?: number
           nome: string
+          permitir_edicao_ponto_colaborador?: boolean
           plano?: string
+          prazo_justificativa_he_horas?: number
           telefone?: string | null
           timezone?: string
           updated_at?: string
@@ -348,11 +488,14 @@ export type Database = {
           cnpj?: string | null
           created_at?: string
           email_contato?: string | null
+          exigir_justificativa_he?: boolean
           id?: string
           logo_url?: string | null
           max_colaboradores?: number
           nome?: string
+          permitir_edicao_ponto_colaborador?: boolean
           plano?: string
+          prazo_justificativa_he_horas?: number
           telefone?: string | null
           timezone?: string
           updated_at?: string
@@ -529,14 +672,50 @@ export type Database = {
           },
         ]
       }
+      notificacoes: {
+        Row: {
+          created_at: string
+          id: string
+          lida: boolean
+          link: string | null
+          mensagem: string
+          tipo: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem: string
+          tipo: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lida?: boolean
+          link?: string | null
+          mensagem?: string
+          tipo?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ponto_registros: {
         Row: {
           created_at: string
           data_hora: string
           data_hora_original: string
+          distancia_empresa_metros: number | null
           foi_editado: boolean
           id: string
           justificativa: string | null
+          latitude: number | null
+          longitude: number | null
           origem: string
           tipo: string
           user_id: string
@@ -545,9 +724,12 @@ export type Database = {
           created_at?: string
           data_hora: string
           data_hora_original?: string
+          distancia_empresa_metros?: number | null
           foi_editado?: boolean
           id?: string
           justificativa?: string | null
+          latitude?: number | null
+          longitude?: number | null
           origem?: string
           tipo: string
           user_id: string
@@ -556,9 +738,12 @@ export type Database = {
           created_at?: string
           data_hora?: string
           data_hora_original?: string
+          distancia_empresa_metros?: number | null
           foi_editado?: boolean
           id?: string
           justificativa?: string | null
+          latitude?: number | null
+          longitude?: number | null
           origem?: string
           tipo?: string
           user_id?: string
@@ -685,6 +870,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "setores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      solicitacoes: {
+        Row: {
+          anexo_url: string | null
+          created_at: string
+          data_fim: string | null
+          data_inicio: string | null
+          data_referencia: string
+          empresa_id: string
+          gestor_id: string | null
+          horario_solicitado: string | null
+          id: string
+          motivo: string
+          respondido_em: string | null
+          resposta_gestor: string | null
+          status: string
+          tipo: string
+          tipo_batida: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          anexo_url?: string | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          data_referencia: string
+          empresa_id: string
+          gestor_id?: string | null
+          horario_solicitado?: string | null
+          id?: string
+          motivo: string
+          respondido_em?: string | null
+          resposta_gestor?: string | null
+          status?: string
+          tipo: string
+          tipo_batida?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          anexo_url?: string | null
+          created_at?: string
+          data_fim?: string | null
+          data_inicio?: string | null
+          data_referencia?: string
+          empresa_id?: string
+          gestor_id?: string | null
+          horario_solicitado?: string | null
+          id?: string
+          motivo?: string
+          respondido_em?: string | null
+          resposta_gestor?: string | null
+          status?: string
+          tipo?: string
+          tipo_batida?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitacoes_empresa_id_fkey"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"

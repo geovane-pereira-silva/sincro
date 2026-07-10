@@ -10,6 +10,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { AppShell } from "@/components/app-shell";
 import { MinhaAssinaturaCard } from "@/components/minha-assinatura-card";
 import { JornadaConfigForm } from "@/components/jornada-config-form";
+import { ConfigNotificacoesForm } from "@/components/config-notificacoes-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -221,6 +222,17 @@ function ConfiguracoesPage() {
           Minha Jornada
         </p>
         <JornadaConfigForm userId={user?.id} />
+
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+          Notificações
+        </p>
+        {user?.id && (
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
+            <ConfigNotificacoesForm userId={user.id} />
+          </div>
+        )}
+
+
 
 
 

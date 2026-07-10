@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import {
   Building2,
   Users,
@@ -14,6 +14,8 @@ import {
   Download,
   LogOut,
   Loader2,
+  Inbox,
+  Settings,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -180,12 +182,29 @@ function GestorPortal() {
             Gestor
           </span>
         </div>
-        <button
-          onClick={logout}
-          className="ml-auto inline-flex items-center gap-2 rounded-xl border border-primary-foreground/30 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
-        >
-          <LogOut className="h-4 w-4" /> Sair
-        </button>
+        <nav className="ml-auto flex items-center gap-1">
+          <Link
+            to="/gestor/solicitacoes"
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
+          >
+            <Inbox className="h-4 w-4" />
+            <span className="hidden sm:inline">Solicitações</span>
+          </Link>
+          <Link
+            to="/gestor/configuracoes"
+            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
+          >
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Config</span>
+          </Link>
+          <button
+            onClick={logout}
+            className="inline-flex items-center gap-2 rounded-xl border border-primary-foreground/30 px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
+        </nav>
       </header>
 
       <main className="mx-auto max-w-5xl px-4 py-6 pb-16 md:px-8">
