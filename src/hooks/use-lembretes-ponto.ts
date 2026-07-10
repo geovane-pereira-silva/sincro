@@ -34,11 +34,11 @@ export function useLembretesPonto() {
     };
 
     agendarLembretePonto(cfg, jornada ?? null, (titulo, mensagem) => {
-      // Push quando permitido; senão, fallback via toast na tela.
+      // Sempre mostra o toast na tela quando o app está aberto e, quando
+      // permitido, também dispara a notificação do sistema (funciona minimizado).
+      toast(titulo, { description: mensagem });
       if (config.push_habilitado && permissaoPushAtual() === "granted") {
-        dispararNotificacaoPush(titulo, mensagem, "/ponto");
-      } else {
-        toast(titulo, { description: mensagem });
+        void dispararNotificacaoPush(titulo, mensagem, "/ponto");
       }
     });
 
