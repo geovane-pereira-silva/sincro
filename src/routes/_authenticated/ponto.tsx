@@ -19,6 +19,7 @@ import { verificarRecompensasPremium } from "@/lib/premium";
 import { HomeUpsellBanner } from "@/components/home-upsell-banner";
 import { StatusDiaCard } from "@/components/status-dia-card";
 import { JornadaOnboardingModal } from "@/components/jornada-onboarding-modal";
+import { validarLocalizacaoPonto } from "@/lib/geolocalizacao";
 
 import { useJornadaConfig } from "@/hooks/use-jornada-config";
 import { useBancoHoras } from "@/hooks/use-banco-horas";
