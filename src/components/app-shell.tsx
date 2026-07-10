@@ -33,10 +33,19 @@ import { useAdminConfig } from "@/hooks/use-admin-config";
 import { useIsSuperadmin } from "@/hooks/use-is-superadmin";
 import { cn } from "@/lib/utils";
 
-const NAV = [
+const NAV_BASE = [
   { to: "/ponto", label: "Meu Ponto", icon: Clock },
   { to: "/historico", label: "Histórico", icon: ListChecks },
   { to: "/relatorio", label: "Relatório", icon: BarChart3 },
+] as const;
+
+const NAV_SOLICITACOES = {
+  to: "/solicitacoes",
+  label: "Solicitações",
+  icon: Inbox,
+} as const;
+
+const NAV_FIM = [
   { to: "/planos", label: "Planos Premium", icon: Sparkles },
   { to: "/configuracoes", label: "Configurações", icon: Settings },
 ] as const;
