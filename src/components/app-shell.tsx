@@ -78,6 +78,10 @@ export function AppShell({
     profile?.email?.split("@")[0] ||
     "você";
   const tz = profile?.timezone ?? "America/Sao_Paulo";
+  const NAV =
+    profile?.tipo_conta === "colaborador"
+      ? [...NAV_BASE, NAV_SOLICITACOES, ...NAV_FIM]
+      : [...NAV_BASE, ...NAV_FIM];
   const { isPremium } = usePremiumStatus(profile?.id);
   const { data: config } = useAdminConfig();
   const { data: isAdmin } = useIsSuperadmin(profile?.id);
