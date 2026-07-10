@@ -13,6 +13,22 @@ Formato:
 
 ---
 
+## [2026-07-10] — Correção dos lembretes de ponto no celular
+- O que foi feito: Lembretes de ponto passaram a usar Service Worker
+  (`public/sw.js`) e `registration.showNotification`, que funcionam no
+  Android/Chrome (onde `new Notification()` é bloqueado). O agendamento deixou
+  de depender de um único `setTimeout` (morto em segundo plano no celular) e
+  agora usa um verificador em intervalo curto + `visibilitychange`, com janela
+  de disparo e deduplicação por dia via localStorage. O toast na tela sempre
+  aparece com o app aberto.
+- Arquivos/componentes afetados: `public/sw.js`, `src/lib/pushNotifications.ts`,
+  `src/hooks/use-lembretes-ponto.ts`.
+- Por quê: A notificação de lembrete próxima ao horário de bater ponto não
+  disparava, principalmente em dispositivos móveis.
+  Observação: notificação com o app totalmente fechado exige Web Push
+  (servidor + VAPID + cron), ainda não implementado.
+
+
 ## [2026-07-10] — Criação da documentação viva (/docs)
 - O que foi feito: Estruturada a pasta `/docs` (01-sistema, 02-funcionalidades,
   changelog) documentando retroativamente o sistema e todos os módulos já
