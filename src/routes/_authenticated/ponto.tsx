@@ -235,6 +235,32 @@ function PontoPage() {
         Math.abs(dataHora.getTime() - original.getTime()) > 60000;
       const obs = justificativa.trim();
 
+      // Colaboradores com empresa: valida a cerca virtual (se configurada).
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      let distancia: number | null = null;
+      if (profile?.tipo_conta === "colaborador" && profile?.empresa_id) {
+        const geo = await validarLocalizacaoPonto(profile.empresa_id);
+        latitude = geo.latitude ?? null;
+        longitude = geo.longitude ?? null;
+        distancia = geo.distancia_metros ?? null;
+        if (!geo.permitido) {
+          if (geo.erro === "fora_da_area") {
+            toast.error(
+              `Você está fora da área permitida (${geo.distancia_metros} m). Ponto não registrado.`,
+            );
+          } else if (geo.erro === "sem_permissao") {
+            toast.error(
+              "Ative a localização para registrar o ponto nesta empresa.",
+            );
+          } else {
+            toast.error("Não foi possível validar sua localização.");
+          }
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const { error } = await supabase.from("ponto_registros").insert({
         user_id: user.id,
         tipo: proximo,
@@ -243,6 +269,9 @@ function PontoPage() {
         foi_editado: editadoReal,
         justificativa: editadoReal && obs.length > 0 ? obs : null,
         origem: "web",
+        latitude,
+        longitude,
+        distancia_empresa_metros: distancia,
       });
       if (error) throw error;
 
