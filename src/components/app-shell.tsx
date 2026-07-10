@@ -25,6 +25,7 @@ import { OnboardingScreen } from "@/components/onboarding-screen";
 import { PremiumProvider } from "@/components/premium-context";
 import { PremiumPill } from "@/components/premium-gate";
 import { SystemBanner } from "@/components/system-banner";
+import { NotificacoesBell } from "@/components/notificacoes-bell";
 import { MaintenanceScreen } from "@/components/maintenance-screen";
 import { usePremiumStatus } from "@/hooks/use-premium";
 import { useAdminConfig } from "@/hooks/use-admin-config";
