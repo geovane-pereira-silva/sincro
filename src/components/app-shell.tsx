@@ -210,6 +210,7 @@ export function AppShell({
             </nav>
           </SheetContent>
         </Sheet>
+        </div>
       </header>
 
         {config?.mensagem_sistema && (
