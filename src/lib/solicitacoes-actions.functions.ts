@@ -213,6 +213,3 @@ export const rejeitarSolicitacao = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// getZonedParts é reexportado apenas para manter o import consistente com o
-// motor de fuso; usado indiretamente por zonedWallToUtc.
-void getZonedParts;
