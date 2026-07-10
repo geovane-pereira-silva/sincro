@@ -8,6 +8,7 @@ import {
   cancelarLembretes,
   dispararNotificacaoPush,
   permissaoPushAtual,
+  registrarServiceWorker,
   type ConfigNotificacoes,
 } from "@/lib/pushNotifications";
 
@@ -19,6 +20,10 @@ export function useLembretesPonto() {
 
   useEffect(() => {
     if (!config) return;
+    // Garante o service worker registrado (necessário no celular).
+    if (config.push_habilitado && permissaoPushAtual() === "granted") {
+      void registrarServiceWorker();
+    }
     const cfg: ConfigNotificacoes = {
       lembrete_entrada: config.lembrete_entrada,
       lembrete_entrada_horario: config.lembrete_entrada_horario,
@@ -29,11 +34,11 @@ export function useLembretesPonto() {
     };
 
     agendarLembretePonto(cfg, jornada ?? null, (titulo, mensagem) => {
-      // Push quando permitido; senão, fallback via toast na tela.
+      // Sempre mostra o toast na tela quando o app está aberto e, quando
+      // permitido, também dispara a notificação do sistema (funciona minimizado).
+      toast(titulo, { description: mensagem });
       if (config.push_habilitado && permissaoPushAtual() === "granted") {
-        dispararNotificacaoPush(titulo, mensagem, "/ponto");
-      } else {
-        toast(titulo, { description: mensagem });
+        void dispararNotificacaoPush(titulo, mensagem, "/ponto");
       }
     });
 
