@@ -33,6 +33,8 @@ import { mensagemErro } from "@/lib/erros";
 export function ConfigNotificacoesForm({ userId }: { userId: string }) {
   const { data, isLoading } = useConfigNotificacoes(userId);
   const salvar = useSalvarConfigNotificacoes();
+  const salvarSub = useServerFn(salvarPushSubscription);
+  const removerSub = useServerFn(removerPushSubscription);
 
   const [entrada, setEntrada] = useState(CONFIG_NOTIF_DEFAULT.lembrete_entrada);
   const [horario, setHorario] = useState(
