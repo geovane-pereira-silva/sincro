@@ -234,7 +234,7 @@ export function AppShell({
           <SystemBanner mensagem={config.mensagem_sistema} />
         )}
 
-        <main className="flex-1 px-4 py-5">{children}</main>
+        <main className="flex-1 px-4 py-5 lg:px-8 lg:py-8">{children}</main>
       </div>
     </PremiumProvider>
   );
