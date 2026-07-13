@@ -251,7 +251,10 @@ export function PontoDiaEditor({
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4">
-          {values.slice(0, count).map((val, i) => {
+          {values.slice(0, count).map((val, i, arr) => {
+            // Foca o primeiro campo vazio (ponto faltando) para o usuário
+            // apenas digitar o horário que falta.
+            const firstEmpty = arr.findIndex((v) => !v.trim());
             const label = rotuloBatida(i, count);
             const jaExiste = !!regDoSlot(i, count);
             // Início de um par de intervalo removível (não é entrada nem saída).
@@ -283,6 +286,7 @@ export function PontoDiaEditor({
                 <Input
                   id={`dia-${i}`}
                   type="time"
+                  autoFocus={firstEmpty === -1 ? i === 0 : i === firstEmpty}
                   value={val}
                   onChange={(e) =>
                     setValues((v) => {
