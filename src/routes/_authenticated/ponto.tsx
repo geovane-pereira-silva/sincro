@@ -262,19 +262,40 @@ function PontoPage() {
         }
       }
 
-      const { error } = await supabase.from("ponto_registros").insert({
+      const registro = {
         user_id: user.id,
         tipo: proximo,
         data_hora: dataHora.toISOString(),
         data_hora_original: original.toISOString(),
         foi_editado: editadoReal,
         justificativa: editadoReal && obs.length > 0 ? obs : null,
-        origem: "web",
+        origem: "web" as const,
         latitude,
         longitude,
         distancia_empresa_metros: distancia,
-      });
-      if (error) throw error;
+      };
+
+      const { error } = await supabase.from("ponto_registros").insert(registro);
+      if (error) {
+        // Sem conexão: guarda localmente e sincroniza depois automaticamente.
+        if (isErroDeRede(error)) {
+          await salvarBatidaOffline({
+            id: crypto.randomUUID(),
+            ...registro,
+            created_at: new Date().toISOString(),
+          });
+          await offline.atualizarPendentes();
+          toast.warning(
+            "📡 Sem conexão — ponto salvo localmente (será sincronizado automaticamente)",
+            { duration: 8000 },
+          );
+          setIsManual(false);
+          setJustificativa("");
+          setTimeInput(horaAtual);
+          return;
+        }
+        throw error;
+      }
 
       toast.success(
         `✓ Registro confirmado pelo SINCRO às ${formatTime(dataHora.toISOString(), tz)}`,
@@ -289,6 +310,43 @@ function PontoPage() {
       // Confere recompensas premium (ex.: 7 dias seguidos) após a batida.
       void verificarRecompensasPremium(user.id, queryClient);
     } catch (err) {
+      // Erro de rede na validação/inserção também vira ponto offline.
+      if (isErroDeRede(err) && proximo) {
+        try {
+          await salvarBatidaOffline({
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            tipo: proximo,
+            data_hora: (isManual
+              ? (() => {
+                  const [hh, mm] = timeInput.split(":").map(Number);
+                  const p = getZonedParts(new Date(), tz);
+                  return zonedWallToUtc(p.year, p.month, p.day, hh, mm, 0, tz);
+                })()
+              : new Date()
+            ).toISOString(),
+            data_hora_original: new Date().toISOString(),
+            foi_editado: false,
+            justificativa: null,
+            origem: "web",
+            latitude: null,
+            longitude: null,
+            distancia_empresa_metros: null,
+            created_at: new Date().toISOString(),
+          });
+          await offline.atualizarPendentes();
+          toast.warning(
+            "📡 Sem conexão — ponto salvo localmente (será sincronizado automaticamente)",
+            { duration: 8000 },
+          );
+          setIsManual(false);
+          setJustificativa("");
+          setTimeInput(horaAtual);
+          return;
+        } catch (_e) {
+          /* cai no toast de erro padrão */
+        }
+      }
       toast.error(mensagemErro(err));
     } finally {
       setSubmitting(false);
