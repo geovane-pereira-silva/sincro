@@ -133,7 +133,7 @@ export function AppShell({
       userId={profile?.id}
       referralCode={profile?.referral_code ?? null}
     >
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background lg:max-w-5xl">
         <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-6 text-primary-foreground">
           <div className="flex min-w-0 items-center gap-3">
             <Avatar className="h-10 w-10 border border-white/10">
