@@ -6,12 +6,15 @@
 
 ---
 
-## [2026-07-13] — Editor de dia: foco no ponto faltante
+## [2026-07-13] — UX: foco no ponto faltante + largura confortável no PC
 
 ### Modificado
 - [ponto] `src/components/ponto-dia-editor.tsx` — ao abrir o editor de um dia,
   o primeiro campo **vazio** (ponto faltando) já vem selecionado, bastando
   digitar o horário. Se não houver campo vazio, foca a entrada.
+- [layout] `src/components/app-shell.tsx` — em telas de note/PC o conteúdo
+  passa a usar largura máxima confortável (`lg:max-w-5xl`) em vez da coluna
+  estreita de celular, dando espaço ao espelho de ponto e tabelas.
 
 ---
 
