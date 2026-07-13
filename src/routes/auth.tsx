@@ -529,6 +529,21 @@ function AuthPage() {
                 )}
                 Entrar com Google
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApple}
+                disabled={appleLoading}
+                className="h-13 w-full rounded-xl border-border text-base font-medium"
+              >
+                {appleLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <AppleIcon />
+                )}
+                Entrar com Apple
+              </Button>
             </>
           )}
         </form>
