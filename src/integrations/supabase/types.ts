@@ -161,6 +161,45 @@ export type Database = {
         }
         Relationships: []
       }
+      assinaturas_espelho: {
+        Row: {
+          assinatura_img_url: string | null
+          created_at: string
+          hash_conteudo: string
+          id: string
+          ip_address: string | null
+          modalidade: string
+          periodo_ano: number
+          periodo_mes: number
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          assinatura_img_url?: string | null
+          created_at?: string
+          hash_conteudo: string
+          id?: string
+          ip_address?: string | null
+          modalidade: string
+          periodo_ano: number
+          periodo_mes: number
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          assinatura_img_url?: string | null
+          created_at?: string
+          hash_conteudo?: string
+          id?: string
+          ip_address?: string | null
+          modalidade?: string
+          periodo_ano?: number
+          periodo_mes?: number
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       colaborador_jornadas: {
         Row: {
           colaborador_id: string
@@ -298,7 +337,10 @@ export type Database = {
           lembrete_entrada: boolean
           lembrete_entrada_horario: string | null
           lembrete_intervalo: boolean
+          lembrete_intervalo_horario: string | null
           lembrete_saida: boolean
+          lembrete_saida_horario: string | null
+          lembrete_solicitacoes: boolean
           push_habilitado: boolean
           user_id: string
         }
@@ -309,7 +351,10 @@ export type Database = {
           lembrete_entrada?: boolean
           lembrete_entrada_horario?: string | null
           lembrete_intervalo?: boolean
+          lembrete_intervalo_horario?: string | null
           lembrete_saida?: boolean
+          lembrete_saida_horario?: string | null
+          lembrete_solicitacoes?: boolean
           push_habilitado?: boolean
           user_id: string
         }
@@ -320,7 +365,10 @@ export type Database = {
           lembrete_entrada?: boolean
           lembrete_entrada_horario?: string | null
           lembrete_intervalo?: boolean
+          lembrete_intervalo_horario?: string | null
           lembrete_saida?: boolean
+          lembrete_saida_horario?: string | null
+          lembrete_solicitacoes?: boolean
           push_habilitado?: boolean
           user_id?: string
         }
@@ -410,6 +458,9 @@ export type Database = {
           id: string
           latitude: number
           longitude: number
+          qr_gerado_em: string | null
+          qr_token: string | null
+          qr_validade_minutos: number | null
           raio_metros: number
           updated_at: string
         }
@@ -421,6 +472,9 @@ export type Database = {
           id?: string
           latitude: number
           longitude: number
+          qr_gerado_em?: string | null
+          qr_token?: string | null
+          qr_validade_minutos?: number | null
           raio_metros?: number
           updated_at?: string
         }
@@ -432,6 +486,9 @@ export type Database = {
           id?: string
           latitude?: number
           longitude?: number
+          qr_gerado_em?: string | null
+          qr_token?: string | null
+          qr_validade_minutos?: number | null
           raio_metros?: number
           updated_at?: string
         }
@@ -844,6 +901,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       setores: {
         Row: {
