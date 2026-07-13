@@ -384,6 +384,10 @@ function PontoPage() {
             {formatDateLong(now, tz)}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <OfflineIndicator
+              online={offline.online}
+              pendentes={offline.pendentes}
+            />
             {streak >= 2 && (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
                 <Flame className="h-3.5 w-3.5" />
