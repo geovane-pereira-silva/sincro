@@ -48,6 +48,7 @@ function AuthPage() {
   const [indicacaoTravada, setIndicacaoTravada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [checando, setChecando] = useState(true);
   const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState<
     string | null
