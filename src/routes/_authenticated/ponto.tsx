@@ -65,6 +65,12 @@ function PontoPage() {
 
   const queryClient = useQueryClient();
 
+  const offline = usePontoOffline((n) => {
+    toast.success(`✓ ${n} ponto${n > 1 ? "s" : ""} offline sincronizado${n > 1 ? "s" : ""}`);
+    queryClient.invalidateQueries({ queryKey: ["registros"] });
+    queryClient.invalidateQueries({ queryKey: ["streak"] });
+  });
+
   // Relógio em tempo real (segundos) — só o display do relógio.
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
