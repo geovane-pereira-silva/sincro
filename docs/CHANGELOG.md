@@ -6,6 +6,15 @@
 
 ---
 
+## [2026-07-13] — Editor de dia: foco no ponto faltante
+
+### Modificado
+- [ponto] `src/components/ponto-dia-editor.tsx` — ao abrir o editor de um dia,
+  o primeiro campo **vazio** (ponto faltando) já vem selecionado, bastando
+  digitar o horário. Se não houver campo vazio, foca a entrada.
+
+---
+
 ## [2026-07-13] — BLOCO B4: Ponto Offline (integrado à tela de ponto)
 
 ### Adicionado
