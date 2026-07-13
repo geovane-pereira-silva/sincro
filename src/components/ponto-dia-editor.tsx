@@ -251,7 +251,6 @@ export function PontoDiaEditor({
         </DialogHeader>
 
         <form onSubmit={handleSave} className="space-y-4">
-          {(() => null)()}
           {values.slice(0, count).map((val, i, arr) => {
             // Foca o primeiro campo vazio (ponto faltando) para o usuário
             // apenas digitar o horário que falta.
