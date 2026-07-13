@@ -20,12 +20,21 @@ import {
 import {
   solicitarPermissaoPush,
   permissaoPushAtual,
+  assinarWebPush,
+  cancelarWebPush,
 } from "@/lib/pushNotifications";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  salvarPushSubscription,
+  removerPushSubscription,
+} from "@/lib/push.functions";
 import { mensagemErro } from "@/lib/erros";
 
 export function ConfigNotificacoesForm({ userId }: { userId: string }) {
   const { data, isLoading } = useConfigNotificacoes(userId);
   const salvar = useSalvarConfigNotificacoes();
+  const salvarSub = useServerFn(salvarPushSubscription);
+  const removerSub = useServerFn(removerPushSubscription);
 
   const [entrada, setEntrada] = useState(CONFIG_NOTIF_DEFAULT.lembrete_entrada);
   const [horario, setHorario] = useState(
@@ -63,6 +72,24 @@ export function ConfigNotificacoesForm({ userId }: { userId: string }) {
         );
         setPush(false);
         return;
+      }
+      // Assina o Web Push e persiste a subscription no backend.
+      const assinado = await assinarWebPush(async (sub) => {
+        await salvarSub({ data: sub });
+      });
+      if (!assinado) {
+        toast.error("Não foi possível registrar o dispositivo para push.");
+        setPush(false);
+        return;
+      }
+    } else {
+      const endpoint = await cancelarWebPush();
+      if (endpoint) {
+        try {
+          await removerSub({ data: { endpoint } });
+        } catch (_e) {
+          /* ignora falha ao remover */
+        }
       }
     }
     setPush(next);

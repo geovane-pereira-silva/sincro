@@ -48,6 +48,7 @@ function AuthPage() {
   const [indicacaoTravada, setIndicacaoTravada] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [checando, setChecando] = useState(true);
   const [aguardandoConfirmacao, setAguardandoConfirmacao] = useState<
     string | null
@@ -230,6 +231,25 @@ function AuthPage() {
     } catch (err) {
       toast.error(mensagemErro(err));
       setGoogleLoading(false);
+    }
+  }
+
+  async function handleApple() {
+    setAppleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error(mensagemErro(result.error));
+        setAppleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/ponto", replace: true });
+    } catch (err) {
+      toast.error(mensagemErro(err));
+      setAppleLoading(false);
     }
   }
 
@@ -509,6 +529,21 @@ function AuthPage() {
                 )}
                 Entrar com Google
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApple}
+                disabled={appleLoading}
+                className="h-13 w-full rounded-xl border-border text-base font-medium"
+              >
+                {appleLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <AppleIcon />
+                )}
+                Entrar com Apple
+              </Button>
             </>
           )}
         </form>
@@ -618,6 +653,14 @@ function GoogleIcon() {
         fill="#EA4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
+    </svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true" fill="currentColor">
+      <path d="M16.365 1.43c0 1.14-.42 2.2-1.12 2.98-.84.94-2.2 1.66-3.32 1.57-.14-1.12.42-2.3 1.1-3.02.78-.84 2.14-1.46 3.34-1.53zM20.9 17.02c-.6 1.4-.9 2.02-1.68 3.26-1.08 1.72-2.6 3.86-4.48 3.88-1.68.02-2.1-1.1-4.38-1.08-2.28.01-2.74 1.1-4.42 1.08-1.88-.02-3.32-1.94-4.4-3.66C-1.6 16.7-2 11.9.2 9.37c1.14-1.32 2.66-2.1 4.28-2.1 1.66 0 2.7 1.1 4.06 1.1 1.32 0 2.12-1.1 4.04-1.1 1.44 0 2.96.78 4.06 2.14-3.56 1.96-2.98 7.04.26 8.51z" />
     </svg>
   );
 }

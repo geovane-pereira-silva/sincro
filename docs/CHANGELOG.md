@@ -6,6 +6,41 @@
 
 ---
 
+## [2026-07-13] — BLOCO B3 (Apple SSO) + B7 (Web Push VAPID)
+
+### Adicionado
+- [auth] `src/routes/auth.tsx` — botão **Entrar com Apple** (via broker
+  `lovable.auth.signInWithOAuth("apple")`), ao lado do Google. Provedor Apple
+  habilitado no backend.
+- [push] `src/lib/pushNotifications.ts` — `assinarWebPush`/`cancelarWebPush`
+  (subscription do PushManager com a chave pública VAPID) e helper
+  `urlBase64ToUint8Array`.
+- [push] `src/lib/push.functions.ts` — server fns `salvarPushSubscription`
+  (upsert) e `removerPushSubscription`, escopadas ao usuário autenticado.
+- [push] Edge function `supabase/functions/send-push-notification` — envia
+  Web Push (VAPID) para os dispositivos de um usuário; protegida por segredo
+  interno (`x-internal-secret` / `PUSH_INTERNAL_SECRET`); remove subscriptions
+  expiradas (404/410).
+
+### Modificado
+- [push] `src/components/config-notificacoes-form.tsx` — ao ativar as
+  notificações push, o dispositivo é assinado no Web Push e a subscription é
+  persistida; ao desativar, a subscription é cancelada e removida.
+
+### Segredos
+- `PUSH_INTERNAL_SECRET` (novo), além dos já existentes `VAPID_PUBLIC_KEY`,
+  `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`.
+
+### Limitações conhecidas
+- **B3 Microsoft SSO:** o provedor Microsoft não é suportado pela autenticação
+  gerenciada (apenas Google e Apple). Mantido apenas Google + Apple.
+- Pendentes da sequência: B1 (Férias/Folgas), B2 (assinatura do espelho),
+  B5 (QR Code), B6 (justificativa de HE) e Bloco C (visual).
+
+---
+
+
+
 ## [2026-07-13] — UX: foco no ponto faltante + largura confortável no PC
 
 ### Modificado

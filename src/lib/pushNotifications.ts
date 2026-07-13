@@ -29,7 +29,81 @@ export function permissaoPushAtual(): NotificationPermission | "indisponivel" {
   return Notification.permission;
 }
 
+// Chave pública VAPID (publicável — segura no cliente). O par privado fica
+// como secret no backend (VAPID_PRIVATE_KEY) e é usado pela edge function.
+export const VAPID_PUBLIC_KEY =
+  "BF0y2XCvmZCRRGsxSSSOviqxp6OCkSFOxoCvwRHmVg7IyRW8ry0EYR7nB1gmb4VDVMM3hyxCKiV1Y0r8hoXskm0";
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const buffer = new ArrayBuffer(raw.length);
+  const out = new Uint8Array(buffer);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
 let swRegistration: ServiceWorkerRegistration | null = null;
+
+/**
+ * Assina o dispositivo para Web Push e persiste a subscription no backend.
+ * Retorna true em caso de sucesso. Requer permissão já concedida.
+ */
+export async function assinarWebPush(
+  salvar: (sub: {
+    endpoint: string;
+    p256dh: string;
+    auth: string;
+  }) => Promise<void>,
+): Promise<boolean> {
+  try {
+    if (
+      typeof navigator === "undefined" ||
+      !("serviceWorker" in navigator) ||
+      typeof window === "undefined" ||
+      !("PushManager" in window)
+    ) {
+      return false;
+    }
+    const reg = await registrarServiceWorker();
+    if (!reg) return false;
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+    const json = sub.toJSON();
+    const keys = json.keys ?? {};
+    if (!json.endpoint || !keys.p256dh || !keys.auth) return false;
+    await salvar({
+      endpoint: json.endpoint,
+      p256dh: keys.p256dh,
+      auth: keys.auth,
+    });
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
+/** Cancela a subscription de Web Push no dispositivo. Retorna o endpoint removido. */
+export async function cancelarWebPush(): Promise<string | null> {
+  try {
+    const reg = await registrarServiceWorker();
+    if (!reg) return null;
+    const sub = await reg.pushManager.getSubscription();
+    if (!sub) return null;
+    const endpoint = sub.endpoint;
+    await sub.unsubscribe();
+    return endpoint;
+  } catch (_e) {
+    return null;
+  }
+}
 
 /** Registra o service worker (necessário para notificações no celular). */
 export async function registrarServiceWorker(): Promise<ServiceWorkerRegistration | null> {
