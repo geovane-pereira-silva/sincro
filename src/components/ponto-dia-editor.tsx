@@ -286,6 +286,7 @@ export function PontoDiaEditor({
                 <Input
                   id={`dia-${i}`}
                   type="time"
+                  autoFocus={firstEmpty === -1 ? i === 0 : i === firstEmpty}
                   value={val}
                   onChange={(e) =>
                     setValues((v) => {
