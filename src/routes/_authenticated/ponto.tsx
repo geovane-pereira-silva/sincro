@@ -20,6 +20,9 @@ import { HomeUpsellBanner } from "@/components/home-upsell-banner";
 import { StatusDiaCard } from "@/components/status-dia-card";
 import { JornadaOnboardingModal } from "@/components/jornada-onboarding-modal";
 import { validarLocalizacaoPonto } from "@/lib/geolocalizacao";
+import { salvarBatidaOffline, isErroDeRede } from "@/lib/pontoOffline";
+import { usePontoOffline } from "@/hooks/use-ponto-offline";
+import { OfflineIndicator } from "@/components/offline-indicator";
 
 import { useJornadaConfig } from "@/hooks/use-jornada-config";
 import { useBancoHoras } from "@/hooks/use-banco-horas";
@@ -61,6 +64,12 @@ function PontoPage() {
   }, [profile?.tipo_conta, navigate]);
 
   const queryClient = useQueryClient();
+
+  const offline = usePontoOffline((n) => {
+    toast.success(`✓ ${n} ponto${n > 1 ? "s" : ""} offline sincronizado${n > 1 ? "s" : ""}`);
+    queryClient.invalidateQueries({ queryKey: ["registros"] });
+    queryClient.invalidateQueries({ queryKey: ["streak"] });
+  });
 
   // Relógio em tempo real (segundos) — só o display do relógio.
   const [now, setNow] = useState(() => new Date());
@@ -262,19 +271,40 @@ function PontoPage() {
         }
       }
 
-      const { error } = await supabase.from("ponto_registros").insert({
+      const registro = {
         user_id: user.id,
         tipo: proximo,
         data_hora: dataHora.toISOString(),
         data_hora_original: original.toISOString(),
         foi_editado: editadoReal,
         justificativa: editadoReal && obs.length > 0 ? obs : null,
-        origem: "web",
+        origem: "web" as const,
         latitude,
         longitude,
         distancia_empresa_metros: distancia,
-      });
-      if (error) throw error;
+      };
+
+      const { error } = await supabase.from("ponto_registros").insert(registro);
+      if (error) {
+        // Sem conexão: guarda localmente e sincroniza depois automaticamente.
+        if (isErroDeRede(error)) {
+          await salvarBatidaOffline({
+            id: crypto.randomUUID(),
+            ...registro,
+            created_at: new Date().toISOString(),
+          });
+          await offline.atualizarPendentes();
+          toast.warning(
+            "📡 Sem conexão — ponto salvo localmente (será sincronizado automaticamente)",
+            { duration: 8000 },
+          );
+          setIsManual(false);
+          setJustificativa("");
+          setTimeInput(horaAtual);
+          return;
+        }
+        throw error;
+      }
 
       toast.success(
         `✓ Registro confirmado pelo SINCRO às ${formatTime(dataHora.toISOString(), tz)}`,
@@ -289,6 +319,43 @@ function PontoPage() {
       // Confere recompensas premium (ex.: 7 dias seguidos) após a batida.
       void verificarRecompensasPremium(user.id, queryClient);
     } catch (err) {
+      // Erro de rede na validação/inserção também vira ponto offline.
+      if (isErroDeRede(err) && proximo) {
+        try {
+          await salvarBatidaOffline({
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            tipo: proximo,
+            data_hora: (isManual
+              ? (() => {
+                  const [hh, mm] = timeInput.split(":").map(Number);
+                  const p = getZonedParts(new Date(), tz);
+                  return zonedWallToUtc(p.year, p.month, p.day, hh, mm, 0, tz);
+                })()
+              : new Date()
+            ).toISOString(),
+            data_hora_original: new Date().toISOString(),
+            foi_editado: false,
+            justificativa: null,
+            origem: "web",
+            latitude: null,
+            longitude: null,
+            distancia_empresa_metros: null,
+            created_at: new Date().toISOString(),
+          });
+          await offline.atualizarPendentes();
+          toast.warning(
+            "📡 Sem conexão — ponto salvo localmente (será sincronizado automaticamente)",
+            { duration: 8000 },
+          );
+          setIsManual(false);
+          setJustificativa("");
+          setTimeInput(horaAtual);
+          return;
+        } catch (_e) {
+          /* cai no toast de erro padrão */
+        }
+      }
       toast.error(mensagemErro(err));
     } finally {
       setSubmitting(false);
@@ -317,6 +384,10 @@ function PontoPage() {
             {formatDateLong(now, tz)}
           </p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <OfflineIndicator
+              online={offline.online}
+              pendentes={offline.pendentes}
+            />
             {streak >= 2 && (
               <div className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3 py-1 text-xs font-semibold text-[#EA580C]">
                 <Flame className="h-3.5 w-3.5" />

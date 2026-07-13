@@ -6,6 +6,27 @@
 
 ---
 
+## [2026-07-13] — BLOCO B4: Ponto Offline (integrado à tela de ponto)
+
+### Adicionado
+- [ponto offline] `src/lib/pontoOffline.ts` — fila de batidas em IndexedDB,
+  detecção de erro de rede (`isErroDeRede`), sincronização automática e
+  Background Sync via Service Worker.
+- [ponto offline] `src/hooks/use-ponto-offline.ts` — estado de conexão,
+  contagem de pendentes e sincronização nos eventos `online`/montagem.
+- [ponto offline] `src/components/offline-indicator.tsx` — selo Online /
+  Offline / Sincronizando com contador de pendentes no card do relógio.
+
+### Modificado
+- [ponto] `src/routes/_authenticated/ponto.tsx` — ao bater ponto sem conexão,
+  o registro é salvo localmente (toast informando) e sincronizado quando a
+  rede volta; indicador de conexão exibido no card do relógio.
+
+### Banco de dados
+- Nenhuma alteração (usa a estrutura existente de `ponto_registros`).
+
+---
+
 ## [2026-07-13] — Documentação viva (nova estrutura /docs) + roadmap BLOCO B/C
 
 ### Adicionado
