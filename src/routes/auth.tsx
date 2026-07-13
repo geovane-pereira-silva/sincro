@@ -231,7 +231,26 @@ function AuthPage() {
     } catch (err) {
       toast.error(mensagemErro(err));
       setGoogleLoading(false);
+  }
+
+  async function handleApple() {
+    setAppleLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        toast.error(mensagemErro(result.error));
+        setAppleLoading(false);
+        return;
+      }
+      if (result.redirected) return;
+      navigate({ to: "/ponto", replace: true });
+    } catch (err) {
+      toast.error(mensagemErro(err));
+      setAppleLoading(false);
     }
+  }
   }
 
   if (checando) {
