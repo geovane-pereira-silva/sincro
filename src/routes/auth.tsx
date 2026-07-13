@@ -231,6 +231,7 @@ function AuthPage() {
     } catch (err) {
       toast.error(mensagemErro(err));
       setGoogleLoading(false);
+    }
   }
 
   async function handleApple() {
@@ -250,7 +251,6 @@ function AuthPage() {
       toast.error(mensagemErro(err));
       setAppleLoading(false);
     }
-  }
   }
 
   if (checando) {
