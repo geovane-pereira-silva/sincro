@@ -133,7 +133,7 @@ export function AppShell({
       userId={profile?.id}
       referralCode={profile?.referral_code ?? null}
     >
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-background lg:max-w-5xl">
         <header className="sticky top-0 z-10 flex h-[72px] items-center justify-between bg-primary px-6 text-primary-foreground">
           <div className="flex min-w-0 items-center gap-3">
             <Avatar className="h-10 w-10 border border-white/10">
@@ -234,7 +234,7 @@ export function AppShell({
           <SystemBanner mensagem={config.mensagem_sistema} />
         )}
 
-        <main className="flex-1 px-4 py-5">{children}</main>
+        <main className="flex-1 px-4 py-5 lg:px-8 lg:py-8">{children}</main>
       </div>
     </PremiumProvider>
   );
