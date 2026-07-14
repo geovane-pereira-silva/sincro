@@ -6,6 +6,20 @@
 
 ---
 
+## [2026-07-14] — Correção: dias com batidas trocadas apareciam "Incompleto"
+
+### Corrigido
+- [ponto/relatório] `src/lib/ponto.ts` (`resumoDoDia`) — entrada/saída e
+  intervalos passam a ser derivados da **ordem cronológica** das batidas, não
+  do campo `tipo`. Assim, mesmo que os papéis estejam trocados (ex.: várias
+  batidas salvas como "entrada"), o dia é calculado corretamente.
+- [ponto/editor] `src/components/ponto-dia-editor.tsx` — o pré-preenchimento do
+  editor mapeia as batidas existentes por posição cronológica (1ª = entrada,
+  última = saída), corrigindo o caso em que tudo aparecia como "entrada".
+- [dados] Migração normalizou o `tipo` de todas as batidas de todos os usuários
+  com base na ordem cronológica de cada dia (nenhum horário foi alterado).
+
+
 ## [2026-07-14] — Correção: lembretes de ponto não disparavam
 
 ### Corrigido

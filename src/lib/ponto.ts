@@ -280,15 +280,22 @@ export function resumoDoDia(
   registros: PontoRegistro[],
   cargaHorariaDiaria: number,
 ): DiaResumo {
-  const entrada = registros.find((r) => r.tipo === "entrada");
-  const saidaIntervalo = registros.find((r) => r.tipo === "saida_intervalo");
-  const entradaIntervalo = registros.find((r) => r.tipo === "entrada_intervalo");
-  const saida = [...registros].reverse().find((r) => r.tipo === "saida");
-
   // Cálculo geral por pares cronológicos: suporta N intervalos (até 10 batidas).
   // Pares (0,1),(2,3)... são segmentos de trabalho; os "buracos" entre pares
   // são intervalos. Para o dia clássico de 4 batidas o resultado é idêntico.
   const ordenados = batidasOrdenadas(registros);
+
+  // Entrada/saída e intervalos são derivados da ORDEM CRONOLÓGICA, não do campo
+  // `tipo` (que pode estar incorreto por erro de digitação ou dado legado).
+  // 1ª batida = entrada; última = saída (quando o nº é par); posições ímpares
+  // no meio são saídas p/ intervalo e as pares são voltas do intervalo.
+  const entrada = ordenados[0];
+  const saida =
+    ordenados.length >= 2 && ordenados.length % 2 === 0
+      ? ordenados[ordenados.length - 1]
+      : undefined;
+  const saidaIntervalo = ordenados[1];
+  const entradaIntervalo = ordenados[2];
   const t = (r: PontoRegistro) => new Date(r.data_hora).getTime();
   let trabalhadoMin = 0;
   let intervaloMin = 0;
