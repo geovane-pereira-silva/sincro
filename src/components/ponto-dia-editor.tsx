@@ -61,40 +61,43 @@ export function PontoDiaEditor({
   const [count, setCount] = useState(4);
   const [values, setValues] = useState<string[]>(["", "", "", ""]);
 
-  // Batidas existentes mapeadas por papel/posição, em ordem cronológica.
-  const existentesPorSlot = useMemo(() => {
+  // Mapeia as batidas existentes para os campos (slots) do dia por ORDEM
+  // CRONOLÓGICA — não pelo campo `tipo`, que pode estar incorreto (dado legado
+  // ou batidas salvas todas como "entrada"). 1º horário = entrada; último =
+  // saída (quando o nº é par); os do meio preenchem os intervalos em ordem.
+  const slotInfo = useMemo(() => {
     const ordenados = batidasOrdenadas(registros);
-    const entrada = registros.find((r) => r.tipo === "entrada");
-    const saida = [...registros].reverse().find((r) => r.tipo === "saida");
-    const outs = ordenados.filter((r) => r.tipo === "saida_intervalo");
-    const ins = ordenados.filter((r) => r.tipo === "entrada_intervalo");
-    return { entrada, saida, outs, ins };
+    const n = ordenados.length;
+    const par = n % 2 === 0 ? n : n + 1;
+    const total = Math.min(MAX_PONTOS, Math.max(4, par));
+    const slots: (PontoRegistro | undefined)[] = new Array(total).fill(
+      undefined,
+    );
+    if (n > 0) {
+      slots[0] = ordenados[0];
+      if (n % 2 === 0) {
+        // Dia completo (par): último horário vai para a saída.
+        slots[total - 1] = ordenados[n - 1];
+        for (let k = 1; k <= n - 2; k++) slots[k] = ordenados[k];
+      } else {
+        // Dia incompleto (ímpar): preenche a partir do 1º intervalo e deixa a
+        // saída final em branco para o usuário completar.
+        for (let k = 1; k <= n - 1; k++) slots[k] = ordenados[k];
+      }
+    }
+    return { slots, total };
   }, [registros]);
 
-  function regDoSlot(
-    i: number,
-    total: number,
-    e = existentesPorSlot,
-  ): PontoRegistro | undefined {
-    if (i === 0) return e.entrada;
-    if (i === total - 1) return e.saida;
-    return i % 2 === 1 ? e.outs[(i - 1) / 2] : e.ins[(i - 2) / 2];
+  function regDoSlot(i: number): PontoRegistro | undefined {
+    return slotInfo.slots[i];
   }
 
   useEffect(() => {
     if (!open) return;
-    const paresPresentes = Math.max(
-      existentesPorSlot.outs.length,
-      existentesPorSlot.ins.length,
-    );
-    // Base 4 (1 par de intervalo), cresce conforme o que já foi registrado.
-    const total = Math.min(
-      MAX_PONTOS,
-      Math.max(4, 2 + 2 * Math.max(1, paresPresentes)),
-    );
+    const total = slotInfo.total;
     const next: string[] = [];
     for (let i = 0; i < total; i++) {
-      const reg = regDoSlot(i, total);
+      const reg = slotInfo.slots[i];
       if (reg) {
         const p = getZonedParts(new Date(reg.data_hora), tz);
         next.push(
@@ -108,6 +111,7 @@ export function PontoDiaEditor({
     setValues(next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, dayKey]);
+
 
   const [y, m, d] = dayKey.split("-").map(Number);
 
