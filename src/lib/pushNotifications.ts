@@ -29,6 +29,23 @@ export function permissaoPushAtual(): NotificationPermission | "indisponivel" {
   return Notification.permission;
 }
 
+/**
+ * Detecta se o app está rodando como PWA instalado (modo standalone).
+ * Nesse caso os lembretes devem ser forçados como notificação de sistema
+ * (pop-up) em vez de apenas um toast na tela.
+ */
+export function appInstalado(): boolean {
+  if (typeof window === "undefined") return false;
+  const standalone =
+    window.matchMedia?.("(display-mode: standalone)")?.matches ||
+    window.matchMedia?.("(display-mode: fullscreen)")?.matches ||
+    window.matchMedia?.("(display-mode: minimal-ui)")?.matches;
+  // iOS Safari expõe navigator.standalone quando adicionado à tela inicial.
+  const iosStandalone =
+    (navigator as unknown as { standalone?: boolean }).standalone === true;
+  return Boolean(standalone || iosStandalone);
+}
+
 // Chave pública VAPID (publicável — segura no cliente). O par privado fica
 // como secret no backend (VAPID_PRIVATE_KEY) e é usado pela edge function.
 export const VAPID_PUBLIC_KEY =
