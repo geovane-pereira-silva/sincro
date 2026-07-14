@@ -6,6 +6,25 @@
 
 ---
 
+## [2026-07-14] — Correção: lembretes de ponto não disparavam
+
+### Corrigido
+- [notificações] `src/hooks/use-lembretes-ponto.ts` — quando o usuário nunca
+  salvava preferências, `config` vinha `null` e o hook retornava cedo, não
+  agendando **nenhum** lembrete. Agora usa `CONFIG_NOTIF_DEFAULT` como fallback,
+  de modo que todo usuário logado (navegador ou app instalado) recebe lembretes.
+
+### Adicionado
+- [notificações] `src/lib/pushNotifications.ts` — `appInstalado()` detecta modo
+  standalone (PWA instalado / iOS `navigator.standalone`).
+- [notificações] Quando o app está **instalado**: pede permissão de notificação
+  automaticamente e **força o lembrete como pop-up do sistema** (via Service
+  Worker `showNotification`), além do toast. No navegador sem permissão, mantém
+  o fallback de toast na tela.
+
+---
+
+
 ## [2026-07-13] — BLOCO B3 (Apple SSO) + B7 (Web Push VAPID)
 
 ### Adicionado
