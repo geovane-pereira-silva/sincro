@@ -168,7 +168,7 @@ export function PontoDiaEditor({
           raw,
           minutos: hh * 60 + mm,
           iso,
-          existente: regDoSlot(i, count),
+          existente: regDoSlot(i),
         });
       }
 
@@ -260,7 +260,7 @@ export function PontoDiaEditor({
             // apenas digitar o horário que falta.
             const firstEmpty = arr.findIndex((v) => !v.trim());
             const label = rotuloBatida(i, count);
-            const jaExiste = !!regDoSlot(i, count);
+            const jaExiste = !!regDoSlot(i);
             // Início de um par de intervalo removível (não é entrada nem saída).
             const podeRemover =
               count > 4 && i % 2 === 1 && i !== count - 1;
