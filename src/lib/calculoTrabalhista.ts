@@ -40,7 +40,9 @@ export type StatusDia =
   | "folga"
   | "feriado"
   | "incompleto"
-  | "futuro";
+  | "futuro"
+  | "bh_positivo"
+  | "bh_negativo";
 
 export interface CalculoDia {
   // Entradas
@@ -304,23 +306,32 @@ export function calcularDia(params: {
   }
 
   // --- Horas extras / falta ----------------------------------------------
-  // Extra conta integralmente; falta é perdoada até a tolerância.
+  // PILAR DO SISTEMA — dois regimes mutuamente exclusivos:
+  //  • SEM banco de horas: conta-se EXTRA ou FALTA/ATRASOS.
+  //    Falta = ausência do dia inteiro OU de meio período (trabalhou até
+  //    metade da jornada). Diferenças menores aparecem como atraso /
+  //    saída antecipada, nunca como falta.
+  //  • COM banco de horas: tudo vira BH+ ou BH- (bancoDia). Sem faltas,
+  //    sem extras e sem atrasos.
+  const bhAtivo = config.banco_horas_ativo;
   let horasExtras = 0;
   let horasFalta = 0;
-  if (completo && ehDiaTrabalho && !ehFeriado) {
-    const delta = horasTrabalhadas - horasPrevistas;
-    if (delta > tol) {
-      horasExtras = delta;
-    } else if (-delta > tol) {
-      horasFalta = -delta - tol;
-    }
-  } else if (ehDiaTrabalho && !ehFeriado && !completo) {
-    // Dia de trabalho sem par completo: não computa extra nem atraso;
-    // a falta só é contabilizada quando não há nenhuma batida (status falta)
-    // E o dia já passou — dias futuros nunca contam como falta.
-    if (batidas.length === 0 && !ehFuturo) {
+  if (!bhAtivo && ehDiaTrabalho && !ehFeriado) {
+    if (completo) {
+      const delta = horasTrabalhadas - horasPrevistas;
+      if (delta > tol) horasExtras = delta;
+      if (horasTrabalhadas <= horasPrevistas / 2) {
+        // Ausência de meio período.
+        horasFalta = Math.round(horasPrevistas / 2);
+      }
+    } else if (batidas.length === 0 && !ehFuturo) {
+      // Ausência do dia inteiro (dias futuros nunca contam).
       horasFalta = horasPrevistas;
     }
+  }
+  if (bhAtivo) {
+    atraso = 0;
+    saidaAntecipada = 0;
   }
 
   // --- Adicional noturno (CLT Art. 73) -----------------------------------
@@ -338,7 +349,7 @@ export function calcularDia(params: {
   // --- Banco de horas -----------------------------------------------------
   // Crédito/débito do dia = trabalhado - previsto (em dias de trabalho).
   let bancoDia = 0;
-  if (config.banco_horas_ativo) {
+  if (bhAtivo) {
     if (ehDiaTrabalho && !ehFeriado && completo) {
       bancoDia = horasTrabalhadas - horasPrevistas;
     } else if ((!ehDiaTrabalho || ehFeriado) && completo) {
@@ -359,24 +370,30 @@ export function calcularDia(params: {
 
   // --- Status -------------------------------------------------------------
   let status: StatusDia;
-  if (ehFeriado) {
+  if (ehFeriado && !(bhAtivo && completo)) {
     status = "feriado";
-  } else if (!ehDiaTrabalho) {
+  } else if (!ehDiaTrabalho && !(bhAtivo && completo)) {
     status = "folga";
   } else if (ehFuturo && batidas.length === 0) {
     // Dia de trabalho ainda não ocorrido: neutro (nem falta, nem negativo).
     status = "futuro";
+  } else if (bhAtivo) {
+    if (batidas.length > 0 && !completo) status = "incompleto";
+    else if (Math.round(bancoDia) > 0) status = "bh_positivo";
+    else if (Math.round(bancoDia) < 0) status = "bh_negativo";
+    else status = "normal";
   } else if (batidas.length === 0) {
     status = "falta";
   } else if (!completo) {
     status = "incompleto";
-  } else if (horasExtras > 0) {
-    status = "extra";
   } else if (horasFalta > 0) {
     status = "falta";
+  } else if (horasExtras > 0) {
+    status = "extra";
   } else {
     status = "normal";
   }
+
 
 
 
@@ -436,6 +453,14 @@ export const STATUS_INFO: Record<
   futuro: {
     label: "—",
     classes: "bg-secondary/50 text-muted-foreground",
+  },
+  bh_positivo: {
+    label: "BH+",
+    classes: "bg-ponto-entrada/10 text-ponto-entrada",
+  },
+  bh_negativo: {
+    label: "BH-",
+    classes: "bg-negativo/10 text-negativo",
   },
 };
 
