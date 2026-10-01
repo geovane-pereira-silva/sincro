@@ -83,6 +83,17 @@ export interface CalculoDia {
   dsrDia: number;
 }
 
+/**
+ * Saldo simples que deve ser apresentado ao usuário no espelho:
+ * trabalhado menos previsto. Dias ainda abertos ou futuros não exibem saldo.
+ */
+export function saldoTrabalhadoDia(calculo: CalculoDia): number | null {
+  if (calculo.status === "incompleto" || calculo.status === "futuro") {
+    return null;
+  }
+  return calculo.horasTrabalhadas - calculo.horasPrevistas;
+}
+
 // --- Feriados nacionais (hardcoded, expansível) ---------------------------
 
 // Feriados nacionais fixos + móveis 2024/2025/2026 (formato YYYY-MM-DD).
