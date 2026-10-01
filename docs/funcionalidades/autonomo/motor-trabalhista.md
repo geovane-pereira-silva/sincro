@@ -17,6 +17,8 @@ Autônomo, colaborador, gestor (relatórios) e admin.
 - Dias **futuros** retornam 0 (status `futuro`) — não penalizam o saldo.
 - Dias especiais (`dias_especiais`) alteram o cálculo (feriado, atestado, etc.).
 - Suporta jornada configurável por dia/carga horária.
+- A apresentação diária usa `trabalhado - previsto`: horas trabalhadas em preto
+  e um único saldo colorido; dias incompletos ou futuros ficam sem saldo.
 
 ## Tabelas do banco envolvidas
 `ponto_registros`, `jornada_config`, `jornadas_empresa`, `dias_especiais`.

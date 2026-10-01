@@ -16,6 +16,8 @@ Colaborador (próprio); gestor (da equipe).
 ## Regras de negócio
 - Mostra todas as batidas do dia, não só entrada/saída.
 - Dias futuros não contam como falta/negativo.
+- Cada dia destaca somente o total trabalhado em preto e o saldo diário em cor
+  (verde positivo, vermelho negativo). Dias incompletos e futuros não exibem saldo.
 - (BLOCO B2) Assinatura eletrônica do espelho — PENDENTE.
 
 ## Tabelas do banco envolvidas

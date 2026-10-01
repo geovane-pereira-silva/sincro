@@ -19,10 +19,9 @@ import {
 import { cn } from "@/lib/utils";
 import {
   calcularDia,
-  formatBanco,
-  formatHoraMin,
   JORNADA_CONFIG_DEFAULT,
   STATUS_INFO,
+  saldoTrabalhadoDia,
 } from "@/lib/calculoTrabalhista";
 import {
   TIPO_INFO,
@@ -39,7 +38,22 @@ import {
 } from "@/lib/ponto";
 
 export const Route = createFileRoute("/_authenticated/historico")({
-  head: () => ({ meta: [{ title: "Histórico — SINCRO" }] }),
+  head: () => ({
+    meta: [
+      { title: "Histórico de ponto — SINCRO" },
+      {
+        name: "description",
+        content: "Consulte suas batidas, horas trabalhadas e saldo diário no SINCRO.",
+      },
+      { property: "og:title", content: "Histórico de ponto — SINCRO" },
+      {
+        property: "og:description",
+        content: "Consulte suas batidas, horas trabalhadas e saldo diário no SINCRO.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: HistoricoPage,
 });
 
@@ -155,6 +169,7 @@ function HistoricoConteudo({
                   tz,
                 });
                 const statusInfo = STATUS_INFO[calc.status];
+                const saldoDia = saldoTrabalhadoDia(calc);
                 return (
                   <AccordionItem
                     key={dayKey}
@@ -177,32 +192,22 @@ function HistoricoConteudo({
                           </span>
                         </div>
                         <div className="flex shrink-0 items-center gap-1.5">
-                          {calc.horasExtras > 0 && (
-                            <span className="rounded-full bg-ponto-entrada/10 px-2 py-0.5 text-[10px] font-bold text-ponto-entrada">
-                              +{formatHoraMin(calc.horasExtras)}
+                          {saldoDia !== null && (
+                            <span
+                              aria-label={`Saldo do dia ${formatSaldo(saldoDia)}`}
+                              className={cn(
+                                "rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums",
+                                saldoDia > 0 && "bg-positivo/10 text-positivo",
+                                saldoDia < 0 && "bg-negativo/10 text-negativo",
+                                saldoDia === 0 && "bg-secondary text-muted-foreground",
+                              )}
+                            >
+                              {formatSaldo(saldoDia)}
                             </span>
                           )}
-                          {calc.horasFalta > 0 && (
-                            <span className="rounded-full bg-negativo/10 px-2 py-0.5 text-[10px] font-bold text-negativo">
-                              -{formatHoraMin(calc.horasFalta)}
-                            </span>
-                          )}
-                          {jornadaConfig?.banco_horas_ativo &&
-                            calc.bancoDia !== 0 && (
-                              <span
-                                className={cn(
-                                  "rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums",
-                                  calc.bancoDia >= 0
-                                    ? "bg-positivo/10 text-positivo"
-                                    : "bg-negativo/10 text-negativo",
-                                )}
-                              >
-                                {formatBanco(calc.bancoDia)}
-                              </span>
-                            )}
                           {resumo.entrada && resumo.saida ? (
-                            <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-foreground">
-                              {formatDuracao(resumo.trabalhadoMin)}
+                            <span className="min-w-[54px] text-right text-sm font-bold tabular-nums text-foreground">
+                              {formatDuracao(calc.horasTrabalhadas)}
                             </span>
                           ) : (
                             <span className="text-sm font-medium text-muted-foreground">
@@ -246,15 +251,8 @@ function HistoricoConteudo({
                           <span className="text-muted-foreground">
                             Intervalo: {formatDuracao(resumo.intervaloMin)}
                           </span>
-                          <span
-                            className={cn(
-                              "font-bold",
-                              resumo.saldoMin >= 0
-                                ? "text-positivo"
-                                : "text-negativo",
-                            )}
-                          >
-                            Saldo {formatSaldo(resumo.saldoMin)}
+                          <span className="font-semibold text-foreground">
+                            Trabalhado: {formatDuracao(calc.horasTrabalhadas)}
                           </span>
                         </div>
                       )}

@@ -6,6 +6,18 @@
 
 ---
 
+## [2026-10-01] — Histórico e relatório simplificados
+
+### Modificado
+- [histórico/relatório] Cada dia agora exibe o total trabalhado em preto e um
+  único saldo diário colorido (verde positivo, vermelho negativo).
+- [relatório] Removidos da visualização os indicadores diários duplicados de
+  previsto, extra, falta, atraso e banco acumulado; o resumo mensal segue a
+  mesma hierarquia de trabalhado + saldo.
+- [cálculo] Dias incompletos e futuros não exibem saldo visual.
+
+---
+
 ## [2026-07-14] — Correção: dias com batidas trocadas apareciam "Incompleto"
 
 ### Corrigido
